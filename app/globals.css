@@ -1,0 +1,203 @@
+@import "tailwindcss";
+@import "primereact/resources/themes/saga-blue/theme.css"; /* hoặc theme khác */
+@import "primereact/resources/primereact.min.css";
+@import "primeicons/primeicons.css";
+
+/* Biến màu chủ đạo đơn giản */
+:root {
+  --color-primary: #2563eb; /* blue-600 */
+  --color-primary-light: #e0edff; /* xanh nhạt nền input */
+  --color-primary-dark: #1e40af; /* blue-800 */
+  --color-bg: #f8fafc; /* nền trắng xanh rất nhẹ */
+  --color-text: #1e293b; /* slate-800 */
+  --color-border: #c7d2fe; /* blue-200 */
+  --color-link: #2563eb;
+  --color-link-hover: #1d4ed8;
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: "Inter", "Roboto", Arial, sans-serif;
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--color-primary-dark);
+  font-weight: 700;
+}
+
+a {
+  color: var(--color-link);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+a:hover {
+  color: var(--color-link-hover);
+  text-decoration: underline;
+}
+
+button,
+.p-button {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: background 0.2s;
+  box-shadow: none;
+}
+button:hover,
+.p-button:hover {
+  background: var(--color-primary-dark);
+  color: #fff;
+}
+
+input,
+textarea,
+select,
+.p-inputtext {
+  background: var(--color-primary-light);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  color: var(--color-text);
+  transition: border 0.2s;
+  box-shadow: none;
+}
+input:focus,
+textarea:focus,
+select:focus,
+.p-inputtext:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+.p-checkbox-box.p-highlight {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+}
+
+.p-password {
+  width: 100% !important;
+  position: relative;
+  display: block !important;
+}
+
+.p-password-input {
+  width: 100% !important;
+  background: #eff6ff !important;
+  border-radius: 8px !important;
+  border: 1px solid #e5e7eb !important;
+  height: 48px !important;
+  font-size: 16px !important;
+  box-sizing: border-box;
+  padding-right: 40px !important;
+  display: block !important;
+}
+
+.p-password .p-password-icon {
+  margin: auto 0;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 1.2rem;
+  z-index: 2;
+  position: absolute;
+  right: 10px !important;
+  top: 15px !important;
+}
+
+.p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  background: var(--color-primary-light);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 8px;
+}
+
+/* Hiệu ứng fade-in cho các khối lớn */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* PrimeReact overrides */
+.p-datatable .p-datatable-thead > tr > th {
+  background: #f8f9fa;
+  color: #495057;
+  font-weight: 600;
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+  padding: 0.75rem;
+}
+
+.p-button {
+  font-weight: 500;
+}
+
+/* Custom styles */
+.card {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  padding: 1.5rem;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.p-message {
+  border-radius: 8px !important;
+  padding: 12px 20px !important;
+  font-size: 16px !important;
+  font-weight: 500;
+  margin-bottom: 16px !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+  border: none !important;
+}
+
+.p-message-success {
+  background: #e0fbe6 !important;
+  color: #15803d !important;
+}
+
+.p-message-error {
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+}
+
+.p-message-info {
+  background: #e0f2fe !important;
+  color: #2563eb !important;
+}
+
+.p-message-icon {
+  margin-right: 8px;
+}
