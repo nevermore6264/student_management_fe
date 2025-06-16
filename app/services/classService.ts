@@ -1,30 +1,25 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-const API_BASE = 'http://localhost:8080/api/khoa';
+const API_BASE = 'http://localhost:8080/api/lop';
 
-interface Department {
+export interface Class {
+    maLop: string;
+    tenLop: string;
     maKhoa: string;
-    tenKhoa: string;
-    soDienThoai: string;
-    email: string;
-    diaChi: string;
-    maTruong: string;
+    khoaHoc: string;
     trangThai: number;
 }
 
-class DepartmentService {
-    private validateDepartment(data: any): Department {
+class ClassService {
+    private validateClass(data: any): Class {
         return {
+            maLop: data.maLop || '',
+            tenLop: data.tenLop || '',
             maKhoa: data.maKhoa || '',
-            tenKhoa: data.tenKhoa || '',
-            soDienThoai: data.soDienThoai || '',
-            email: data.email || '',
-            diaChi: data.diaChi || '',
-            maTruong: data.maTruong || 'UTE',
+            khoaHoc: data.khoaHoc || '',
             trangThai: data.trangThai ?? 1
         };
     }
 
-    async getAllDepartments(): Promise<any> {
+    async getAllClasses(): Promise<{ data: Class[] }> {
         const token = localStorage.getItem('token');
         const res = await fetch(`${API_BASE}`, {
             method: 'GET',
@@ -35,16 +30,16 @@ class DepartmentService {
         });
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || 'Không thể lấy danh sách khoa');
+            throw new Error(err.message || 'Không thể lấy danh sách lớp');
         }
         const data = await res.json();
         return {
             ...data,
-            data: Array.isArray(data.data) ? data.data.map(this.validateDepartment) : []
+            data: Array.isArray(data.data) ? data.data.map(this.validateClass) : []
         };
     }
 
-    async createDepartment(data: Department) {
+    async createClass(data: Class) {
         const token = localStorage.getItem('token');
         const res = await fetch(`${API_BASE}`, {
             method: 'POST',
@@ -56,15 +51,15 @@ class DepartmentService {
         });
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || 'Thêm khoa thất bại');
+            throw new Error(err.message || 'Thêm lớp thất bại');
         }
         const responseData = await res.json();
-        return this.validateDepartment(responseData.data);
+        return this.validateClass(responseData.data);
     }
 
-    async updateDepartment(maKhoa: string, data: Department) {
+    async updateClass(maLop: string, data: Class) {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${API_BASE}/${maKhoa}`, {
+        const res = await fetch(`${API_BASE}/${maLop}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -74,15 +69,15 @@ class DepartmentService {
         });
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || 'Cập nhật khoa thất bại');
+            throw new Error(err.message || 'Cập nhật lớp thất bại');
         }
         const responseData = await res.json();
-        return this.validateDepartment(responseData.data);
+        return this.validateClass(responseData.data);
     }
 
-    async deleteDepartment(maKhoa: string) {
+    async deleteClass(maLop: string) {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${API_BASE}/${maKhoa}`, {
+        const res = await fetch(`${API_BASE}/${maLop}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -91,12 +86,11 @@ class DepartmentService {
         });
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || 'Xóa khoa thất bại');
+            throw new Error(err.message || 'Xóa lớp thất bại');
         }
         return res;
     }
 }
 
-const departmentService = new DepartmentService();
-export default departmentService;
-export type { Department }; 
+const classService = new ClassService();
+export default classService; 

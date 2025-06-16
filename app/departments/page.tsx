@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
@@ -6,17 +7,8 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { Message } from 'primereact/message';
 import { InputText } from 'primereact/inputtext';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import departmentService, { Department } from '../services/departmentService';
-
-interface Department {
-    maKhoa: string;
-    tenKhoa: string;
-    soDienThoai: string;
-    email: string;
-    diaChi: string;
-    maTruong: string;
-    trangThai: number;
-}
 
 export default function DepartmentListPage() {
     const [departments, setDepartments] = useState<Department[]>([]);
@@ -61,29 +53,57 @@ export default function DepartmentListPage() {
         setEditDialogVisible(true);
     };
 
-    const handleDelete = async (maKhoa: string) => {
-        // TODO: Call API to delete
-        setDepartments(departments.filter(d => d.maKhoa !== maKhoa));
-        setSuccess('Xóa khoa thành công');
-        setTimeout(() => setSuccess(''), 2500);
+    const handleDelete = (dep: Department) => {
+        confirmDialog({
+            message: (
+                <div>
+                    <span>Bạn có chắc chắn muốn xóa khoa <b>{dep.tenKhoa}</b>?</span>
+                    <div className="mt-3 text-red-600">
+                        <b>Lưu ý: Hành động này sẽ xóa toàn bộ thông tin liên quan đến khoa này, bao gồm:</b>
+                        <ul className="list-disc ml-6 mt-1">
+                            <li>Thông tin khoa</li>
+                            <li>Danh sách giảng viên, sinh viên thuộc khoa</li>
+                            <li>Các thông tin liên quan khác</li>
+                        </ul>
+                        <div className="mt-2 font-bold">Hành động này không thể hoàn tác!</div>
+                    </div>
+                </div>
+            ),
+            header: 'Xác nhận xóa khoa',
+            icon: 'pi pi-exclamation-triangle text-3xl text-red-500',
+            acceptClassName: 'p-button-danger',
+            rejectLabel: 'Hủy',
+            acceptLabel: 'Xóa',
+            accept: async () => {
+                try {
+                    await departmentService.deleteDepartment(dep.maKhoa);
+                    setDepartments(departments.filter(d => d.maKhoa !== dep.maKhoa));
+                    setSuccess('Xóa khoa thành công');
+                    setTimeout(() => setSuccess(''), 2500);
+                } catch (err: any) {
+                    setError(err.message || 'Xóa khoa thất bại');
+                    setTimeout(() => setError(''), 2500);
+                }
+            }
+        });
     };
 
     const handleSave = async () => {
         setSaving(true);
         try {
             if (isEdit) {
-                // TODO: Call API update
+                await departmentService.updateDepartment(formData.maKhoa, formData);
                 setDepartments(departments.map(d => d.maKhoa === formData.maKhoa ? formData : d));
                 setSuccess('Cập nhật khoa thành công');
             } else {
-                // TODO: Call API create
-                setDepartments([...departments, formData]);
+                const newDepartment = await departmentService.createDepartment(formData);
+                setDepartments([...departments, newDepartment]);
                 setSuccess('Thêm khoa thành công');
             }
             setTimeout(() => setSuccess(''), 2500);
             setEditDialogVisible(false);
         } catch (err: any) {
-            setError('Lưu khoa thất bại');
+            setError(err.message || 'Lưu khoa thất bại');
             setTimeout(() => setError(''), 2500);
         } finally {
             setSaving(false);
@@ -91,12 +111,13 @@ export default function DepartmentListPage() {
     };
 
     const filteredDepartments = departments.filter(dep =>
-        dep.maKhoa.toLowerCase().includes(searchText.toLowerCase()) ||
-        dep.tenKhoa.toLowerCase().includes(searchText.toLowerCase())
+        (dep.maKhoa?.toLowerCase() || '').includes(searchText.toLowerCase()) ||
+        (dep.tenKhoa?.toLowerCase() || '').includes(searchText.toLowerCase())
     );
 
     return (
         <div className="w-4/5 max-w-5xl mx-auto p-6 bg-white rounded-2xl shadow-lg mt-12 flex flex-col items-center">
+            <ConfirmDialog />
             <h1 className="text-2xl font-bold mb-6 text-blue-700 text-center">Quản lý khoa</h1>
             {error && <Message severity="error" text={error} className="mb-4" />}
             {success && <Message severity="success" text={success} className="mb-4" />}
@@ -142,7 +163,7 @@ export default function DepartmentListPage() {
                                     <td className="px-4 py-2">{dep.trangThai === 1 ? 'Hoạt động' : 'Ngừng'}</td>
                                     <td className="px-4 py-2 text-center flex gap-2 justify-center">
                                         <Button icon="pi pi-pencil" className="p-button-rounded p-button-warning text-lg" onClick={() => handleEdit(dep)} />
-                                        <Button icon="pi pi-trash" className="p-button-rounded p-button-danger text-lg" onClick={() => handleDelete(dep.maKhoa)} />
+                                        <Button icon="pi pi-trash" className="p-button-rounded p-button-danger text-lg" onClick={() => handleDelete(dep)} />
                                     </td>
                                 </tr>
                             ))}
