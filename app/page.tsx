@@ -3,9 +3,31 @@
 import { Menubar } from 'primereact/menubar';
 import { Button } from 'primereact/button';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function Home() {
     const router = useRouter();
+    const [user, setUser] = useState<{ maNguoiDung: string, tenNguoiDung: string } | null>(null);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const token = localStorage.getItem('token');
+            if (token) {
+                setUser({
+                    maNguoiDung: localStorage.getItem('maNguoiDung') || '',
+                    tenNguoiDung: localStorage.getItem('tenNguoiDung') || '',
+                });
+            } else {
+                setUser(null);
+            }
+        }
+    }, []);
+
+    const handleLogout = () => {
+        localStorage.clear();
+        setUser(null);
+        router.push('/auth/login');
+    };
 
     const menuItems = [
         {
@@ -38,8 +60,21 @@ export default function Home() {
         router.push('/auth/register');
     };
 
-    const end = (
-        <div className="flex align-items-center gap-2">
+    const end = user ? (
+        <div className="flex items-center gap-4">
+            <div className="flex flex-col text-right">
+                <span className="font-bold text-blue-700">{user.tenNguoiDung}</span>
+                <span className="text-xs text-gray-500">{user.maNguoiDung}</span>
+            </div>
+            <Button
+                label="Đăng xuất"
+                icon="pi pi-sign-out"
+                className="bg-red-500 text-white font-bold px-4 py-2 rounded-lg hover:bg-red-600 transition-colors shadow-sm"
+                onClick={handleLogout}
+            />
+        </div>
+    ) : (
+        <div className="flex items-center gap-2">
             <Button
                 label="Đăng nhập"
                 icon="pi pi-sign-in"

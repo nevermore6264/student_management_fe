@@ -110,7 +110,7 @@ export default function DepartmentListPage() {
                     />
                 </div>
                 <div className="flex justify-end w-full md:w-1/2">
-                    <Button label="Thêm khoa" icon="pi pi-plus" onClick={() => { setFormData({ maKhoa: '', tenKhoa: '', soDienThoai: '', email: '', diaChi: '', maTruong: '', trangThai: 1 }); setIsEdit(false); setEditDialogVisible(true); }} />
+                    <Button label="Thêm khoa" icon="pi pi-plus" onClick={() => { setFormData({ maKhoa: '', tenKhoa: '', soDienThoai: '', email: '', diaChi: '', maTruong: 'UTE', trangThai: 1 }); setIsEdit(false); setEditDialogVisible(true); }} />
                 </div>
             </div>
             {loading ? (
@@ -138,7 +138,7 @@ export default function DepartmentListPage() {
                                     <td className="px-4 py-2">{dep.soDienThoai}</td>
                                     <td className="px-4 py-2">{dep.email}</td>
                                     <td className="px-4 py-2">{dep.diaChi}</td>
-                                    <td className="px-4 py-2">{dep.maTruong}</td>
+                                    <td className="px-4 py-2">UTE</td>
                                     <td className="px-4 py-2">{dep.trangThai === 1 ? 'Hoạt động' : 'Ngừng'}</td>
                                     <td className="px-4 py-2 text-center flex gap-2 justify-center">
                                         <Button icon="pi pi-pencil" className="p-button-rounded p-button-warning text-lg" onClick={() => handleEdit(dep)} />
