@@ -3,7 +3,6 @@
 import { Menubar } from 'primereact/menubar';
 import { Button } from 'primereact/button';
 import { useRouter } from 'next/navigation';
-import { Card } from 'primereact/card';
 
 export default function Home() {
     const router = useRouter();
@@ -77,39 +76,58 @@ export default function Home() {
     return (
         <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 font-sans">
             {/* Menubar */}
-            <div className="sticky top-0 z-50">
-                <div className="mx-auto flex items-center justify-between px-4 py-2">
-                    <div className="flex items-center gap-2 font-extrabold leading-tight text-primary-900">
-                        <img src="/logo.png" alt="Logo" className="h-8 w-8 mr-2" />
-                        <h6 className="text-white text-xl font-bold tracking-wide">Hệ thống Đăng ký tín chỉ</h6>
+            <div className="sticky top-0 z-50 shadow-lg bg-white/80 backdrop-blur-md">
+                <div className="mx-auto flex items-center justify-between px-6 py-3 w-full">
+                    <div className="flex items-center gap-3 font-extrabold leading-tight text-primary-900">
+                        <img src="/logo.png" alt="Logo" className="h-10 w-10 mr-2 drop-shadow-lg" />
+                        <h6 className="text-blue-700 text-2xl font-bold tracking-wide drop-shadow">Hệ thống Đăng ký tín chỉ</h6>
                     </div>
                     <Menubar
                         model={menuItems}
                         end={end}
-                        className="border-none shadow-none font-semibold bg-transparent"
+                        className="border-none shadow-none font-semibold bg-transparent text-blue-800"
                         pt={{
                             root: { className: "gap-4" },
                             menu: { className: "flex gap-4" },
-                            menuitem: { className: "rounded-lg px-4 py-2 hover:bg-blue-100 hover:text-blue-700 transition-colors text-white" },
-                            action: { className: "flex items-center gap-2 text-white" },
-                            icon: { className: "text-white" },
-                            label: { className: "text-white" }
+                            menuitem: { className: "rounded-lg px-4 py-2 hover:bg-blue-100 hover:text-blue-700 transition-colors text-blue-800" },
+                            action: { className: "flex items-center gap-2 text-blue-800" },
+                            icon: { className: "text-blue-700" },
+                            label: { className: "text-blue-800" }
                         }}
                     />
                 </div>
             </div>
 
             {/* Hero Section */}
-            <section className="relative flex flex-col md:flex-row items-center justify-between container mx-auto px-4 py-16 md:py-24 gap-8">
+            <section className="relative flex flex-col md:flex-row items-center justify-between max-w-7xl mx-auto px-6 py-20 md:py-28 gap-12">
                 <div className="flex-1 flex flex-col justify-center items-start text-left z-10">
-                    <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight text-primary-900 drop-shadow-lg">Hệ thống đăng ký tín chỉ</h1>
-                    <p className="text-lg md:text-2xl mb-8 text-gray-700 max-w-xl">Giải pháp toàn diện giúp sinh viên quản lý việc học tập một cách hiệu quả</p>
+                    <h1 className="text-5xl md:text-7xl font-extrabold mb-8 leading-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-blue-400 to-blue-700 drop-shadow-xl">
+                        Hệ thống đăng ký tín chỉ
+                    </h1>
+                    <p className="text-xl md:text-2xl mb-10 text-gray-700 max-w-xl font-light">Giải pháp toàn diện giúp sinh viên quản lý việc học tập một cách hiệu quả</p>
+                    <div className="flex flex-wrap gap-6">
+                        <Button
+                            label="Bắt đầu ngay"
+                            icon="pi pi-arrow-right"
+                            severity="success"
+                            size="large"
+                            className="p-button-raised shadow-xl px-8 py-4 text-xl rounded-full hover:scale-105 transition-transform duration-200 bg-gradient-to-r from-blue-500 to-green-400 text-white font-bold border-0"
+                            onClick={() => router.push('/course-registration')}
+                        />
+                        <Button
+                            label="Tìm hiểu thêm"
+                            icon="pi pi-info-circle"
+                            severity="secondary"
+                            size="large"
+                            className="p-button-outlined px-8 py-4 text-xl rounded-full hover:bg-blue-100 hover:text-blue-700 transition-colors duration-200 border-2 border-blue-400 text-blue-700 font-bold"
+                        />
+                    </div>
                 </div>
                 <div className="flex-1 flex justify-center items-center relative z-10">
                     <img
                         src="https://cdni.iconscout.com/illustration/premium/thumb/online-education-3678714-3098696.png"
                         alt="Education Illustration"
-                        className="w-full max-w-lg rounded-3xl shadow-xl border-4 border-white hover:scale-105 transition-transform duration-300"
+                        className="w-full max-w-lg rounded-3xl shadow-2xl border-4 border-white hover:scale-105 transition-transform duration-300 bg-white/70 backdrop-blur-lg"
                         style={{ maxWidth: '100%', height: 'auto' }}
                     />
                 </div>
@@ -121,27 +139,47 @@ export default function Home() {
             </section>
 
             {/* Features Section */}
-            <section className="container mx-auto px-4 py-16">
-                <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-14 text-primary-900">Tính năng nổi bật</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <section className="max-w-7xl mx-auto px-6 py-20">
+                <h2 className="text-4xl md:text-5xl font-extrabold text-center mb-16 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-blue-400 to-blue-700 drop-shadow-lg tracking-tight">
+                    Tính năng nổi bật
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-14">
                     {features.map((feature, index) => (
-                        <div key={index} className="flex justify-center">
-                            <Card className="w-full max-w-xs h-full rounded-2xl shadow-lg hover:shadow-3xl transition-all duration-300 border-0 bg-white flex flex-col items-center p-8 group">
-                                <i className={`${feature.icon} mb-6 text-5xl group-hover:text-primary-600 transition-colors duration-200`}></i>
-                                <h3 className="text-xl font-bold mb-3 text-primary-800">{feature.title}</h3>
-                                <p className="text-gray-600 text-base leading-relaxed">{feature.description}</p>
-                            </Card>
+                        <div
+                            key={index}
+                            className="flex justify-center"
+                            style={{ animation: `fadeInUp 0.6s ${index * 0.15 + 0.2}s both` }}
+                        >
+                            <div className="w-full max-w-xs h-full rounded-3xl bg-white/90 shadow-2xl hover:shadow-blue-400/40 transition-all duration-300 border-0 flex flex-col items-center p-12 group hover:scale-110 hover:bg-gradient-to-br hover:from-blue-100 hover:to-blue-200 relative overflow-hidden backdrop-blur-lg">
+                                <div className="mb-8 flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 shadow-2xl group-hover:from-blue-400 group-hover:to-blue-600 transition-all duration-300 animate-pulse group-hover:animate-none">
+                                    <i className={`${feature.icon} text-5xl text-white group-hover:text-yellow-200 transition-colors duration-200 group-hover:rotate-12`}></i>
+                                </div>
+                                <h3 className="text-2xl font-extrabold mb-4 text-blue-700 text-center group-hover:text-blue-900 transition-colors drop-shadow">
+                                    {feature.title}
+                                </h3>
+                                <p className="text-gray-500 text-base leading-relaxed text-center font-light">
+                                    {feature.description}
+                                </p>
+                                {/* Hiệu ứng glow */}
+                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-300 rounded-full opacity-20 blur-2xl pointer-events-none"></div>
+                            </div>
                         </div>
                     ))}
                 </div>
+                <style>{`
+                    @keyframes fadeInUp {
+                        0% { opacity: 0; transform: translateY(40px);}
+                        100% { opacity: 1; transform: translateY(0);}
+                    }
+                `}</style>
             </section>
 
             {/* CTA Section */}
-            <section className="bg-gradient-to-r from-primary-100 via-blue-100 to-primary-200 py-16">
-                <div className="container mx-auto px-4">
+            <section className="bg-gradient-to-r from-primary-100 via-blue-100 to-primary-200 py-20">
+                <div className="max-w-3xl mx-auto px-6">
                     <div className="flex flex-col items-center justify-center text-center">
-                        <h2 className="text-3xl md:text-4xl font-extrabold mb-4 text-primary-900">Sẵn sàng bắt đầu?</h2>
-                        <p className="text-lg md:text-xl mb-8 text-gray-700 max-w-2xl mx-auto">
+                        <h2 className="text-4xl md:text-5xl font-extrabold mb-6 text-blue-800 drop-shadow-lg">Sẵn sàng bắt đầu?</h2>
+                        <p className="text-xl md:text-2xl mb-10 text-gray-700 max-w-2xl mx-auto font-light">
                             Đăng ký ngay để trải nghiệm hệ thống đăng ký tín chỉ hiện đại
                         </p>
                         <Button
@@ -149,7 +187,7 @@ export default function Home() {
                             icon="pi pi-user-plus"
                             severity="success"
                             size="large"
-                            className="p-button-raised px-8 py-4 text-lg rounded-full shadow-lg hover:scale-105 transition-transform duration-200"
+                            className="p-button-raised px-10 py-5 text-xl rounded-full shadow-xl hover:scale-110 transition-transform duration-200 bg-gradient-to-r from-blue-500 to-green-400 text-white font-bold border-0"
                             onClick={handleRegister}
                         />
                     </div>
