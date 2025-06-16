@@ -14,13 +14,14 @@ export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setSuccess(false);
-
+        setLoading(true);
         try {
             await authService.forgotPassword({ email });
             setSuccess(true);
@@ -31,6 +32,8 @@ export default function ForgotPasswordPage() {
             } else {
                 setError('Không thể gửi yêu cầu đặt lại mật khẩu. Vui lòng thử lại sau.');
             }
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -74,6 +77,7 @@ export default function ForgotPasswordPage() {
                         label="Gửi yêu cầu"
                         icon="pi pi-send"
                         className="p-button-lg w-full h-12 font-bold text-lg rounded-xl bg-gradient-to-r from-blue-500 to-blue-700 border-0 shadow-lg hover:scale-105 transition-transform duration-200 text-white"
+                        loading={loading}
                     />
 
                     <div className="text-center pt-4">
