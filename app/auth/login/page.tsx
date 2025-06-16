@@ -50,40 +50,39 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="p-d-flex p-jc-center p-ai-center" style={{ background: '#f4f6fb' }}>
-            <div style={{ width: 400, background: '#fff', borderRadius: 16, boxShadow: '0 4px 24px 0 rgba(0,0,0,0.08)', padding: 32, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200 py-12 px-4">
+            <div className="w-full max-w-md bg-white/90 rounded-3xl shadow-2xl p-10 flex flex-col items-center backdrop-blur-lg hover:shadow-blue-300/40 transition-all duration-300">
                 {/* Logo và tiêu đề */}
-                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 24 }}>
-                    <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-                        <Image src="/logo.png" alt="Logo" width={72} height={72} style={{ borderRadius: '50%', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }} />
+                <div className="w-full flex flex-col items-center mb-8">
+                    <div className="w-full flex justify-center mb-4">
+                        <Image src="/logo.png" alt="Logo" width={72} height={72} className="rounded-full shadow-lg" />
                     </div>
-                    <h1 style={{ fontSize: 24, fontWeight: 700, color: '#2563eb', marginBottom: 8, textAlign: 'center' }}>Hệ thống Đăng ký học phần</h1>
-                    <p style={{ color: '#6b7280', textAlign: 'center' }}>Đăng nhập để tiếp tục sử dụng</p>
+                    <h1 className="text-2xl md:text-3xl font-extrabold text-blue-700 mb-2 text-center drop-shadow">Hệ thống Đăng ký học phần</h1>
+                    <p className="text-gray-500 text-center">Đăng nhập để tiếp tục sử dụng</p>
                 </div>
                 {error && (
-                    <Message severity="error" text={error} style={{ width: '100%', marginBottom: 16 }} />
+                    <Message severity="error" text={error} className="w-full mb-4" />
                 )}
-                <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 16 }}>
-                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        <label htmlFor="email" style={{ color: '#374151', fontWeight: 500 }}>Email</label>
+                <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5">
+                    <div className="w-full flex flex-col gap-2">
+                        <label htmlFor="email" className="text-gray-700 font-semibold">Email</label>
                         <InputText
                             id="email"
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="p-inputtext-lg"
+                            className="p-inputtext-lg bg-blue-50 rounded-xl border border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 h-12 text-base"
                             placeholder="Nhập email của bạn"
                             required
-                            style={{ width: '100%', background: '#eff6ff', borderRadius: 8, border: '1px solid #e5e7eb', height: 48, fontSize: 16 }}
                         />
                     </div>
-                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        <label htmlFor="password" style={{ color: '#374151', fontWeight: 500 }}>Mật khẩu</label>
+                    <div className="w-full flex flex-col gap-2">
+                        <label htmlFor="password" className="text-gray-700 font-semibold">Mật khẩu</label>
                         <Password
                             id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="p-inputtext-lg"
+                            className="p-inputtext-lg w-full bg-blue-50 rounded-xl border border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 h-12 text-base"
                             inputClassName="p-password-input"
                             placeholder="Nhập mật khẩu của bạn"
                             toggleMask
@@ -91,10 +90,10 @@ export default function LoginPage() {
                             required
                         />
                     </div>
-                    <div className="p-d-flex p-jc-between p-ai-center" style={{ margin: '8px 0' }}>
+                    <div className="flex justify-between items-center mt-1 mb-2">
                         <Link
                             href="/auth/forgot-password"
-                            style={{ color: '#2563eb', fontWeight: 500, fontSize: 14, textDecoration: 'underline' }}
+                            className="text-blue-600 font-medium text-sm underline hover:text-blue-800 transition-colors"
                         >
                             Quên mật khẩu?
                         </Link>
@@ -103,15 +102,14 @@ export default function LoginPage() {
                         type="submit"
                         label="Đăng nhập"
                         icon="pi pi-sign-in"
-                        className="p-button-lg p-button-primary"
+                        className="p-button-lg w-full h-12 font-bold text-lg rounded-xl bg-gradient-to-r from-blue-500 to-blue-700 border-0 shadow-lg hover:scale-105 transition-transform duration-200 text-white"
                         loading={loading}
-                        style={{ width: '100%', height: 48, fontWeight: 700, fontSize: 18, borderRadius: 8, boxShadow: '0 2px 8px 0 rgba(37,99,235,0.10)' }}
                     />
-                    <div style={{ textAlign: 'center', paddingTop: 16 }}>
-                        <span style={{ color: '#6b7280' }}>Chưa có tài khoản? </span>
+                    <div className="text-center pt-4">
+                        <span className="text-gray-500">Chưa có tài khoản? </span>
                         <Link
                             href="/auth/register"
-                            style={{ color: '#2563eb', fontWeight: 500, textDecoration: 'underline' }}
+                            className="text-blue-600 font-semibold underline hover:text-blue-800 transition-colors"
                         >
                             Đăng ký ngay
                         </Link>
