@@ -1,234 +1,201 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import { useState } from 'react';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
+import { useEffect, useState } from 'react';
 import { Button } from 'primereact/button';
-import { InputText } from 'primereact/inputtext';
 import { Dialog } from 'primereact/dialog';
 import { Message } from 'primereact/message';
-import { useRouter } from 'next/navigation';
+import { InputText } from 'primereact/inputtext';
+import departmentService, { Department } from '../services/departmentService';
 
 interface Department {
     maKhoa: string;
     tenKhoa: string;
-    moTa: string;
-    truongKhoa: string;
+    soDienThoai: string;
+    email: string;
+    diaChi: string;
+    maTruong: string;
+    trangThai: number;
 }
 
-export default function DepartmentManagementPage() {
-    const router = useRouter();
-    const [departments] = useState<Department[]>([
-        {
-            maKhoa: 'CNTT',
-            tenKhoa: 'Công nghệ thông tin',
-            moTa: 'Khoa Công nghệ thông tin',
-            truongKhoa: 'Nguyễn Văn A'
-        },
-        {
-            maKhoa: 'KT',
-            tenKhoa: 'Kế toán',
-            moTa: 'Khoa Kế toán',
-            truongKhoa: 'Trần Thị B'
-        }
-    ]);
-
-    const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
-    const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
+export default function DepartmentListPage() {
+    const [departments, setDepartments] = useState<Department[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const [editDialogVisible, setEditDialogVisible] = useState(false);
     const [formData, setFormData] = useState<Department>({
         maKhoa: '',
         tenKhoa: '',
-        moTa: '',
-        truongKhoa: ''
+        soDienThoai: '',
+        email: '',
+        diaChi: '',
+        maTruong: '',
+        trangThai: 1
     });
+    const [isEdit, setIsEdit] = useState(false);
+    const [searchText, setSearchText] = useState('');
+    const [saving, setSaving] = useState(false);
 
-    const actionTemplate = (rowData: Department) => {
-        return (
-            <div className="flex gap-2">
-                <Button
-                    icon="pi pi-pencil"
-                    className="p-button-rounded p-button-success"
-                    tooltip="Sửa"
-                    onClick={() => {
-                        setSelectedDepartment(rowData);
-                        setFormData(rowData);
-                        setEditDialogVisible(true);
-                    }}
-                />
-                <Button
-                    icon="pi pi-trash"
-                    className="p-button-rounded p-button-danger"
-                    tooltip="Xóa"
-                    onClick={() => {
-                        setSelectedDepartment(rowData);
-                        setDeleteDialogVisible(true);
-                    }}
-                />
-                <Button
-                    icon="pi pi-list"
-                    className="p-button-rounded p-button-info"
-                    tooltip="Xem lớp"
-                    onClick={() => router.push(`/departments/${rowData.maKhoa}/classes`)}
-                />
-            </div>
-        );
+    const fetchDepartments = async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const res = await departmentService.getAllDepartments();
+            setDepartments(res.data);
+        } catch (err: any) {
+            setError(err.message || 'Không thể tải danh sách khoa');
+            setTimeout(() => setError(''), 2500);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleEdit = () => {
-        // TODO: Implement edit logic
-        console.log('Editing department:', formData);
-        setEditDialogVisible(false);
+    useEffect(() => {
+        fetchDepartments();
+    }, []);
+
+    const handleEdit = (dep: Department) => {
+        setFormData(dep);
+        setIsEdit(true);
+        setEditDialogVisible(true);
     };
 
-    const handleDelete = () => {
-        // TODO: Implement delete logic
-        console.log('Deleting department:', selectedDepartment);
-        setDeleteDialogVisible(false);
-        setSelectedDepartment(null);
+    const handleDelete = async (maKhoa: string) => {
+        // TODO: Call API to delete
+        setDepartments(departments.filter(d => d.maKhoa !== maKhoa));
+        setSuccess('Xóa khoa thành công');
+        setTimeout(() => setSuccess(''), 2500);
     };
+
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            if (isEdit) {
+                // TODO: Call API update
+                setDepartments(departments.map(d => d.maKhoa === formData.maKhoa ? formData : d));
+                setSuccess('Cập nhật khoa thành công');
+            } else {
+                // TODO: Call API create
+                setDepartments([...departments, formData]);
+                setSuccess('Thêm khoa thành công');
+            }
+            setTimeout(() => setSuccess(''), 2500);
+            setEditDialogVisible(false);
+        } catch (err: any) {
+            setError('Lưu khoa thất bại');
+            setTimeout(() => setError(''), 2500);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const filteredDepartments = departments.filter(dep =>
+        dep.maKhoa.toLowerCase().includes(searchText.toLowerCase()) ||
+        dep.tenKhoa.toLowerCase().includes(searchText.toLowerCase())
+    );
 
     return (
-        <div className="card">
-            <div className="flex justify-content-between align-items-center mb-4">
-                <h1 className="text-2xl font-bold">Quản lý Khoa</h1>
-                <Button
-                    label="Thêm khoa"
-                    icon="pi pi-plus"
-                    onClick={() => {
-                        setFormData({ maKhoa: '', tenKhoa: '', moTa: '', truongKhoa: '' });
-                        setEditDialogVisible(true);
-                    }}
-                />
+        <div className="w-4/5 max-w-5xl mx-auto p-6 bg-white rounded-2xl shadow-lg mt-12 flex flex-col items-center">
+            <h1 className="text-2xl font-bold mb-6 text-blue-700 text-center">Quản lý khoa</h1>
+            {error && <Message severity="error" text={error} className="mb-4" />}
+            {success && <Message severity="success" text={success} className="mb-4" />}
+            <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4">
+                <div className="flex gap-2 w-full md:w-1/2">
+                    <InputText
+                        value={searchText}
+                        onChange={e => setSearchText(e.target.value)}
+                        placeholder="Tìm kiếm theo mã, tên khoa..."
+                        className="w-full"
+                    />
+                </div>
+                <div className="flex justify-end w-full md:w-1/2">
+                    <Button label="Thêm khoa" icon="pi pi-plus" onClick={() => { setFormData({ maKhoa: '', tenKhoa: '', soDienThoai: '', email: '', diaChi: '', maTruong: '', trangThai: 1 }); setIsEdit(false); setEditDialogVisible(true); }} />
+                </div>
             </div>
-
-            <div className="flex justify-content-between mb-4">
-                <span className="p-input-icon-left">
-                    <i className="pi pi-search" />
-                    <InputText placeholder="Tìm kiếm khoa..." />
-                </span>
-            </div>
-
-            <DataTable
-                value={departments}
-                paginator
-                rows={10}
-                rowsPerPageOptions={[5, 10, 25, 50]}
-                className="p-datatable-sm"
-                emptyMessage="Không tìm thấy khoa nào"
-            >
-                <Column field="maKhoa" header="Mã khoa" sortable />
-                <Column field="tenKhoa" header="Tên khoa" sortable />
-                <Column field="truongKhoa" header="Trưởng khoa" sortable />
-                <Column field="moTa" header="Mô tả" sortable />
-                <Column body={actionTemplate} style={{ width: '12rem' }} />
-            </DataTable>
-
-            {/* Edit Dialog */}
+            {loading ? (
+                <div className="text-center py-8 text-blue-500 font-semibold">Đang tải dữ liệu...</div>
+            ) : (
+                <div className="overflow-x-auto w-full">
+                    <table className="w-full border rounded-lg overflow-hidden">
+                        <thead className="bg-blue-100">
+                            <tr>
+                                <th className="px-4 py-2 text-left">Mã khoa</th>
+                                <th className="px-4 py-2 text-left">Tên khoa</th>
+                                <th className="px-4 py-2 text-left">Số điện thoại</th>
+                                <th className="px-4 py-2 text-left">Email</th>
+                                <th className="px-4 py-2 text-left">Địa chỉ</th>
+                                <th className="px-4 py-2 text-left">Mã trường</th>
+                                <th className="px-4 py-2 text-left">Trạng thái</th>
+                                <th className="px-4 py-2 text-center">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredDepartments.map(dep => (
+                                <tr key={dep.maKhoa} className="border-b hover:bg-blue-50">
+                                    <td className="px-4 py-2 font-mono">{dep.maKhoa}</td>
+                                    <td className="px-4 py-2">{dep.tenKhoa}</td>
+                                    <td className="px-4 py-2">{dep.soDienThoai}</td>
+                                    <td className="px-4 py-2">{dep.email}</td>
+                                    <td className="px-4 py-2">{dep.diaChi}</td>
+                                    <td className="px-4 py-2">{dep.maTruong}</td>
+                                    <td className="px-4 py-2">{dep.trangThai === 1 ? 'Hoạt động' : 'Ngừng'}</td>
+                                    <td className="px-4 py-2 text-center flex gap-2 justify-center">
+                                        <Button icon="pi pi-pencil" className="p-button-rounded p-button-warning text-lg" onClick={() => handleEdit(dep)} />
+                                        <Button icon="pi pi-trash" className="p-button-rounded p-button-danger text-lg" onClick={() => handleDelete(dep.maKhoa)} />
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
             <Dialog
                 visible={editDialogVisible}
                 onHide={() => setEditDialogVisible(false)}
-                header={formData.maKhoa ? 'Sửa khoa' : 'Thêm khoa mới'}
+                header={isEdit ? 'Sửa khoa' : 'Thêm khoa'}
                 modal
-                className="p-fluid"
+                className="p-fluid w-full max-w-2xl"
                 footer={
-                    <div>
-                        <Button
-                            label="Hủy"
-                            icon="pi pi-times"
-                            onClick={() => setEditDialogVisible(false)}
-                            className="p-button-text"
-                        />
-                        <Button
-                            label="Lưu"
-                            icon="pi pi-check"
-                            onClick={handleEdit}
-                        />
+                    <div className="flex justify-end gap-2 mt-4">
+                        <button type="button" className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md font-semibold hover:bg-gray-300" onClick={() => setEditDialogVisible(false)} disabled={saving}>Hủy</button>
+                        <button type="button" className="bg-blue-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-700" onClick={handleSave} disabled={saving}>Lưu</button>
                     </div>
                 }
             >
-                <div className="flex flex-column gap-4">
-                    <div className="flex flex-column gap-2">
-                        <label htmlFor="maKhoa" className="font-medium">
-                            Mã khoa
-                        </label>
-                        <InputText
-                            id="maKhoa"
-                            value={formData.maKhoa}
-                            onChange={(e) => setFormData({ ...formData, maKhoa: e.target.value })}
-                            placeholder="Nhập mã khoa"
-                            required
-                        />
+                <form className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="maKhoa" className="text-gray-700 font-medium">Mã khoa</label>
+                        <input id="maKhoa" value={formData.maKhoa} onChange={e => setFormData({ ...formData, maKhoa: e.target.value })} className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base" required disabled={isEdit} />
                     </div>
-
-                    <div className="flex flex-column gap-2">
-                        <label htmlFor="tenKhoa" className="font-medium">
-                            Tên khoa
-                        </label>
-                        <InputText
-                            id="tenKhoa"
-                            value={formData.tenKhoa}
-                            onChange={(e) => setFormData({ ...formData, tenKhoa: e.target.value })}
-                            placeholder="Nhập tên khoa"
-                            required
-                        />
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="tenKhoa" className="text-gray-700 font-medium">Tên khoa</label>
+                        <input id="tenKhoa" value={formData.tenKhoa} onChange={e => setFormData({ ...formData, tenKhoa: e.target.value })} className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base" required />
                     </div>
-
-                    <div className="flex flex-column gap-2">
-                        <label htmlFor="truongKhoa" className="font-medium">
-                            Trưởng khoa
-                        </label>
-                        <InputText
-                            id="truongKhoa"
-                            value={formData.truongKhoa}
-                            onChange={(e) => setFormData({ ...formData, truongKhoa: e.target.value })}
-                            placeholder="Nhập tên trưởng khoa"
-                            required
-                        />
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="soDienThoai" className="text-gray-700 font-medium">Số điện thoại</label>
+                        <input id="soDienThoai" value={formData.soDienThoai} onChange={e => setFormData({ ...formData, soDienThoai: e.target.value })} className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base" required />
                     </div>
-
-                    <div className="flex flex-column gap-2">
-                        <label htmlFor="moTa" className="font-medium">
-                            Mô tả
-                        </label>
-                        <InputText
-                            id="moTa"
-                            value={formData.moTa}
-                            onChange={(e) => setFormData({ ...formData, moTa: e.target.value })}
-                            placeholder="Nhập mô tả"
-                            required
-                        />
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="email" className="text-gray-700 font-medium">Email</label>
+                        <input id="email" type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base" required />
                     </div>
-                </div>
-            </Dialog>
-
-            {/* Delete Dialog */}
-            <Dialog
-                visible={deleteDialogVisible}
-                onHide={() => setDeleteDialogVisible(false)}
-                header="Xác nhận xóa"
-                modal
-                footer={
-                    <div>
-                        <Button
-                            label="Hủy"
-                            icon="pi pi-times"
-                            onClick={() => setDeleteDialogVisible(false)}
-                            className="p-button-text"
-                        />
-                        <Button
-                            label="Xóa"
-                            icon="pi pi-trash"
-                            onClick={handleDelete}
-                            className="p-button-danger"
-                        />
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="diaChi" className="text-gray-700 font-medium">Địa chỉ</label>
+                        <input id="diaChi" value={formData.diaChi} onChange={e => setFormData({ ...formData, diaChi: e.target.value })} className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base" required />
                     </div>
-                }
-            >
-                <p>
-                    Bạn có chắc chắn muốn xóa khoa{' '}
-                    <strong>{selectedDepartment?.tenKhoa}</strong>?
-                </p>
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="maTruong" className="text-gray-700 font-medium">Mã trường</label>
+                        <input id="maTruong" value={formData.maTruong} onChange={e => setFormData({ ...formData, maTruong: e.target.value })} className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base" required />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="trangThai" className="text-gray-700 font-medium">Trạng thái</label>
+                        <select id="trangThai" value={formData.trangThai} onChange={e => setFormData({ ...formData, trangThai: Number(e.target.value) })} className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base">
+                            <option value={1}>Hoạt động</option>
+                            <option value={0}>Ngừng</option>
+                        </select>
+                    </div>
+                </form>
             </Dialog>
         </div>
     );

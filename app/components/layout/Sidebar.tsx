@@ -28,7 +28,7 @@ const menuItems = [
         path: '/departments',
         roles: ['admin'],
         subItems: [
-            { label: 'Danh sách Khoa', path: '/departments/list', roles: ['admin'] },
+            { label: 'Danh sách Khoa', path: '/departments', roles: ['admin'] },
             { label: 'Danh sách Lớp', path: '/departments/classes', roles: ['admin'] }
         ]
     },

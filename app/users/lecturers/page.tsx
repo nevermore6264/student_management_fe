@@ -7,6 +7,7 @@ import { Dialog } from 'primereact/dialog';
 import { Message } from 'primereact/message';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import { Dropdown } from 'primereact/dropdown';
+import { InputText } from 'primereact/inputtext';
 import lecturerService from '../../../app/services/lecturerService';
 import departmentService, { Department } from '../../../app/services/departmentService';
 
@@ -35,6 +36,8 @@ export default function LecturerListPage() {
     const [saving, setSaving] = useState(false);
     const [isEdit, setIsEdit] = useState(false);
     const [lecturerToDelete, setLecturerToDelete] = useState<Lecturer | null>(null);
+    const [searchText, setSearchText] = useState('');
+    const [selectedDepartment, setSelectedDepartment] = useState<string>('');
 
     const fetchDepartments = async () => {
         try {
@@ -104,6 +107,15 @@ export default function LecturerListPage() {
         }
     };
 
+    const filteredLecturers = lecturers.filter(gv => {
+        const matchesSearch =
+            gv.maGiangVien.toLowerCase().includes(searchText.toLowerCase()) ||
+            gv.tenGiangVien.toLowerCase().includes(searchText.toLowerCase()) ||
+            gv.email.toLowerCase().includes(searchText.toLowerCase());
+        const matchesDepartment = selectedDepartment ? gv.maKhoa === selectedDepartment : true;
+        return matchesSearch && matchesDepartment;
+    });
+
     return (
         <div className="w-4/5 max-w-5xl mx-auto p-6 bg-white rounded-2xl shadow-lg mt-12 flex flex-col items-center">
             <h1 className="text-2xl font-bold mb-6 text-blue-700 text-center">Quản lý giảng viên</h1>
@@ -111,6 +123,27 @@ export default function LecturerListPage() {
             {success && <Message severity="success" text={success} className="mb-4" />}
             <div className="w-full flex justify-end mb-4">
                 <Button label="Thêm giảng viên" icon="pi pi-plus" onClick={() => { setFormData({ maGiangVien: '', tenGiangVien: '', email: '', soDienThoai: '', maKhoa: '' }); setIsEdit(false); setEditDialogVisible(true); }} />
+            </div>
+            <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4">
+                <div className="flex gap-2 w-full md:w-1/2">
+                    <InputText
+                        value={searchText}
+                        onChange={e => setSearchText(e.target.value)}
+                        placeholder="Tìm kiếm theo mã, tên, email..."
+                        className="w-full"
+                    />
+                </div>
+                <div className="flex gap-2 w-full md:w-1/3">
+                    <Dropdown
+                        value={selectedDepartment}
+                        options={[{ maKhoa: '', tenKhoa: 'Tất cả khoa' }, ...departments]}
+                        onChange={e => setSelectedDepartment(e.value)}
+                        optionLabel="tenKhoa"
+                        optionValue="maKhoa"
+                        placeholder="Lọc theo khoa"
+                        className="w-full"
+                    />
+                </div>
             </div>
             {loading ? (
                 <div className="text-center py-8 text-blue-500 font-semibold">Đang tải dữ liệu...</div>
@@ -128,7 +161,7 @@ export default function LecturerListPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {lecturers.map((gv) => (
+                            {filteredLecturers.map((gv) => (
                                 <tr key={gv.maGiangVien} className="border-b hover:bg-blue-50">
                                     <td className="px-4 py-2 font-mono">{gv.maGiangVien}</td>
                                     <td className="px-4 py-2">{gv.tenGiangVien}</td>

@@ -7,6 +7,7 @@ import { Dialog } from 'primereact/dialog';
 import { Message } from 'primereact/message';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import studentService from '../../../app/services/studentService';
+import { InputText } from 'primereact/inputtext';
 
 interface Student {
     maSinhVien: string;
@@ -36,6 +37,7 @@ export default function StudentListPage() {
     const [saving, setSaving] = useState(false);
     const [isEdit, setIsEdit] = useState(false);
     const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
+    const [searchText, setSearchText] = useState('');
 
     const fetchStudents = async () => {
         setLoading(true);
@@ -99,6 +101,14 @@ export default function StudentListPage() {
         }
     };
 
+    const filteredStudents = students.filter(sv => {
+        const matchesSearch =
+            sv.maSinhVien.toLowerCase().includes(searchText.toLowerCase()) ||
+            sv.hoTenSinhVien.toLowerCase().includes(searchText.toLowerCase()) ||
+            sv.email.toLowerCase().includes(searchText.toLowerCase());
+        return matchesSearch;
+    });
+
     return (
         <div className="w-4/5 max-w-5xl mx-auto p-6 bg-white rounded-2xl shadow-lg mt-12 flex flex-col items-center">
             <h1 className="text-2xl font-bold mb-6 text-blue-700 text-center">Quản lý sinh viên</h1>
@@ -106,6 +116,16 @@ export default function StudentListPage() {
             {success && <Message severity="success" text={success} className="mb-4" />}
             <div className="w-full flex justify-end mb-4">
                 <Button label="Thêm sinh viên" icon="pi pi-plus" onClick={() => { setFormData({ maSinhVien: '', hoTenSinhVien: '', ngaySinh: '', gioiTinh: true, email: '', soDienThoai: '', diaChi: '' }); setIsEdit(false); setEditDialogVisible(true); }} />
+            </div>
+            <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4">
+                <div className="flex gap-2 w-full md:w-1/2">
+                    <InputText
+                        value={searchText}
+                        onChange={e => setSearchText(e.target.value)}
+                        placeholder="Tìm kiếm theo mã, tên, email..."
+                        className="w-full"
+                    />
+                </div>
             </div>
             {loading ? (
                 <div className="text-center py-8 text-blue-500 font-semibold">Đang tải dữ liệu...</div>
@@ -125,7 +145,7 @@ export default function StudentListPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {students.map((sv) => (
+                            {filteredStudents.map((sv) => (
                                 <tr key={sv.maSinhVien} className="border-b hover:bg-blue-50">
                                     <td className="px-4 py-2 font-mono">{sv.maSinhVien}</td>
                                     <td className="px-4 py-2">{sv.hoTenSinhVien}</td>
