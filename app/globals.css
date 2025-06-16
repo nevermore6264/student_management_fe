@@ -201,3 +201,14 @@ select:focus,
 .p-message-icon {
   margin-right: 8px;
 }
+
+.p-menubar {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+.p-menubar-root {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}

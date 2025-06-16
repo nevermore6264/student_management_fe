@@ -77,21 +77,23 @@ export default function Home() {
     return (
         <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 font-sans">
             {/* Menubar */}
-            <div className="bg-primary shadow-2 sticky top-0 z-50">
-                <div className="container mx-auto flex items-center justify-between px-4 py-2">
-                    <div className="flex items-center gap-2 font-extrabold leading-tight text-primary-900 drop-shadow-lg">
+            <div className="sticky top-0 z-50">
+                <div className="mx-auto flex items-center justify-between px-4 py-2">
+                    <div className="flex items-center gap-2 font-extrabold leading-tight text-primary-900">
                         <img src="/logo.png" alt="Logo" className="h-8 w-8 mr-2" />
                         <h6 className="text-white text-xl font-bold tracking-wide">Hệ thống Đăng ký tín chỉ</h6>
                     </div>
                     <Menubar
                         model={menuItems}
                         end={end}
-                        className="bg-transparent border-none shadow-none text-white font-semibold"
+                        className="border-none shadow-none font-semibold bg-transparent"
                         pt={{
                             root: { className: "gap-4" },
                             menu: { className: "flex gap-4" },
-                            menuitem: { className: "rounded-lg px-4 py-2 hover:bg-blue-100 hover:text-blue-700 transition-colors" },
-                            action: { className: "flex items-center gap-2" },
+                            menuitem: { className: "rounded-lg px-4 py-2 hover:bg-blue-100 hover:text-blue-700 transition-colors text-white" },
+                            action: { className: "flex items-center gap-2 text-white" },
+                            icon: { className: "text-white" },
+                            label: { className: "text-white" }
                         }}
                     />
                 </div>
