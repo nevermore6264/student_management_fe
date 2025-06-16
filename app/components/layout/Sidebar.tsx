@@ -110,9 +110,6 @@ export default function Sidebar() {
 
     return (
         <div className="h-screen w-64 bg-blue-50 flex flex-col">
-            <div className="py-6 px-4 bg-blue-500 rounded-b-xl">
-                <h1 className="text-xl font-bold text-white text-center">Đăng ký tín chỉ</h1>
-            </div>
             <nav className="mt-4 flex-1">
                 {menuItems
                     .filter(item => !item.roles || item.roles.some(r => roles == (r)))

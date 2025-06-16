@@ -1,138 +1,32 @@
 'use client';
 
-import { Menubar } from 'primereact/menubar';
 import { Button } from 'primereact/button';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+
+const features = [
+    {
+        title: 'Đăng ký tín chỉ',
+        description: 'Đăng ký môn học nhanh chóng và dễ dàng với giao diện trực quan',
+        icon: 'pi pi-book text-4xl text-primary'
+    },
+    {
+        title: 'Lịch học',
+        description: 'Xem lịch học chi tiết và quản lý thời gian hiệu quả',
+        icon: 'pi pi-calendar text-4xl text-primary'
+    },
+    {
+        title: 'Kết quả học tập',
+        description: 'Theo dõi điểm số và tiến độ học tập của bạn',
+        icon: 'pi pi-chart-bar text-4xl text-primary'
+    }
+];
+
+const handleRegister = () => {
+    window.location.href = '/auth/register';
+};
 
 export default function Home() {
-    const router = useRouter();
-    const [user, setUser] = useState<{ maNguoiDung: string, tenNguoiDung: string } | null>(null);
-
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const token = localStorage.getItem('token');
-            if (token) {
-                setUser({
-                    maNguoiDung: localStorage.getItem('maNguoiDung') || '',
-                    tenNguoiDung: localStorage.getItem('tenNguoiDung') || '',
-                });
-            } else {
-                setUser(null);
-            }
-        }
-    }, []);
-
-    const handleLogout = () => {
-        localStorage.clear();
-        setUser(null);
-        router.push('/auth/login');
-    };
-
-    const menuItems = [
-        {
-            label: 'Trang chủ',
-            icon: 'pi pi-home',
-            command: () => router.push('/')
-        },
-        {
-            label: 'Đăng ký tín chỉ',
-            icon: 'pi pi-book',
-            command: () => router.push('/course-registration')
-        },
-        {
-            label: 'Lịch học',
-            icon: 'pi pi-calendar',
-            command: () => router.push('/schedule')
-        },
-        {
-            label: 'Kết quả học tập',
-            icon: 'pi pi-chart-bar',
-            command: () => router.push('/academic-results')
-        }
-    ];
-
-    const handleLogin = () => {
-        router.push('/auth/login');
-    };
-
-    const handleRegister = () => {
-        router.push('/auth/register');
-    };
-
-    const end = user ? (
-        <div className="flex items-center gap-4">
-            <div className="flex flex-col text-right">
-                <span className="font-bold text-blue-700">{user.tenNguoiDung}</span>
-                <span className="text-xs text-gray-500">{user.maNguoiDung}</span>
-            </div>
-            <Button
-                label="Đăng xuất"
-                icon="pi pi-sign-out"
-                className="bg-red-500 text-white font-bold px-4 py-2 rounded-lg hover:bg-red-600 transition-colors shadow-sm"
-                onClick={handleLogout}
-            />
-        </div>
-    ) : (
-        <div className="flex items-center gap-2">
-            <Button
-                label="Đăng nhập"
-                icon="pi pi-sign-in"
-                className="bg-white text-blue-600 border border-blue-500 font-bold px-4 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors shadow-sm"
-                onClick={handleLogin}
-            />
-            <Button
-                label="Đăng ký"
-                icon="pi pi-user-plus"
-                className="bg-blue-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-                onClick={handleRegister}
-            />
-        </div>
-    );
-
-    const features = [
-        {
-            title: 'Đăng ký tín chỉ',
-            description: 'Đăng ký môn học nhanh chóng và dễ dàng với giao diện trực quan',
-            icon: 'pi pi-book text-4xl text-primary'
-        },
-        {
-            title: 'Lịch học',
-            description: 'Xem lịch học chi tiết và quản lý thời gian hiệu quả',
-            icon: 'pi pi-calendar text-4xl text-primary'
-        },
-        {
-            title: 'Kết quả học tập',
-            description: 'Theo dõi điểm số và tiến độ học tập của bạn',
-            icon: 'pi pi-chart-bar text-4xl text-primary'
-        }
-    ];
-
     return (
         <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 font-sans">
-            {/* Menubar */}
-            <div className="sticky top-0 z-50 shadow-lg bg-white/80 backdrop-blur-md">
-                <div className="mx-auto flex items-center justify-between px-6 py-3 w-full">
-                    <div className="flex items-center gap-3 font-extrabold leading-tight text-primary-900">
-                        <img src="/logo.png" alt="Logo" className="h-10 w-10 mr-2 drop-shadow-lg" />
-                        <h6 className="text-blue-700 text-2xl font-bold tracking-wide drop-shadow">Hệ thống Đăng ký tín chỉ</h6>
-                    </div>
-                    <Menubar
-                        model={menuItems}
-                        end={end}
-                        className="border-none shadow-none font-semibold bg-transparent text-blue-800"
-                        pt={{
-                            root: { className: "gap-4" },
-                            menu: { className: "flex gap-4" },
-                            menuitem: { className: "rounded-lg px-4 py-2 hover:bg-blue-100 hover:text-blue-700 transition-colors text-blue-800" },
-                            action: { className: "flex items-center gap-2 text-blue-800" },
-                            icon: { className: "text-blue-700" },
-                            label: { className: "text-blue-800" }
-                        }}
-                    />
-                </div>
-            </div>
-
             {/* Features Section */}
             <section className="max-w-7xl mx-auto px-6 py-20">
                 <h2 className="text-4xl md:text-5xl font-extrabold text-center mb-16 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-blue-400 to-blue-700 drop-shadow-lg tracking-tight">
