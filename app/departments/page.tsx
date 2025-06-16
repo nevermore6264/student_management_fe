@@ -163,7 +163,7 @@ export default function DepartmentListPage() {
                     </div>
                 }
             >
-                <form className="flex flex-col gap-4">
+                <form className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
                         <label htmlFor="maKhoa" className="text-gray-700 font-medium">Mã khoa</label>
                         <input id="maKhoa" value={formData.maKhoa} onChange={e => setFormData({ ...formData, maKhoa: e.target.value })} className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base" required disabled={isEdit} />
