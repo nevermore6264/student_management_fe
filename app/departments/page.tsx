@@ -30,7 +30,7 @@ export default function DepartmentListPage() {
         soDienThoai: '',
         email: '',
         diaChi: '',
-        maTruong: '',
+        maTruong: 'UTE',
         trangThai: 1
     });
     const [isEdit, setIsEdit] = useState(false);
@@ -186,7 +186,7 @@ export default function DepartmentListPage() {
                     </div>
                     <div className="flex flex-col gap-2">
                         <label htmlFor="maTruong" className="text-gray-700 font-medium">Mã trường</label>
-                        <input id="maTruong" value={formData.maTruong} onChange={e => setFormData({ ...formData, maTruong: e.target.value })} className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base" required />
+                        <input id="maTruong" disabled value={formData.maTruong} onChange={e => setFormData({ ...formData, maTruong: e.target.value })} className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base" required />
                     </div>
                     <div className="flex flex-col gap-2">
                         <label htmlFor="trangThai" className="text-gray-700 font-medium">Trạng thái</label>

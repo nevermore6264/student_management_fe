@@ -102,23 +102,6 @@ export default function Home() {
                 <div className="flex-1 flex flex-col justify-center items-start text-left z-10">
                     <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight text-primary-900 drop-shadow-lg">Hệ thống đăng ký tín chỉ</h1>
                     <p className="text-lg md:text-2xl mb-8 text-gray-700 max-w-xl">Giải pháp toàn diện giúp sinh viên quản lý việc học tập một cách hiệu quả</p>
-                    <div className="flex flex-wrap gap-4">
-                        <Button
-                            label="Bắt đầu ngay"
-                            icon="pi pi-arrow-right"
-                            severity="success"
-                            size="large"
-                            className="p-button-raised shadow-lg px-6 py-3 text-lg rounded-full hover:scale-105 transition-transform duration-200"
-                            onClick={() => router.push('/course-registration')}
-                        />
-                        <Button
-                            label="Tìm hiểu thêm"
-                            icon="pi pi-info-circle"
-                            severity="secondary"
-                            size="large"
-                            className="p-button-outlined px-6 py-3 text-lg rounded-full hover:bg-primary-100 hover:text-primary-900 transition-colors duration-200"
-                        />
-                    </div>
                 </div>
                 <div className="flex-1 flex justify-center items-center relative z-10">
                     <img
