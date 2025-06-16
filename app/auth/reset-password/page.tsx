@@ -43,10 +43,10 @@ export default function ResetPasswordPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center">
-            <div className="card w-full max-w-md bg-white rounded-2xl p-8 shadow-xl flex flex-col items-center">
-                <img src="/logo.png" alt="Logo" width={72} height={72} className="rounded-full shadow mb-4" />
-                <h1 className="text-2xl font-bold text-blue-600 mb-2 text-center">Đặt lại mật khẩu</h1>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200 py-12 px-4">
+            <div className="w-full max-w-md bg-white/90 rounded-3xl shadow-2xl p-10 flex flex-col items-center backdrop-blur-lg hover:shadow-blue-300/40 transition-all duration-300">
+                <img src="/logo.png" alt="Logo" width={72} height={72} className="rounded-full shadow-lg mb-4" />
+                <h1 className="text-2xl md:text-3xl font-extrabold text-blue-700 mb-2 text-center drop-shadow">Đặt lại mật khẩu</h1>
                 <p className="text-gray-500 text-center mb-4">Nhập email, mã xác thực và mật khẩu mới</p>
 
                 {error && (
@@ -61,37 +61,37 @@ export default function ResetPasswordPage() {
                     />
                 )}
 
-                <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4 mt-2">
+                <form onSubmit={handleSubmit} className="w-full flex flex-col gap-5 mt-2">
                     <div className="w-full flex flex-col gap-2">
-                        <label htmlFor="email" className="text-gray-700 font-medium">Email</label>
+                        <label htmlFor="email" className="text-gray-700 font-semibold">Email</label>
                         <InputText
                             id="email"
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="p-inputtext-lg w-full bg-blue-50 border border-gray-200 rounded-md h-11 text-base focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition"
+                            className="p-inputtext-lg w-full bg-blue-50 border border-blue-200 rounded-xl h-12 text-base focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition"
                             placeholder="Nhập email của bạn"
                             required
                         />
                     </div>
                     <div className="w-full flex flex-col gap-2">
-                        <label htmlFor="code" className="text-gray-700 font-medium">Mã xác thực</label>
+                        <label htmlFor="code" className="text-gray-700 font-semibold">Mã xác thực</label>
                         <InputText
                             id="code"
                             value={code}
                             onChange={(e) => setCode(e.target.value)}
-                            className="p-inputtext-lg w-full bg-blue-50 border border-gray-200 rounded-md h-11 text-base focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition"
+                            className="p-inputtext-lg w-full bg-blue-50 border border-blue-200 rounded-xl h-12 text-base focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition"
                             placeholder="Nhập mã xác thực từ email"
                             required
                         />
                     </div>
                     <div className="w-full flex flex-col gap-2">
-                        <label htmlFor="newPassword" className="text-gray-700 font-medium">Mật khẩu mới</label>
+                        <label htmlFor="newPassword" className="text-gray-700 font-semibold">Mật khẩu mới</label>
                         <Password
                             id="newPassword"
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
-                            className="p-inputtext-lg w-full bg-blue-50 border border-gray-200 rounded-md h-11 text-base focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition"
+                            className="p-inputtext-lg w-full bg-blue-50 border border-blue-200 rounded-xl h-12 text-base focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition"
                             inputClassName="w-full"
                             placeholder="Nhập mật khẩu mới"
                             toggleMask
@@ -100,12 +100,12 @@ export default function ResetPasswordPage() {
                         />
                     </div>
                     <div className="w-full flex flex-col gap-2">
-                        <label htmlFor="confirmPassword" className="text-gray-700 font-medium">Xác nhận mật khẩu mới</label>
+                        <label htmlFor="confirmPassword" className="text-gray-700 font-semibold">Xác nhận mật khẩu mới</label>
                         <Password
                             id="confirmPassword"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="p-inputtext-lg w-full bg-blue-50 border border-gray-200 rounded-md h-11 text-base focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition"
+                            className="p-inputtext-lg w-full bg-blue-50 border border-blue-200 rounded-xl h-12 text-base focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition"
                             inputClassName="w-full"
                             placeholder="Nhập lại mật khẩu mới"
                             toggleMask
@@ -117,11 +117,11 @@ export default function ResetPasswordPage() {
                         type="submit"
                         label="Đặt lại mật khẩu"
                         icon="pi pi-refresh"
-                        className="p-button-lg p-button-primary w-full h-11 font-bold text-lg rounded-md shadow-md hover:shadow-lg transition"
+                        className="p-button-lg w-full h-12 font-bold text-lg rounded-xl bg-gradient-to-r from-blue-500 to-blue-700 border-0 shadow-lg hover:scale-105 transition-transform duration-200 text-white"
                     />
                     <div className="text-center pt-4">
                         <span className="text-gray-500">Quay lại </span>
-                        <Link href="/auth/login" className="text-blue-600 font-medium underline hover:text-blue-800 transition">
+                        <Link href="/auth/login" className="text-blue-600 font-semibold underline hover:text-blue-800 transition-colors">
                             Đăng nhập
                         </Link>
                     </div>
