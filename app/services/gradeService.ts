@@ -1,4 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+
+export interface ApiResponse<T> {
+    success: boolean;
+    message: string;
+    data: T;
+}
 
 export interface SemesterSummary {
     hocKy: number;
@@ -38,6 +45,7 @@ class GradeService {
         }
         return res.json();
     }
+
     async getDetails(maSinhVien: string): Promise<Grade[]> {
         const token = localStorage.getItem('token');
         const res = await fetch(`${API_BASE}/api/diem/sinhvien/${maSinhVien}/chitiet`, {
@@ -53,7 +61,8 @@ class GradeService {
         }
         return res.json();
     }
-    async getAllOverview(): Promise<SemesterSummary[]> {
+
+    async getAllOverview(): Promise<ApiResponse<SemesterSummary[]>> {
         const token = localStorage.getItem('token');
         const res = await fetch(`${API_BASE}/api/diem/tongquan`, {
             method: 'GET',
@@ -68,7 +77,8 @@ class GradeService {
         }
         return res.json();
     }
-    async getAllDetails(): Promise<Grade[]> {
+
+    async getAllDetails(): Promise<ApiResponse<Grade[]>> {
         const token = localStorage.getItem('token');
         const res = await fetch(`${API_BASE}/api/diem/chitiet`, {
             method: 'GET',

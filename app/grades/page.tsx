@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -21,10 +22,16 @@ export default function GradeManagementPage() {
     const fetchOverview = async () => {
         setLoading(true); setError('');
         try {
-            const data = await gradeService.getAllOverview();
-            setSemesterSummaries(data);
+            const res = await gradeService.getAllOverview();
+            if (res.success && Array.isArray(res.data)) {
+                setSemesterSummaries(res.data);
+            } else {
+                setSemesterSummaries([]);
+                setError(res.message || 'Dữ liệu không hợp lệ');
+            }
         } catch (err: any) {
             setError(err.message || 'Không thể tải tổng quan điểm');
+            setSemesterSummaries([]);
         } finally {
             setLoading(false);
         }
@@ -32,10 +39,16 @@ export default function GradeManagementPage() {
     const fetchDetails = async () => {
         setLoading(true); setError('');
         try {
-            const data = await gradeService.getAllDetails();
-            setGrades(data);
+            const res = await gradeService.getAllDetails();
+            if (res.success && Array.isArray(res.data)) {
+                setGrades(res.data);
+            } else {
+                setGrades([]);
+                setError(res.message || 'Dữ liệu không hợp lệ');
+            }
         } catch (err: any) {
             setError(err.message || 'Không thể tải chi tiết điểm');
+            setGrades([]);
         } finally {
             setLoading(false);
         }
