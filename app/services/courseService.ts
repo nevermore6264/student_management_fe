@@ -17,8 +17,6 @@ export interface Course {
     tenHocPhan: string;
     soTinChi: number;
     maKhoa: string;
-    moTa?: string;
-    trangThai: number;
     lopHocPhans?: CourseClass[];
 }
 
@@ -29,8 +27,6 @@ class CourseService {
             tenHocPhan: data.tenHocPhan || '',
             soTinChi: data.soTinChi ?? 0,
             maKhoa: data.maKhoa || '',
-            moTa: data.moTa || '',
-            trangThai: data.trangThai ?? 1,
             lopHocPhans: data.lopHocPhans || []
         };
     }

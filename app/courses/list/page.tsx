@@ -22,9 +22,7 @@ export default function CourseListPage() {
         maHocPhan: '',
         tenHocPhan: '',
         soTinChi: 0,
-        maKhoa: '',
-        moTa: '',
-        trangThai: 1
+        maKhoa: ''
     });
     const [isEdit, setIsEdit] = useState(false);
     const [searchText, setSearchText] = useState('');
@@ -52,7 +50,8 @@ export default function CourseListPage() {
     }, []);
 
     const handleEdit = (course: Course) => {
-        setFormData(course);
+        const { ...rest } = course;
+        setFormData(rest as Course);
         setIsEdit(true);
         setEditDialogVisible(true);
     };
@@ -130,7 +129,7 @@ export default function CourseListPage() {
                     />
                 </div>
                 <div className="flex justify-end w-full md:w-1/2">
-                    <Button label="Thêm học phần" icon="pi pi-plus" onClick={() => { setFormData({ maHocPhan: '', tenHocPhan: '', soTinChi: 0, maKhoa: departments[0]?.maKhoa || '', moTa: '', trangThai: 1 }); setIsEdit(false); setEditDialogVisible(true); }} />
+                    <Button label="Thêm học phần" icon="pi pi-plus" onClick={() => { setFormData({ maHocPhan: '', tenHocPhan: '', soTinChi: 0, maKhoa: departments[0]?.maKhoa || '' }); setIsEdit(false); setEditDialogVisible(true); }} />
                 </div>
             </div>
             {loading ? (
@@ -144,7 +143,6 @@ export default function CourseListPage() {
                                 <th className="px-4 py-2 text-left">Tên học phần</th>
                                 <th className="px-4 py-2 text-left">Số tín chỉ</th>
                                 <th className="px-4 py-2 text-left">Khoa</th>
-                                <th className="px-4 py-2 text-left">Trạng thái</th>
                                 <th className="px-4 py-2 text-center">Hành động</th>
                             </tr>
                         </thead>
@@ -157,7 +155,6 @@ export default function CourseListPage() {
                                         <td className="px-4 py-2">{course.tenHocPhan}</td>
                                         <td className="px-4 py-2">{course.soTinChi}</td>
                                         <td className="px-4 py-2">{khoa ? khoa.tenKhoa : course.maKhoa}</td>
-                                        <td className="px-4 py-2">{course.trangThai === 1 ? 'Hoạt động' : 'Ngừng'}</td>
                                         <td className="px-4 py-2 text-center flex gap-2 justify-center">
                                             <Button icon="pi pi-eye" className="p-button-rounded p-button-info text-lg" tooltip="Xem chi tiết" onClick={() => { setSelectedCourse(course); setDetailDialogVisible(true); }} />
                                             <Button icon="pi pi-pencil" className="p-button-rounded p-button-warning text-lg" onClick={() => handleEdit(course)} />
@@ -202,17 +199,6 @@ export default function CourseListPage() {
                             {departments.map(dep => (
                                 <option key={dep.maKhoa} value={dep.maKhoa}>{dep.tenKhoa}</option>
                             ))}
-                        </select>
-                    </div>
-                    <div className="flex flex-col gap-2 md:col-span-2">
-                        <label htmlFor="moTa" className="text-gray-700 font-medium">Mô tả</label>
-                        <textarea id="moTa" value={formData.moTa} onChange={e => setFormData({ ...formData, moTa: e.target.value })} className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base" rows={2} />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="trangThai" className="text-gray-700 font-medium">Trạng thái</label>
-                        <select id="trangThai" value={formData.trangThai} onChange={e => setFormData({ ...formData, trangThai: Number(e.target.value) })} className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base">
-                            <option value={1}>Hoạt động</option>
-                            <option value={0}>Ngừng</option>
                         </select>
                     </div>
                 </form>
