@@ -3,6 +3,7 @@ const API_BASE = 'http://localhost:8080/api/lophocphan';
 
 export interface ClassSection {
     maLopHP: string;
+    maHocPhan: string;
     tenLopHP: string;
     soLuong: number;
     giangVien: string;
@@ -16,6 +17,7 @@ class ClassSectionService {
     private validateClassSection(data: any): ClassSection {
         return {
             maLopHP: data.maLopHP || '',
+            maHocPhan: data.maHocPhan || '',
             tenLopHP: data.tenLopHP || '',
             soLuong: data.soLuong ?? 0,
             giangVien: data.giangVien || '',

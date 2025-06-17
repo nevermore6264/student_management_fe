@@ -8,6 +8,8 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Message } from 'primereact/message';
+import lecturerService from '../../services/lecturerService';
+import courseService, { Course } from '../../services/courseService';
 
 export default function ClassesPage() {
     const [classes, setClasses] = useState<ClassSection[]>([]);
@@ -18,6 +20,7 @@ export default function ClassesPage() {
     const [editDialogVisible, setEditDialogVisible] = useState(false);
     const [formData, setFormData] = useState<ClassSection>({
         maLopHP: '',
+        maHocPhan: '',
         tenLopHP: '',
         soLuong: 0,
         giangVien: '',
@@ -29,9 +32,20 @@ export default function ClassesPage() {
     const [isEdit, setIsEdit] = useState(false);
     const [saving, setSaving] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<ClassSection | null>(null);
+    const [lecturers, setLecturers] = useState<{ maGiangVien: string; tenGiangVien: string }[]>([]);
+    const [courses, setCourses] = useState<Course[]>([]);
 
     useEffect(() => {
         fetchClasses();
+        lecturerService.getAllLecturers().then(res => {
+            if (Array.isArray(res.data)) setLecturers(res.data);
+            else if (Array.isArray(res)) setLecturers(res);
+            else setLecturers([]);
+        }).catch(() => setLecturers([]));
+        courseService.getAllCourses().then(res => {
+            if (Array.isArray(res.data)) setCourses(res.data);
+            else setCourses([]);
+        }).catch(() => setCourses([]));
     }, []);
 
     const fetchClasses = async () => {
@@ -112,7 +126,7 @@ export default function ClassesPage() {
                     />
                 </div>
                 <div className="flex justify-end w-full md:w-1/2">
-                    <Button label="Thêm lớp học phần" icon="pi pi-plus" onClick={() => { setFormData({ maLopHP: '', tenLopHP: '', soLuong: 0, giangVien: '', thoiGianBatDau: '', thoiGianKetThuc: '', phongHoc: '', trangThai: true }); setIsEdit(false); setEditDialogVisible(true); }} />
+                    <Button label="Thêm lớp học phần" icon="pi pi-plus" onClick={() => { setFormData({ maLopHP: '', maHocPhan: '', tenLopHP: '', soLuong: 0, giangVien: '', thoiGianBatDau: '', thoiGianKetThuc: '', phongHoc: '', trangThai: true }); setIsEdit(false); setEditDialogVisible(true); }} />
                 </div>
             </div>
             {loading ? (
@@ -182,7 +196,18 @@ export default function ClassesPage() {
                     </div>
                     <div className="flex flex-col gap-2">
                         <label htmlFor="giangVien" className="text-gray-700 font-medium">Giảng viên</label>
-                        <input id="giangVien" value={formData.giangVien} onChange={e => setFormData({ ...formData, giangVien: e.target.value })} className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base" required />
+                        <select
+                            id="giangVien"
+                            value={formData.giangVien}
+                            onChange={e => setFormData({ ...formData, giangVien: e.target.value })}
+                            className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base"
+                            required
+                        >
+                            <option value="">-- Chọn giảng viên --</option>
+                            {lecturers.map(gv => (
+                                <option key={gv.maGiangVien} value={gv.maGiangVien}>{gv.tenGiangVien}</option>
+                            ))}
+                        </select>
                     </div>
                     <div className="flex flex-col gap-2">
                         <label htmlFor="thoiGianBatDau" className="text-gray-700 font-medium">Thời gian bắt đầu</label>
@@ -201,6 +226,21 @@ export default function ClassesPage() {
                         <select id="trangThai" value={formData.trangThai ? 1 : 0} onChange={e => setFormData({ ...formData, trangThai: Number(e.target.value) === 1 })} className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base">
                             <option value={1}>Hoạt động</option>
                             <option value={0}>Ngừng</option>
+                        </select>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="maHocPhan" className="text-gray-700 font-medium">Học phần</label>
+                        <select
+                            id="maHocPhan"
+                            value={formData.maHocPhan || ''}
+                            onChange={e => setFormData({ ...formData, maHocPhan: e.target.value })}
+                            className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base"
+                            required
+                        >
+                            <option value="">-- Chọn học phần --</option>
+                            {courses.map(hp => (
+                                <option key={hp.maHocPhan} value={hp.maHocPhan}>{hp.tenHocPhan}</option>
+                            ))}
                         </select>
                     </div>
                 </form>
