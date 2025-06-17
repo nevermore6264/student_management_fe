@@ -24,28 +24,64 @@ export interface Grade {
 
 class GradeService {
     async getOverview(maSinhVien: string): Promise<SemesterSummary[]> {
-        const res = await fetch(`${API_BASE}/api/diem/sinhvien/${maSinhVien}/tongquan`);
-        if (!res.ok) throw new Error('Không thể lấy tổng quan điểm');
-        const data = await res.json();
-        return data;
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/api/diem/sinhvien/${maSinhVien}/tongquan`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {})
+            }
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || 'Không thể lấy tổng quan điểm');
+        }
+        return res.json();
     }
     async getDetails(maSinhVien: string): Promise<Grade[]> {
-        const res = await fetch(`${API_BASE}/api/diem/sinhvien/${maSinhVien}/chitiet`);
-        if (!res.ok) throw new Error('Không thể lấy chi tiết điểm');
-        const data = await res.json();
-        return data;
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/api/diem/sinhvien/${maSinhVien}/chitiet`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {})
+            }
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || 'Không thể lấy chi tiết điểm');
+        }
+        return res.json();
     }
     async getAllOverview(): Promise<SemesterSummary[]> {
-        const res = await fetch(`${API_BASE}/api/diem/tongquan`);
-        if (!res.ok) throw new Error('Không thể lấy tổng quan toàn bộ sinh viên');
-        const data = await res.json();
-        return data;
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/api/diem/tongquan`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {})
+            }
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || 'Không thể lấy tổng quan toàn bộ sinh viên');
+        }
+        return res.json();
     }
     async getAllDetails(): Promise<Grade[]> {
-        const res = await fetch(`${API_BASE}/api/diem/chitiet`);
-        if (!res.ok) throw new Error('Không thể lấy chi tiết điểm toàn bộ sinh viên');
-        const data = await res.json();
-        return data;
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/api/diem/chitiet`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {})
+            }
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || 'Không thể lấy chi tiết điểm toàn bộ sinh viên');
+        }
+        return res.json();
     }
 }
 
