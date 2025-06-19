@@ -12,6 +12,12 @@ const menuItems = [
         roles: ['admin', 'sv', 'gv']
     },
     {
+        label: 'Thông tin cá nhân',
+        icon: 'pi pi-user',
+        path: '/profile',
+        roles: ['admin', 'sv', 'gv']
+    },
+    {
         label: 'Quản lý người dùng',
         icon: 'pi pi-users',
         path: '/users',
@@ -36,48 +42,100 @@ const menuItems = [
         label: 'Quản lý Học phần',
         icon: 'pi pi-book',
         path: '/courses',
-        roles: ['admin', 'gv'],
+        roles: ['admin'],
         subItems: [
-            { label: 'Danh sách Học phần', path: '/courses/list', roles: ['admin', 'gv'] },
-            { label: 'Lớp học phần', path: '/courses/classes', roles: ['admin', 'gv'] },
-            { label: 'Thời khóa biểu', path: '/courses/schedule', roles: ['admin', 'gv'] }
+            { label: 'Danh sách Học phần', path: '/courses/list', roles: ['admin'] },
+            { label: 'Lớp học phần', path: '/courses/classes', roles: ['admin'] },
+            { label: 'Thời khóa biểu', path: '/courses/schedule', roles: ['admin'] }
         ]
     },
     {
-        label: 'Đăng ký học phần',
-        icon: 'pi pi-calendar-plus',
-        path: '/registration',
+        label: 'Quản lý đăng ký',
+        icon: 'pi pi-calendar',
+        path: '/registration-management',
+        roles: ['admin'],
+        subItems: [
+            { label: 'Đợt đăng ký', path: '/registration-management/periods', roles: ['admin'] },
+            { label: 'Danh sách đăng ký', path: '/registration-management/list', roles: ['admin'] }
+        ]
+    },
+    {
+        label: 'Giảng dạy',
+        icon: 'pi pi-book',
+        path: '/teaching',
+        roles: ['gv'],
+        subItems: [
+            {
+                label: 'Quản lý học phần',
+                icon: 'pi pi-book',
+                path: '/courses',
+                subItems: [
+                    { label: 'Danh sách học phần', path: '/courses/list', roles: ['gv'] },
+                    { label: 'Lớp học phần', path: '/courses/classes', roles: ['gv'] },
+                    { label: 'Thời khóa biểu', path: '/courses/schedule', roles: ['gv'] }
+                ]
+            },
+            {
+                label: 'Quản lý điểm',
+                icon: 'pi pi-chart-bar',
+                path: '/grades',
+                subItems: [
+                    { label: 'Nhập điểm', path: '/grades/input', roles: ['gv'] },
+                    { label: 'Xem điểm', path: '/grades/view', roles: ['gv'] },
+                    { label: 'Thống kê điểm', path: '/grades/statistics', roles: ['gv'] }
+                ]
+            },
+            {
+                label: 'Báo cáo',
+                icon: 'pi pi-file',
+                path: '/reports',
+                subItems: [
+                    { label: 'Thống kê đăng ký', path: '/reports/registration', roles: ['gv'] },
+                    { label: 'Kết quả học tập', path: '/reports/academic', roles: ['gv'] },
+                    { label: 'Báo cáo giảng dạy', path: '/reports/teaching', roles: ['gv'] }
+                ]
+            }
+        ]
+    },
+    {
+        label: 'Học tập',
+        icon: 'pi pi-book',
+        path: '/study',
         roles: ['sv'],
         subItems: [
-            { label: 'Đợt đăng ký', path: '/registration/periods', roles: ['sv'] },
-            { label: 'Đăng ký môn học', path: '/registration/courses', roles: ['sv'] },
-            { label: 'Lịch sử đăng ký', path: '/registration/history', roles: ['sv'] }
-        ]
-    },
-    {
-        label: 'Kế hoạch học tập',
-        icon: 'pi pi-list',
-        path: '/study-plan',
-        roles: ['sv', 'gv']
-    },
-    {
-        label: 'Quản lý điểm',
-        icon: 'pi pi-chart-bar',
-        path: '/grades',
-        roles: ['admin', 'gv', 'sv'],
-        subItems: [
-            { label: 'Nhập điểm', path: '/grades/input', roles: ['gv'] },
-            { label: 'Xem điểm', path: '/grades/view', roles: ['sv', 'gv'] }
+            {
+                label: 'Đăng ký học phần',
+                icon: 'pi pi-calendar-plus',
+                path: '/registration',
+                subItems: [
+                    { label: 'Đợt đăng ký', path: '/registration/periods', roles: ['sv'] },
+                    { label: 'Đăng ký môn học', path: '/registration/courses', roles: ['sv'] },
+                    { label: 'Lịch sử đăng ký', path: '/registration/history', roles: ['sv'] }
+                ]
+            },
+            {
+                label: 'Kế hoạch học tập',
+                icon: 'pi pi-list',
+                path: '/study-plan',
+                roles: ['sv']
+            },
+            {
+                label: 'Kết quả học tập',
+                icon: 'pi pi-chart-bar',
+                path: '/grades',
+                roles: ['sv']
+            }
         ]
     },
     {
         label: 'Báo cáo',
         icon: 'pi pi-file',
         path: '/reports',
-        roles: ['admin', 'sv', 'gv'],
+        roles: ['admin'],
         subItems: [
-            { label: 'Thống kê đăng ký', path: '/reports/registration', roles: ['admin', 'sv', 'gv'] },
-            { label: 'Kết quả học tập', path: '/reports/academic', roles: ['admin', 'sv', 'gv'] }
+            { label: 'Thống kê đăng ký', path: '/reports/registration', roles: ['admin'] },
+            { label: 'Kết quả học tập', path: '/reports/academic', roles: ['admin'] },
+            { label: 'Báo cáo tổng hợp', path: '/reports/summary', roles: ['admin'] }
         ]
     }
 ];
