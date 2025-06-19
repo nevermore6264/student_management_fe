@@ -157,7 +157,6 @@ export default function CourseClassManagementPage() {
 
             <div className="flex justify-content-between mb-4">
                 <span className="p-input-icon-left">
-                    <i className="pi pi-search" />
                     <InputText placeholder="Tìm kiếm lớp học phần..." />
                 </span>
             </div>

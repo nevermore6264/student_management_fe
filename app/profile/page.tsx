@@ -224,71 +224,71 @@ export default function ProfilePage() {
                 }
             >
                 {editForm ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="flex flex-col mb-2">
-                            <label htmlFor="hoTen" className="font-semibold mb-1">Họ tên *</label>
-                            <InputText id="hoTen" value={editForm.hoTen} onChange={e => handleEditInput('hoTen', e.target.value)} className={editErrors.hoTen ? 'p-invalid' : ''} />
+                    <div className="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-field mb-3">
+                            <label htmlFor="hoTen" className="p-d-block font-semibold mb-1">Họ tên *</label>
+                            <InputText id="hoTen" className={"p-inputtext p-component w-full" + (editErrors.hoTen ? ' p-invalid' : '')} value={editForm.hoTen} onChange={e => handleEditInput('hoTen', e.target.value)} />
                             {editErrors.hoTen && <small className="p-error">Họ tên không được để trống</small>}
                         </div>
-                        <div className="flex flex-col mb-2">
-                            <label htmlFor="email" className="font-semibold mb-1">Email *</label>
-                            <InputText id="email" value={editForm.email} onChange={e => handleEditInput('email', e.target.value)} className={editErrors.email ? 'p-invalid' : ''} />
+                        <div className="p-field mb-3">
+                            <label htmlFor="email" className="p-d-block font-semibold mb-1">Email *</label>
+                            <InputText id="email" className={"p-inputtext p-component w-full" + (editErrors.email ? ' p-invalid' : '')} value={editForm.email} onChange={e => handleEditInput('email', e.target.value)} />
                             {editErrors.email && <small className="p-error">Email không được để trống</small>}
                         </div>
-                        <div className="flex flex-col mb-2">
-                            <label htmlFor="soDienThoai" className="font-semibold mb-1">Số điện thoại *</label>
-                            <InputText id="soDienThoai" value={editForm.soDienThoai} onChange={e => handleEditInput('soDienThoai', e.target.value)} className={editErrors.soDienThoai ? 'p-invalid' : ''} />
+                        <div className="p-field mb-3">
+                            <label htmlFor="soDienThoai" className="p-d-block font-semibold mb-1">Số điện thoại *</label>
+                            <InputText id="soDienThoai" className={"p-inputtext p-component w-full" + (editErrors.soDienThoai ? ' p-invalid' : '')} value={editForm.soDienThoai} onChange={e => handleEditInput('soDienThoai', e.target.value)} />
                             {editErrors.soDienThoai && <small className="p-error">Số điện thoại không được để trống</small>}
                         </div>
-                        <div className="flex flex-col mb-2">
-                            <label htmlFor="ngaySinh" className="font-semibold mb-1">Ngày sinh</label>
-                            <InputText id="ngaySinh" value={editForm.ngaySinh || ''} onChange={e => handleEditInput('ngaySinh', e.target.value)} />
+                        <div className="p-field mb-3">
+                            <label htmlFor="ngaySinh" className="p-d-block font-semibold mb-1">Ngày sinh</label>
+                            <InputText id="ngaySinh" className="p-inputtext p-component w-full" value={editForm.ngaySinh || ''} onChange={e => handleEditInput('ngaySinh', e.target.value)} />
                         </div>
-                        <div className="flex flex-col mb-2">
-                            <label htmlFor="gioiTinh" className="font-semibold mb-1">Giới tính</label>
-                            <Dropdown id="gioiTinh" value={editForm.gioiTinh || ''} options={genderOptions} onChange={e => handleEditInput('gioiTinh', e.value)} placeholder="Chọn giới tính" className="w-full" />
+                        <div className="p-field mb-3">
+                            <label htmlFor="gioiTinh" className="p-d-block font-semibold mb-1">Giới tính</label>
+                            <Dropdown id="gioiTinh" className="w-full" value={editForm.gioiTinh || ''} options={genderOptions} onChange={e => handleEditInput('gioiTinh', e.value)} placeholder="Chọn giới tính" />
                         </div>
                         {editForm.role === 'sv' && (
                             <>
-                                <div className="flex flex-col mb-2">
-                                    <label htmlFor="maSinhVien" className="font-semibold mb-1">Mã sinh viên</label>
-                                    <InputText id="maSinhVien" value={(editForm as StudentProfile).maSinhVien} disabled className="bg-gray-100" />
+                                <div className="p-field mb-3">
+                                    <label htmlFor="maSinhVien" className="p-d-block font-semibold mb-1">Mã sinh viên</label>
+                                    <InputText id="maSinhVien" className="p-inputtext p-component w-full bg-gray-100" value={(editForm as StudentProfile).maSinhVien} disabled />
                                 </div>
-                                <div className="flex flex-col mb-2">
-                                    <label htmlFor="khoa" className="font-semibold mb-1">Khoa</label>
-                                    <InputText id="khoa" value={(editForm as StudentProfile).khoa} disabled className="bg-gray-100" />
+                                <div className="p-field mb-3">
+                                    <label htmlFor="khoa" className="p-d-block font-semibold mb-1">Khoa</label>
+                                    <InputText id="khoa" className="p-inputtext p-component w-full bg-gray-100" value={(editForm as StudentProfile).khoa} disabled />
                                 </div>
-                                <div className="flex flex-col mb-2">
-                                    <label htmlFor="lop" className="font-semibold mb-1">Lớp</label>
-                                    <InputText id="lop" value={(editForm as StudentProfile).lop} disabled className="bg-gray-100" />
+                                <div className="p-field mb-3">
+                                    <label htmlFor="lop" className="p-d-block font-semibold mb-1">Lớp</label>
+                                    <InputText id="lop" className="p-inputtext p-component w-full bg-gray-100" value={(editForm as StudentProfile).lop} disabled />
                                 </div>
-                                <div className="flex flex-col mb-2">
-                                    <label htmlFor="chuyenNganh" className="font-semibold mb-1">Chuyên ngành</label>
-                                    <InputText id="chuyenNganh" value={(editForm as StudentProfile).chuyenNganh} disabled className="bg-gray-100" />
+                                <div className="p-field mb-3">
+                                    <label htmlFor="chuyenNganh" className="p-d-block font-semibold mb-1">Chuyên ngành</label>
+                                    <InputText id="chuyenNganh" className="p-inputtext p-component w-full bg-gray-100" value={(editForm as StudentProfile).chuyenNganh} disabled />
                                 </div>
-                                <div className="flex flex-col mb-2">
-                                    <label htmlFor="namNhapHoc" className="font-semibold mb-1">Năm nhập học</label>
-                                    <InputText id="namNhapHoc" value={(editForm as StudentProfile).namNhapHoc || ''} disabled className="bg-gray-100" />
+                                <div className="p-field mb-3">
+                                    <label htmlFor="namNhapHoc" className="p-d-block font-semibold mb-1">Năm nhập học</label>
+                                    <InputText id="namNhapHoc" className="p-inputtext p-component w-full bg-gray-100" value={(editForm as StudentProfile).namNhapHoc || ''} disabled />
                                 </div>
                             </>
                         )}
                         {editForm.role === 'gv' && (
                             <>
-                                <div className="flex flex-col mb-2">
-                                    <label htmlFor="maGiangVien" className="font-semibold mb-1">Mã giảng viên</label>
-                                    <InputText id="maGiangVien" value={(editForm as LecturerProfile).maGiangVien} disabled className="bg-gray-100" />
+                                <div className="p-field mb-3">
+                                    <label htmlFor="maGiangVien" className="p-d-block font-semibold mb-1">Mã giảng viên</label>
+                                    <InputText id="maGiangVien" className="p-inputtext p-component w-full bg-gray-100" value={(editForm as LecturerProfile).maGiangVien} disabled />
                                 </div>
-                                <div className="flex flex-col mb-2">
-                                    <label htmlFor="khoa" className="font-semibold mb-1">Khoa</label>
-                                    <InputText id="khoa" value={(editForm as LecturerProfile).khoa} disabled className="bg-gray-100" />
+                                <div className="p-field mb-3">
+                                    <label htmlFor="khoa" className="p-d-block font-semibold mb-1">Khoa</label>
+                                    <InputText id="khoa" className="p-inputtext p-component w-full bg-gray-100" value={(editForm as LecturerProfile).khoa} disabled />
                                 </div>
-                                <div className="flex flex-col mb-2">
-                                    <label htmlFor="hocVi" className="font-semibold mb-1">Học vị</label>
-                                    <InputText id="hocVi" value={(editForm as LecturerProfile).hocVi || ''} disabled className="bg-gray-100" />
+                                <div className="p-field mb-3">
+                                    <label htmlFor="hocVi" className="p-d-block font-semibold mb-1">Học vị</label>
+                                    <InputText id="hocVi" className="p-inputtext p-component w-full bg-gray-100" value={(editForm as LecturerProfile).hocVi || ''} disabled />
                                 </div>
-                                <div className="flex flex-col mb-2">
-                                    <label htmlFor="chucVu" className="font-semibold mb-1">Chức vụ</label>
-                                    <InputText id="chucVu" value={(editForm as LecturerProfile).chucVu || ''} disabled className="bg-gray-100" />
+                                <div className="p-field mb-3">
+                                    <label htmlFor="chucVu" className="p-d-block font-semibold mb-1">Chức vụ</label>
+                                    <InputText id="chucVu" className="p-inputtext p-component w-full bg-gray-100" value={(editForm as LecturerProfile).chucVu || ''} disabled />
                                 </div>
                             </>
                         )}

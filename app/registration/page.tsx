@@ -1,15 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Dialog } from 'primereact/dialog';
-import { Dropdown } from 'primereact/dropdown';
 import { TabView, TabPanel } from 'primereact/tabview';
-import { Tag } from 'primereact/tag';
-import { useRouter } from 'next/navigation';
 
 interface CourseClass {
     maLopHocPhan: string;
@@ -35,7 +30,6 @@ interface RegistrationPeriod {
 }
 
 export default function CourseRegistrationPage() {
-    const router = useRouter();
     const [activeTab, setActiveTab] = useState(0);
 
     const [registrationPeriods] = useState<RegistrationPeriod[]>([
@@ -100,12 +94,6 @@ export default function CourseRegistrationPage() {
     const [registerDialogVisible, setRegisterDialogVisible] = useState(false);
     const [cancelDialogVisible, setCancelDialogVisible] = useState(false);
 
-    const statusTemplate = (rowData: CourseClass) => {
-        const status = rowData.trangThai;
-        const severity = status === 'Còn chỗ' ? 'success' : 'info';
-        return <Tag value={status} severity={severity} />;
-    };
-
     const actionTemplate = (rowData: CourseClass) => {
         if (rowData.trangThai === 'Còn chỗ') {
             return (
@@ -155,68 +143,145 @@ export default function CourseRegistrationPage() {
 
             <div className="mb-4">
                 <h2 className="text-xl font-semibold mb-2">Đợt đăng ký hiện tại</h2>
-                <DataTable
-                    value={registrationPeriods}
-                    className="p-datatable-sm"
-                    emptyMessage="Không có đợt đăng ký nào"
-                >
-                    <Column field="tenDotDangKy" header="Tên đợt đăng ký" />
-                    <Column field="ngayBatDau" header="Ngày bắt đầu" />
-                    <Column field="ngayKetThuc" header="Ngày kết thúc" />
-                    <Column field="trangThai" header="Trạng thái" />
-                </DataTable>
+                <div className="overflow-x-auto">
+                    <table className="w-full border-collapse border border-gray-300">
+                        <thead className="bg-blue-100">
+                            <tr>
+                                <th className="px-4 py-2 border border-gray-300">Tên đợt đăng ký</th>
+                                <th className="px-4 py-2 border border-gray-300">Ngày bắt đầu</th>
+                                <th className="px-4 py-2 border border-gray-300">Ngày kết thúc</th>
+                                <th className="px-4 py-2 border border-gray-300">Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {registrationPeriods.length === 0 ? (
+                                <tr>
+                                    <td colSpan={4} className="text-center py-4 text-gray-500">
+                                        Không có đợt đăng ký nào
+                                    </td>
+                                </tr>
+                            ) : (
+                                registrationPeriods.map((period) => (
+                                    <tr key={period.maDotDangKy} className="border-b hover:bg-blue-50">
+                                        <td className="px-4 py-2 border border-gray-300">{period.tenDotDangKy}</td>
+                                        <td className="px-4 py-2 border border-gray-300">{period.ngayBatDau}</td>
+                                        <td className="px-4 py-2 border border-gray-300">{period.ngayKetThuc}</td>
+                                        <td className="px-4 py-2 border border-gray-300">{period.trangThai}</td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <TabView activeIndex={activeTab} onTabChange={(e) => setActiveTab(e.index)}>
                 <TabPanel header="Lớp học phần có thể đăng ký">
                     <div className="flex justify-content-between mb-4">
                         <span className="p-input-icon-left">
-                            <i className="pi pi-search" />
                             <InputText placeholder="Tìm kiếm lớp học phần..." />
                         </span>
                     </div>
 
-                    <DataTable
-                        value={availableClasses}
-                        paginator
-                        rows={10}
-                        rowsPerPageOptions={[5, 10, 25, 50]}
-                        className="p-datatable-sm"
-                        emptyMessage="Không tìm thấy lớp học phần nào"
-                    >
-                        <Column field="maLopHocPhan" header="Mã lớp" sortable />
-                        <Column field="tenLopHocPhan" header="Tên lớp" sortable />
-                        <Column field="maHocPhan" header="Mã học phần" sortable />
-                        <Column field="tenHocPhan" header="Tên học phần" sortable />
-                        <Column field="soTinChi" header="Số tín chỉ" sortable />
-                        <Column field="giangVien" header="Giảng viên" sortable />
-                        <Column field="phongHoc" header="Phòng học" sortable />
-                        <Column field="siSoHienTai" header="Sĩ số hiện tại" sortable />
-                        <Column field="siSoToiDa" header="Sĩ số tối đa" sortable />
-                        <Column field="trangThai" header="Trạng thái" body={statusTemplate} sortable />
-                        <Column body={actionTemplate} style={{ width: '8rem' }} />
-                    </DataTable>
+                    <div className="overflow-x-auto">
+                        <table className="w-full border-collapse border border-gray-300">
+                            <thead className="bg-blue-100">
+                                <tr>
+                                    <th className="px-4 py-2 border border-gray-300">Mã lớp</th>
+                                    <th className="px-4 py-2 border border-gray-300">Tên lớp</th>
+                                    <th className="px-4 py-2 border border-gray-300">Mã học phần</th>
+                                    <th className="px-4 py-2 border border-gray-300">Tên học phần</th>
+                                    <th className="px-4 py-2 border border-gray-300">Số tín chỉ</th>
+                                    <th className="px-4 py-2 border border-gray-300">Giảng viên</th>
+                                    <th className="px-4 py-2 border border-gray-300">Phòng học</th>
+                                    <th className="px-4 py-2 border border-gray-300">Sĩ số hiện tại</th>
+                                    <th className="px-4 py-2 border border-gray-300">Sĩ số tối đa</th>
+                                    <th className="px-4 py-2 border border-gray-300">Trạng thái</th>
+                                    <th className="px-4 py-2 border border-gray-300 text-center">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {availableClasses.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={11} className="text-center py-4 text-gray-500">
+                                            Không tìm thấy lớp học phần nào
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    availableClasses.map((rowData) => (
+                                        <tr key={rowData.maLopHocPhan} className="border-b hover:bg-blue-50">
+                                            <td className="px-4 py-2 border border-gray-300 font-mono">{rowData.maLopHocPhan}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData.tenLopHocPhan}</td>
+                                            <td className="px-4 py-2 border border-gray-300 font-mono">{rowData.maHocPhan}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData.tenHocPhan}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData.soTinChi}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData.giangVien}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData.phongHoc}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData.siSoHienTai}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData.siSoToiDa}</td>
+                                            <td className="px-4 py-2 border border-gray-300">
+                                                <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${rowData.trangThai === 'Còn chỗ' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                                                    {rowData.trangThai}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-2 border border-gray-300 text-center">
+                                                {actionTemplate(rowData)}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </TabPanel>
 
                 <TabPanel header="Lớp học phần đã đăng ký">
-                    <DataTable
-                        value={registeredClasses}
-                        paginator
-                        rows={10}
-                        rowsPerPageOptions={[5, 10, 25, 50]}
-                        className="p-datatable-sm"
-                        emptyMessage="Chưa đăng ký lớp học phần nào"
-                    >
-                        <Column field="maLopHocPhan" header="Mã lớp" sortable />
-                        <Column field="tenLopHocPhan" header="Tên lớp" sortable />
-                        <Column field="maHocPhan" header="Mã học phần" sortable />
-                        <Column field="tenHocPhan" header="Tên học phần" sortable />
-                        <Column field="soTinChi" header="Số tín chỉ" sortable />
-                        <Column field="giangVien" header="Giảng viên" sortable />
-                        <Column field="phongHoc" header="Phòng học" sortable />
-                        <Column field="trangThai" header="Trạng thái" body={statusTemplate} sortable />
-                        <Column body={actionTemplate} style={{ width: '8rem' }} />
-                    </DataTable>
+                    <div className="overflow-x-auto">
+                        <table className="w-full border-collapse border border-gray-300">
+                            <thead className="bg-blue-100">
+                                <tr>
+                                    <th className="px-4 py-2 border border-gray-300">Mã lớp</th>
+                                    <th className="px-4 py-2 border border-gray-300">Tên lớp</th>
+                                    <th className="px-4 py-2 border border-gray-300">Mã học phần</th>
+                                    <th className="px-4 py-2 border border-gray-300">Tên học phần</th>
+                                    <th className="px-4 py-2 border border-gray-300">Số tín chỉ</th>
+                                    <th className="px-4 py-2 border border-gray-300">Giảng viên</th>
+                                    <th className="px-4 py-2 border border-gray-300">Phòng học</th>
+                                    <th className="px-4 py-2 border border-gray-300">Trạng thái</th>
+                                    <th className="px-4 py-2 border border-gray-300 text-center">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {registeredClasses.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={9} className="text-center py-4 text-gray-500">
+                                            Chưa đăng ký lớp học phần nào
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    registeredClasses.map((rowData) => (
+                                        <tr key={rowData.maLopHocPhan} className="border-b hover:bg-blue-50">
+                                            <td className="px-4 py-2 border border-gray-300 font-mono">{rowData.maLopHocPhan}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData.tenLopHocPhan}</td>
+                                            <td className="px-4 py-2 border border-gray-300 font-mono">{rowData.maHocPhan}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData.tenHocPhan}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData.soTinChi}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData.giangVien}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData.phongHoc}</td>
+                                            <td className="px-4 py-2 border border-gray-300">
+                                                <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${rowData.trangThai === 'Đã đăng ký' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+                                                    {rowData.trangThai}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-2 border border-gray-300 text-center">
+                                                {actionTemplate(rowData)}
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </TabPanel>
             </TabView>
 
