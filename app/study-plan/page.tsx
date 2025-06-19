@@ -6,6 +6,7 @@ import { InputText } from 'primereact/inputtext';
 import { Dialog } from 'primereact/dialog';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { Tag } from 'primereact/tag';
+import { Message } from 'primereact/message';
 
 interface Course {
     maHocPhan: string;
@@ -27,10 +28,15 @@ interface StudyPlan {
     diemTrungBinh: number;
 }
 
+interface NewStudyPlan {
+    tenKeHoach: string;
+    namHoc: string;
+    moTa: string;
+}
+
 export default function StudyPlanPage() {
     const [activeTab, setActiveTab] = useState(0);
-
-    const [studyPlans] = useState<StudyPlan[]>([
+    const [studyPlans, setStudyPlans] = useState<StudyPlan[]>([
         {
             maKeHoach: 'KH001',
             tenKeHoach: 'Kế hoạch học tập năm 2023-2024',
@@ -77,6 +83,17 @@ export default function StudyPlanPage() {
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
     const [courseDetailDialogVisible, setCourseDetailDialogVisible] = useState(false);
 
+    // New study plan dialog states
+    const [newPlanDialogVisible, setNewPlanDialogVisible] = useState(false);
+    const [newPlanForm, setNewPlanForm] = useState<NewStudyPlan>({
+        tenKeHoach: '',
+        namHoc: '',
+        moTa: ''
+    });
+    const [saving, setSaving] = useState(false);
+    const [success, setSuccess] = useState('');
+    const [error, setError] = useState('');
+
     const statusTemplate = (rowData: Course) => {
         const status = rowData.trangThai;
         let severity: "success" | "warning" | "info" = 'info';
@@ -91,6 +108,63 @@ export default function StudyPlanPage() {
         return <Tag value={type} severity={severity} />;
     };
 
+    const handleCreateNewPlan = () => {
+        setNewPlanForm({
+            tenKeHoach: '',
+            namHoc: '',
+            moTa: ''
+        });
+        setNewPlanDialogVisible(true);
+        setError('');
+        setSuccess('');
+    };
+
+    const handleSaveNewPlan = async () => {
+        if (!newPlanForm.tenKeHoach.trim() || !newPlanForm.namHoc.trim()) {
+            setError('Vui lòng điền đầy đủ thông tin bắt buộc');
+            return;
+        }
+
+        setSaving(true);
+        setError('');
+
+        try {
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            const newPlan: StudyPlan = {
+                maKeHoach: `KH${String(studyPlans.length + 1).padStart(3, '0')}`,
+                tenKeHoach: newPlanForm.tenKeHoach,
+                ngayTao: new Date().toISOString().split('T')[0],
+                trangThai: 'Đang thực hiện',
+                tongSoTinChi: 0,
+                diemTrungBinh: 0
+            };
+
+            setStudyPlans([...studyPlans, newPlan]);
+            setSuccess('Tạo kế hoạch học tập thành công!');
+            setNewPlanDialogVisible(false);
+
+            // Clear success message after 3 seconds
+            setTimeout(() => setSuccess(''), 3000);
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : 'Tạo kế hoạch thất bại';
+            setError(errorMessage);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleCancelNewPlan = () => {
+        setNewPlanDialogVisible(false);
+        setNewPlanForm({
+            tenKeHoach: '',
+            namHoc: '',
+            moTa: ''
+        });
+        setError('');
+    };
+
     return (
         <div className="w-4/5 max-w-5xl mx-auto p-6 bg-white rounded-2xl shadow-lg mt-12 flex flex-col items-center">
             <div className="w-full flex justify-content-between align-items-center mb-6">
@@ -99,8 +173,12 @@ export default function StudyPlanPage() {
                     label="Tạo kế hoạch mới"
                     icon="pi pi-plus"
                     className="bg-blue-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                    onClick={handleCreateNewPlan}
                 />
             </div>
+
+            {success && <Message severity="success" text={success} className="w-full mb-4" />}
+            {error && <Message severity="error" text={error} className="w-full mb-4" />}
 
             <div className="w-full mb-6">
                 <h2 className="text-xl font-semibold mb-4 text-blue-700">Kế hoạch hiện tại</h2>
@@ -241,6 +319,79 @@ export default function StudyPlanPage() {
                     </TabPanel>
                 </TabView>
             </div>
+
+            {/* New Study Plan Dialog */}
+            <Dialog
+                visible={newPlanDialogVisible}
+                onHide={handleCancelNewPlan}
+                header="Tạo kế hoạch học tập mới"
+                modal
+                className="p-fluid w-full max-w-2xl"
+                footer={
+                    <div className="flex justify-end gap-2 mt-4">
+                        <button
+                            type="button"
+                            className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md font-semibold hover:bg-gray-300"
+                            onClick={handleCancelNewPlan}
+                            disabled={saving}
+                        >
+                            Hủy
+                        </button>
+                        <button
+                            type="button"
+                            className="bg-blue-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-700 disabled:bg-gray-400"
+                            onClick={handleSaveNewPlan}
+                            disabled={saving}
+                        >
+                            {saving ? 'Đang tạo...' : 'Tạo kế hoạch'}
+                        </button>
+                    </div>
+                }
+            >
+                <div className="grid grid-cols-1 gap-4">
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="tenKeHoach" className="text-gray-700 font-medium">
+                            Tên kế hoạch <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            id="tenKeHoach"
+                            type="text"
+                            value={newPlanForm.tenKeHoach}
+                            onChange={(e) => setNewPlanForm({ ...newPlanForm, tenKeHoach: e.target.value })}
+                            className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Nhập tên kế hoạch học tập..."
+                            required
+                        />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="namHoc" className="text-gray-700 font-medium">
+                            Năm học <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            id="namHoc"
+                            type="text"
+                            value={newPlanForm.namHoc}
+                            onChange={(e) => setNewPlanForm({ ...newPlanForm, namHoc: e.target.value })}
+                            className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="VD: 2024-2025"
+                            required
+                        />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="moTa" className="text-gray-700 font-medium">
+                            Mô tả
+                        </label>
+                        <textarea
+                            id="moTa"
+                            value={newPlanForm.moTa}
+                            onChange={(e) => setNewPlanForm({ ...newPlanForm, moTa: e.target.value })}
+                            className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                            placeholder="Mô tả chi tiết về kế hoạch học tập..."
+                            rows={4}
+                        />
+                    </div>
+                </div>
+            </Dialog>
 
             {/* Course Detail Dialog */}
             <Dialog
