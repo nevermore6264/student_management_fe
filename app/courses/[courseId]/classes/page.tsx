@@ -1,357 +1,363 @@
 'use client';
 
-import { useState } from 'react';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
+import React, { useEffect, useState } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import classSectionService, { ClassSection } from '../../../services/classSectionService';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
+import { Message } from 'primereact/message';
 import { Dialog } from 'primereact/dialog';
-import { Dropdown } from 'primereact/dropdown';
-import { useRouter, useParams } from 'next/navigation';
-
-interface CourseClass {
-    maLopHocPhan: string;
-    tenLopHocPhan: string;
-    hocKy: string;
-    namHoc: string;
-    siSoToiDa: number;
-    siSoHienTai: number;
-    giangVien: string;
-    phongHoc: string;
-    ngayBatDau: string;
-    ngayKetThuc: string;
-}
 
 export default function CourseClassManagementPage() {
     const router = useRouter();
     const params = useParams();
     const courseId = params.courseId as string;
 
-    const [courseClasses] = useState<CourseClass[]>([
-        {
-            maLopHocPhan: 'LHP001',
-            tenLopHocPhan: 'Lập trình Web - Nhóm 1',
-            hocKy: '1',
-            namHoc: '2023-2024',
-            siSoToiDa: 50,
-            siSoHienTai: 30,
-            giangVien: 'Nguyễn Văn A',
-            phongHoc: 'A101',
-            ngayBatDau: '2023-09-01',
-            ngayKetThuc: '2023-12-31'
-        },
-        {
-            maLopHocPhan: 'LHP002',
-            tenLopHocPhan: 'Lập trình Web - Nhóm 2',
-            hocKy: '1',
-            namHoc: '2023-2024',
-            siSoToiDa: 50,
-            siSoHienTai: 25,
-            giangVien: 'Trần Thị B',
-            phongHoc: 'A102',
-            ngayBatDau: '2023-09-01',
-            ngayKetThuc: '2023-12-31'
-        }
-    ]);
-
-    const [semesters] = useState([
-        { label: 'Học kỳ 1', value: '1' },
-        { label: 'Học kỳ 2', value: '2' },
-        { label: 'Học kỳ 3', value: '3' }
-    ]);
-
-    const [selectedClass, setSelectedClass] = useState<CourseClass | null>(null);
-    const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
+    const [classes, setClasses] = useState<ClassSection[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [searchText, setSearchText] = useState('');
     const [editDialogVisible, setEditDialogVisible] = useState(false);
-    const [formData, setFormData] = useState<CourseClass>({
-        maLopHocPhan: '',
-        tenLopHocPhan: '',
-        hocKy: '',
-        namHoc: '',
-        siSoToiDa: 0,
-        siSoHienTai: 0,
+    const [formData, setFormData] = useState<ClassSection>({
+        maLopHP: '',
+        maHocPhan: courseId,
+        tenLopHP: '',
+        soLuong: 0,
         giangVien: '',
+        thoiGianBatDau: '',
+        thoiGianKetThuc: '',
         phongHoc: '',
-        ngayBatDau: '',
-        ngayKetThuc: ''
+        trangThai: true
     });
+    const [isEdit, setIsEdit] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState<ClassSection | null>(null);
 
-    const actionTemplate = (rowData: CourseClass) => {
-        return (
-            <div className="flex gap-2">
-                <Button
-                    icon="pi pi-pencil"
-                    className="p-button-rounded p-button-success"
-                    tooltip="Sửa"
-                    onClick={() => {
-                        setSelectedClass(rowData);
-                        setFormData(rowData);
-                        setEditDialogVisible(true);
-                    }}
-                />
-                <Button
-                    icon="pi pi-trash"
-                    className="p-button-rounded p-button-danger"
-                    tooltip="Xóa"
-                    onClick={() => {
-                        setSelectedClass(rowData);
-                        setDeleteDialogVisible(true);
-                    }}
-                />
-                <Button
-                    icon="pi pi-users"
-                    className="p-button-rounded p-button-info"
-                    tooltip="Xem sinh viên đăng ký"
-                    onClick={() => router.push(`/courses/${courseId}/classes/${rowData.maLopHocPhan}/students`)}
-                />
-                <Button
-                    icon="pi pi-calendar"
-                    className="p-button-rounded p-button-warning"
-                    tooltip="Xem lịch học"
-                    onClick={() => router.push(`/courses/${courseId}/classes/${rowData.maLopHocPhan}/schedule`)}
-                />
-            </div>
-        );
+    useEffect(() => {
+        fetchClasses();
+    }, [courseId]);
+
+    const fetchClasses = async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const data = await classSectionService.getClassSectionsByCourse(courseId);
+            setClasses(data);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Có lỗi xảy ra');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleEdit = () => {
-        // TODO: Implement edit logic
-        console.log('Editing course class:', formData);
-        setEditDialogVisible(false);
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            if (isEdit) {
+                const updated = await classSectionService.updateClassSection(formData.maLopHP, formData);
+                setClasses(classes.map(c => c.maLopHP === updated.maLopHP ? updated : c));
+                setSuccess('Cập nhật lớp học phần thành công');
+            } else {
+                const created = await classSectionService.createClassSection(formData);
+                setClasses([...classes, created]);
+                setSuccess('Thêm lớp học phần thành công');
+            }
+            setTimeout(() => setSuccess(''), 2500);
+            setEditDialogVisible(false);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Lưu lớp học phần thất bại');
+            setTimeout(() => setError(''), 2500);
+        } finally {
+            setSaving(false);
+        }
     };
 
-    const handleDelete = () => {
-        // TODO: Implement delete logic
-        console.log('Deleting course class:', selectedClass);
-        setDeleteDialogVisible(false);
-        setSelectedClass(null);
+    const handleEdit = (cls: ClassSection) => {
+        setFormData(cls);
+        setIsEdit(true);
+        setEditDialogVisible(true);
     };
+
+    const handleDelete = async () => {
+        if (!deleteTarget) return;
+        setSaving(true);
+        try {
+            await classSectionService.deleteClassSection(deleteTarget.maLopHP);
+            setClasses(classes.filter(c => c.maLopHP !== deleteTarget.maLopHP));
+            setSuccess('Xóa lớp học phần thành công');
+            setTimeout(() => setSuccess(''), 2500);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Xóa lớp học phần thất bại');
+            setTimeout(() => setError(''), 2500);
+        } finally {
+            setSaving(false);
+            setDeleteTarget(null);
+        }
+    };
+
+    const filteredClasses = classes.filter(lop =>
+        (lop.maLopHP?.toLowerCase() || '').includes(searchText.toLowerCase()) ||
+        (lop.tenLopHP?.toLowerCase() || '').includes(searchText.toLowerCase())
+    );
 
     return (
-        <div className="card">
-            <div className="flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h1 className="text-2xl font-bold">Quản lý Lớp học phần</h1>
-                    <p className="text-gray-600">Mã học phần: {courseId}</p>
+        <div className="w-4/5 max-w-6xl mx-auto p-6 bg-white rounded-2xl shadow-lg mt-12 flex flex-col items-center">
+            <div className="w-full mb-6">
+                <h1 className="text-2xl font-bold text-blue-700 text-center mb-2">Quản lý Lớp học phần</h1>
+                <p className="text-gray-600 text-center">Mã học phần: {courseId}</p>
+            </div>
+
+            {error && <Message severity="error" text={error} className="mb-4" />}
+            {success && <Message severity="success" text={success} className="mb-4" />}
+
+            <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4">
+                <div className="flex gap-2 w-full md:w-1/2">
+                    <InputText
+                        value={searchText}
+                        onChange={e => setSearchText(e.target.value)}
+                        placeholder="Tìm kiếm theo mã, tên lớp học phần..."
+                        className="w-full"
+                    />
                 </div>
-                <Button
-                    label="Thêm lớp học phần"
-                    icon="pi pi-plus"
-                    onClick={() => {
-                        setFormData({
-                            maLopHocPhan: '',
-                            tenLopHocPhan: '',
-                            hocKy: '',
-                            namHoc: '',
-                            siSoToiDa: 0,
-                            siSoHienTai: 0,
-                            giangVien: '',
-                            phongHoc: '',
-                            ngayBatDau: '',
-                            ngayKetThuc: ''
-                        });
-                        setEditDialogVisible(true);
-                    }}
-                />
+                <div className="flex justify-end w-full md:w-1/2">
+                    <Button
+                        label="Thêm lớp học phần"
+                        icon="pi pi-plus"
+                        onClick={() => {
+                            setFormData({
+                                maLopHP: '',
+                                maHocPhan: courseId,
+                                tenLopHP: '',
+                                soLuong: 0,
+                                giangVien: '',
+                                thoiGianBatDau: '',
+                                thoiGianKetThuc: '',
+                                phongHoc: '',
+                                trangThai: true
+                            });
+                            setIsEdit(false);
+                            setEditDialogVisible(true);
+                        }}
+                    />
+                </div>
             </div>
 
-            <div className="flex justify-content-between mb-4">
-                <span className="p-input-icon-left">
-                    <InputText placeholder="Tìm kiếm lớp học phần..." />
-                </span>
-            </div>
-
-            <DataTable
-                value={courseClasses}
-                paginator
-                rows={10}
-                rowsPerPageOptions={[5, 10, 25, 50]}
-                className="p-datatable-sm"
-                emptyMessage="Không tìm thấy lớp học phần nào"
-            >
-                <Column field="maLopHocPhan" header="Mã lớp" sortable />
-                <Column field="tenLopHocPhan" header="Tên lớp" sortable />
-                <Column field="hocKy" header="Học kỳ" sortable />
-                <Column field="namHoc" header="Năm học" sortable />
-                <Column field="siSoToiDa" header="Sĩ số tối đa" sortable />
-                <Column field="siSoHienTai" header="Sĩ số hiện tại" sortable />
-                <Column field="giangVien" header="Giảng viên" sortable />
-                <Column field="phongHoc" header="Phòng học" sortable />
-                <Column body={actionTemplate} style={{ width: '16rem' }} />
-            </DataTable>
+            {loading ? (
+                <div className="text-center py-8 text-blue-500 font-semibold">Đang tải dữ liệu...</div>
+            ) : (
+                <div className="overflow-x-auto w-full">
+                    <table className="w-full border rounded-lg overflow-hidden">
+                        <thead className="bg-blue-100">
+                            <tr>
+                                <th className="px-4 py-2">Mã lớp HP</th>
+                                <th className="px-4 py-2">Tên lớp HP</th>
+                                <th className="px-4 py-2">Số lượng</th>
+                                <th className="px-4 py-2">Giảng viên</th>
+                                <th className="px-4 py-2">Thời gian bắt đầu</th>
+                                <th className="px-4 py-2">Thời gian kết thúc</th>
+                                <th className="px-4 py-2">Phòng học</th>
+                                <th className="px-4 py-2">Trạng thái</th>
+                                <th className="px-4 py-2 text-center">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredClasses.map(lop => (
+                                <tr key={lop.maLopHP} className="border-b hover:bg-blue-50">
+                                    <td className="px-4 py-2 font-mono">{lop.maLopHP}</td>
+                                    <td className="px-4 py-2">{lop.tenLopHP}</td>
+                                    <td className="px-4 py-2">{lop.soLuong}</td>
+                                    <td className="px-4 py-2">{lop.giangVien}</td>
+                                    <td className="px-4 py-2">{new Date(lop.thoiGianBatDau).toLocaleString()}</td>
+                                    <td className="px-4 py-2">{new Date(lop.thoiGianKetThuc).toLocaleString()}</td>
+                                    <td className="px-4 py-2">{lop.phongHoc}</td>
+                                    <td className="px-4 py-2">{lop.trangThai ? 'Hoạt động' : 'Ngừng'}</td>
+                                    <td className="px-4 py-2 text-center flex gap-2 justify-center">
+                                        <Button
+                                            icon="pi pi-pencil"
+                                            className="p-button-rounded p-button-warning text-lg"
+                                            onClick={() => handleEdit(lop)}
+                                        />
+                                        <Button
+                                            icon="pi pi-trash"
+                                            className="p-button-rounded p-button-danger text-lg"
+                                            onClick={() => setDeleteTarget(lop)}
+                                        />
+                                        <Button
+                                            icon="pi pi-users"
+                                            className="p-button-rounded p-button-info text-lg"
+                                            tooltip="Xem sinh viên"
+                                            onClick={() => router.push(`/courses/${courseId}/classes/${lop.maLopHP}/students`)}
+                                        />
+                                        <Button
+                                            icon="pi pi-chart-bar"
+                                            className="p-button-rounded p-button-success text-lg"
+                                            tooltip="Tổng quan điểm"
+                                            onClick={() => router.push(`/courses/${courseId}/classes/${lop.maLopHP}/overview`)}
+                                        />
+                                        <Button
+                                            icon="pi pi-file-excel"
+                                            className="p-button-rounded p-button-secondary text-lg"
+                                            tooltip="Xuất báo cáo"
+                                            onClick={() => router.push(`/courses/${courseId}/classes/${lop.maLopHP}/report`)}
+                                        />
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
 
             {/* Edit Dialog */}
             <Dialog
                 visible={editDialogVisible}
                 onHide={() => setEditDialogVisible(false)}
-                header={formData.maLopHocPhan ? 'Sửa lớp học phần' : 'Thêm lớp học phần mới'}
+                header={isEdit ? 'Sửa lớp học phần' : 'Thêm lớp học phần'}
                 modal
-                className="p-fluid"
+                className="p-fluid w-full max-w-2xl"
                 footer={
-                    <div>
-                        <Button
-                            label="Hủy"
-                            icon="pi pi-times"
+                    <div className="flex justify-end gap-2 mt-4">
+                        <button
+                            type="button"
+                            className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md font-semibold hover:bg-gray-300"
                             onClick={() => setEditDialogVisible(false)}
-                            className="p-button-text"
-                        />
-                        <Button
-                            label="Lưu"
-                            icon="pi pi-check"
-                            onClick={handleEdit}
-                        />
+                            disabled={saving}
+                        >
+                            Hủy
+                        </button>
+                        <button
+                            type="button"
+                            className="bg-blue-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-700"
+                            onClick={handleSave}
+                            disabled={saving}
+                        >
+                            Lưu
+                        </button>
                     </div>
                 }
             >
-                <div className="flex flex-column gap-4">
-                    <div className="flex flex-column gap-2">
-                        <label htmlFor="maLopHocPhan" className="font-medium">
-                            Mã lớp học phần
-                        </label>
-                        <InputText
-                            id="maLopHocPhan"
-                            value={formData.maLopHocPhan}
-                            onChange={(e) => setFormData({ ...formData, maLopHocPhan: e.target.value })}
-                            placeholder="Nhập mã lớp học phần"
+                <form className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="maLopHP" className="text-gray-700 font-medium">Mã lớp HP</label>
+                        <input
+                            id="maLopHP"
+                            value={formData.maLopHP}
+                            onChange={e => setFormData({ ...formData, maLopHP: e.target.value })}
+                            className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base"
+                            required
+                            disabled={isEdit}
+                        />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="tenLopHP" className="text-gray-700 font-medium">Tên lớp HP</label>
+                        <input
+                            id="tenLopHP"
+                            value={formData.tenLopHP}
+                            onChange={e => setFormData({ ...formData, tenLopHP: e.target.value })}
+                            className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base"
                             required
                         />
                     </div>
-
-                    <div className="flex flex-column gap-2">
-                        <label htmlFor="tenLopHocPhan" className="font-medium">
-                            Tên lớp học phần
-                        </label>
-                        <InputText
-                            id="tenLopHocPhan"
-                            value={formData.tenLopHocPhan}
-                            onChange={(e) => setFormData({ ...formData, tenLopHocPhan: e.target.value })}
-                            placeholder="Nhập tên lớp học phần"
-                            required
-                        />
-                    </div>
-
-                    <div className="flex flex-column gap-2">
-                        <label htmlFor="hocKy" className="font-medium">
-                            Học kỳ
-                        </label>
-                        <Dropdown
-                            id="hocKy"
-                            value={formData.hocKy}
-                            options={semesters}
-                            onChange={(e) => setFormData({ ...formData, hocKy: e.value })}
-                            placeholder="Chọn học kỳ"
-                            required
-                        />
-                    </div>
-
-                    <div className="flex flex-column gap-2">
-                        <label htmlFor="namHoc" className="font-medium">
-                            Năm học
-                        </label>
-                        <InputText
-                            id="namHoc"
-                            value={formData.namHoc}
-                            onChange={(e) => setFormData({ ...formData, namHoc: e.target.value })}
-                            placeholder="Nhập năm học (VD: 2023-2024)"
-                            required
-                        />
-                    </div>
-
-                    <div className="flex flex-column gap-2">
-                        <label htmlFor="siSoToiDa" className="font-medium">
-                            Sĩ số tối đa
-                        </label>
-                        <InputText
-                            id="siSoToiDa"
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="soLuong" className="text-gray-700 font-medium">Số lượng</label>
+                        <input
+                            id="soLuong"
                             type="number"
-                            value={formData.siSoToiDa.toString()}
-                            onChange={(e) => setFormData({ ...formData, siSoToiDa: parseInt(e.target.value) })}
-                            placeholder="Nhập sĩ số tối đa"
+                            min={0}
+                            value={formData.soLuong}
+                            onChange={e => setFormData({ ...formData, soLuong: Number(e.target.value) })}
+                            className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base"
                             required
                         />
                     </div>
-
-                    <div className="flex flex-column gap-2">
-                        <label htmlFor="giangVien" className="font-medium">
-                            Giảng viên
-                        </label>
-                        <InputText
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="giangVien" className="text-gray-700 font-medium">Giảng viên</label>
+                        <input
                             id="giangVien"
                             value={formData.giangVien}
-                            onChange={(e) => setFormData({ ...formData, giangVien: e.target.value })}
-                            placeholder="Nhập tên giảng viên"
+                            onChange={e => setFormData({ ...formData, giangVien: e.target.value })}
+                            className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base"
                             required
                         />
                     </div>
-
-                    <div className="flex flex-column gap-2">
-                        <label htmlFor="phongHoc" className="font-medium">
-                            Phòng học
-                        </label>
-                        <InputText
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="thoiGianBatDau" className="text-gray-700 font-medium">Thời gian bắt đầu</label>
+                        <input
+                            id="thoiGianBatDau"
+                            type="datetime-local"
+                            value={formData.thoiGianBatDau}
+                            onChange={e => setFormData({ ...formData, thoiGianBatDau: e.target.value })}
+                            className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base"
+                            required
+                        />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="thoiGianKetThuc" className="text-gray-700 font-medium">Thời gian kết thúc</label>
+                        <input
+                            id="thoiGianKetThuc"
+                            type="datetime-local"
+                            value={formData.thoiGianKetThuc}
+                            onChange={e => setFormData({ ...formData, thoiGianKetThuc: e.target.value })}
+                            className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base"
+                            required
+                        />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="phongHoc" className="text-gray-700 font-medium">Phòng học</label>
+                        <input
                             id="phongHoc"
                             value={formData.phongHoc}
-                            onChange={(e) => setFormData({ ...formData, phongHoc: e.target.value })}
-                            placeholder="Nhập phòng học"
+                            onChange={e => setFormData({ ...formData, phongHoc: e.target.value })}
+                            className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base"
                             required
                         />
                     </div>
-
-                    <div className="flex flex-column gap-2">
-                        <label htmlFor="ngayBatDau" className="font-medium">
-                            Ngày bắt đầu
-                        </label>
-                        <InputText
-                            id="ngayBatDau"
-                            type="date"
-                            value={formData.ngayBatDau}
-                            onChange={(e) => setFormData({ ...formData, ngayBatDau: e.target.value })}
+                    <div className="flex flex-col gap-2">
+                        <label htmlFor="trangThai" className="text-gray-700 font-medium">Trạng thái</label>
+                        <select
+                            id="trangThai"
+                            value={formData.trangThai ? 'true' : 'false'}
+                            onChange={e => setFormData({ ...formData, trangThai: e.target.value === 'true' })}
+                            className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base"
                             required
-                        />
+                        >
+                            <option value="true">Hoạt động</option>
+                            <option value="false">Ngừng</option>
+                        </select>
                     </div>
-
-                    <div className="flex flex-column gap-2">
-                        <label htmlFor="ngayKetThuc" className="font-medium">
-                            Ngày kết thúc
-                        </label>
-                        <InputText
-                            id="ngayKetThuc"
-                            type="date"
-                            value={formData.ngayKetThuc}
-                            onChange={(e) => setFormData({ ...formData, ngayKetThuc: e.target.value })}
-                            required
-                        />
-                    </div>
-                </div>
+                </form>
             </Dialog>
 
-            {/* Delete Dialog */}
+            {/* Delete Confirmation Dialog */}
             <Dialog
-                visible={deleteDialogVisible}
-                onHide={() => setDeleteDialogVisible(false)}
-                header="Xác nhận xóa"
+                visible={!!deleteTarget}
+                onHide={() => setDeleteTarget(null)}
+                header="Xác nhận xóa lớp học phần"
                 modal
+                className="p-fluid w-full max-w-md"
                 footer={
-                    <div>
-                        <Button
-                            label="Hủy"
-                            icon="pi pi-times"
-                            onClick={() => setDeleteDialogVisible(false)}
-                            className="p-button-text"
-                        />
-                        <Button
-                            label="Xóa"
-                            icon="pi pi-trash"
+                    <div className="flex justify-end gap-2 mt-4">
+                        <button
+                            type="button"
+                            className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md font-semibold hover:bg-gray-300"
+                            onClick={() => setDeleteTarget(null)}
+                            disabled={saving}
+                        >
+                            Hủy
+                        </button>
+                        <button
+                            type="button"
+                            className="bg-red-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-red-700"
                             onClick={handleDelete}
-                            className="p-button-danger"
-                        />
+                            disabled={saving}
+                        >
+                            Xóa
+                        </button>
                     </div>
                 }
             >
-                <p>
-                    Bạn có chắc chắn muốn xóa lớp học phần{' '}
-                    <strong>{selectedClass?.tenLopHocPhan}</strong>?
-                </p>
+                <p>Bạn có chắc chắn muốn xóa lớp học phần <strong>{deleteTarget?.tenLopHP}</strong>?</p>
             </Dialog>
         </div>
     );

@@ -175,7 +175,7 @@ export default function ReportsPage() {
                         value={searchText}
                         onChange={e => setSearchText(e.target.value)}
                         placeholder="Tìm kiếm báo cáo..."
-                        className="w-full"
+                        className="w-full bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base"
                     />
                 </div>
                 <div className="flex justify-end w-full md:w-1/2">
@@ -293,15 +293,15 @@ export default function ReportsPage() {
                 className="p-fluid w-full max-w-2xl"
                 footer={
                     <div className="flex justify-end gap-2 mt-4">
-                        <Button
-                            label="Đóng"
-                            icon="pi pi-times"
+                        <button
+                            type="button"
                             className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md font-semibold hover:bg-gray-300"
                             onClick={() => setReportDetailDialogVisible(false)}
-                        />
-                        <Button
-                            label="Tải xuống"
-                            icon="pi pi-download"
+                        >
+                            Đóng
+                        </button>
+                        <button
+                            type="button"
                             className="bg-blue-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-700"
                             onClick={() => {
                                 if (selectedReport?.fileUrl) {
@@ -310,7 +310,9 @@ export default function ReportsPage() {
                                     setTimeout(() => setSuccess(''), 2000);
                                 }
                             }}
-                        />
+                        >
+                            Tải xuống
+                        </button>
                     </div>
                 }
             >

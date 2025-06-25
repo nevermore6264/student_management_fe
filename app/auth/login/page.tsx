@@ -34,7 +34,7 @@ export default function LoginPage() {
                 localStorage.setItem('tenNguoiDung', res.data.tenNguoiDung);
                 localStorage.setItem('email', res.data.email);
                 localStorage.setItem('vaiTros', JSON.stringify(res.data.vaiTros));
-                router.push('/dashboard');
+                window.location.href = '/dashboard';
             } else {
                 setError(res.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
             }

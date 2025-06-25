@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     const handleLogout = () => {
         localStorage.clear();
         setUser(null);
-        router.push('/auth/login');
+        window.location.href = '/auth/login';
     };
 
     const menuItems = [
