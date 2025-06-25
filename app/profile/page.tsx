@@ -5,6 +5,10 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
 import { Dropdown } from 'primereact/dropdown';
+import { Toast } from 'primereact/toast';
+import { useRef } from 'react';
+import lecturerService from '../services/lecturerService';
+import studentService from '../services/studentService';
 
 type UserRole = 'sv' | 'gv' | 'admin';
 
@@ -43,6 +47,9 @@ export default function ProfilePage() {
     const [showChangePasswordDialog, setShowChangePasswordDialog] = useState(false);
     const [editForm, setEditForm] = useState<Profile | null>(null);
     const [changePwdForm, setChangePwdForm] = useState({ oldPwd: '', newPwd: '', confirmPwd: '' });
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const toast = useRef<Toast>(null);
 
     const genderOptions = [
         { label: 'Nam', value: 'Nam' },
@@ -51,55 +58,187 @@ export default function ProfilePage() {
     ];
     const [editTouched, setEditTouched] = useState<{ [key: string]: boolean }>({});
 
-    useEffect(() => {
-        // Giả lập fetch API, thực tế bạn sẽ gọi API lấy profile từ backend
-        const userRole = localStorage.getItem('role') as UserRole || 'sv';
-        if (userRole === 'sv') {
-            setProfile({
-                role: 'sv',
-                hoTen: 'Nguyễn Văn A',
-                email: 'sv001@example.com',
-                soDienThoai: '0123456789',
-                ngaySinh: '2002-01-01',
-                gioiTinh: 'Nam',
-                avatarUrl: '',
-                maSinhVien: 'SV001',
-                khoa: 'Công nghệ thông tin',
-                lop: 'CNTT01',
-                chuyenNganh: 'Khoa học máy tính',
-                namNhapHoc: '2020',
+    const fetchProfile = async () => {
+        try {
+            setLoading(true);
+            const userRole = localStorage.getItem('vaiTros') as string || '["SV"]';
+            const userId = localStorage.getItem('maNguoiDung');
+
+            if (!userId) {
+                throw new Error('Không tìm thấy thông tin người dùng');
+            }
+
+            // Parse role from vaiTros array
+            let role: UserRole = 'sv';
+            try {
+                const roles = JSON.parse(userRole);
+                if (roles.includes('GV')) {
+                    role = 'gv';
+                } else if (roles.includes('SV')) {
+                    role = 'sv';
+                } else if (roles.includes('ADMIN')) {
+                    role = 'admin';
+                }
+            } catch (e) {
+                console.warn('Error parsing vaiTros:', e);
+            }
+
+            if (role === 'sv') {
+                const response = await studentService.getStudentById(userId);
+                if (response.success) {
+                    const studentData = response.data;
+                    setProfile({
+                        role: 'sv',
+                        hoTen: studentData.hoTen || '',
+                        email: studentData.email || '',
+                        soDienThoai: studentData.soDienThoai || '',
+                        ngaySinh: studentData.ngaySinh || '',
+                        gioiTinh: studentData.gioiTinh || '',
+                        avatarUrl: studentData.avatarUrl || '',
+                        maSinhVien: studentData.maSinhVien || '',
+                        khoa: studentData.khoa || '',
+                        lop: studentData.lop || '',
+                        chuyenNganh: studentData.chuyenNganh || '',
+                        namNhapHoc: studentData.namNhapHoc || '',
+                    });
+                } else {
+                    throw new Error(response.message || 'Không thể lấy thông tin sinh viên');
+                }
+            } else if (role === 'gv') {
+                const response = await lecturerService.getLecturerById(userId);
+                if (response.success) {
+                    const lecturerData = response.data;
+                    setProfile({
+                        role: 'gv',
+                        hoTen: lecturerData.hoTen || '',
+                        email: lecturerData.email || '',
+                        soDienThoai: lecturerData.soDienThoai || '',
+                        ngaySinh: lecturerData.ngaySinh || '',
+                        gioiTinh: lecturerData.gioiTinh || '',
+                        avatarUrl: lecturerData.avatarUrl || '',
+                        maGiangVien: lecturerData.maGiangVien || '',
+                        khoa: lecturerData.khoa || '',
+                        hocVi: lecturerData.hocVi || '',
+                        chucVu: lecturerData.chucVu || '',
+                    });
+                } else {
+                    throw new Error(response.message || 'Không thể lấy thông tin giảng viên');
+                }
+            } else {
+                // Admin profile - using mock data for now
+                setProfile({
+                    role: 'admin',
+                    hoTen: 'Admin',
+                    email: 'admin@example.com',
+                    soDienThoai: '',
+                    avatarUrl: '',
+                    gioiTinh: '',
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching profile:', error);
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Lỗi',
+                detail: error instanceof Error ? error.message : 'Không thể tải thông tin cá nhân',
+                life: 3000
             });
-        } else if (userRole === 'gv') {
-            setProfile({
-                role: 'gv',
-                hoTen: 'Trần Thị B',
-                email: 'gv001@example.com',
-                soDienThoai: '0987654321',
-                ngaySinh: '1980-05-10',
-                gioiTinh: 'Nữ',
-                avatarUrl: '',
-                maGiangVien: 'GV001',
-                khoa: 'Công nghệ thông tin',
-                hocVi: 'Tiến sĩ',
-                chucVu: 'Trưởng bộ môn',
-            });
-        } else {
-            setProfile({
-                role: 'admin',
-                hoTen: 'Admin',
-                email: 'admin@example.com',
-                soDienThoai: '',
-                avatarUrl: '',
-                gioiTinh: '',
-            });
+        } finally {
+            setLoading(false);
         }
-        setEditForm(profile); // Khởi tạo form cập nhật khi có profile
+    };
+
+    useEffect(() => {
+        fetchProfile();
     }, []);
 
     const handleEditInput = (field: string, value: string) => {
         if (!editForm) return;
         setEditForm({ ...editForm, [field]: value });
         setEditTouched({ ...editTouched, [field]: true });
+    };
+
+    const handleSaveProfile = async () => {
+        if (!editForm || !profile) return;
+
+        // Validate required fields
+        if (!editForm.hoTen?.trim() || !editForm.email?.trim() || !editForm.soDienThoai?.trim()) {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Lỗi',
+                detail: 'Vui lòng điền đầy đủ thông tin bắt buộc',
+                life: 3000
+            });
+            return;
+        }
+
+        try {
+            setSaving(true);
+            const userId = localStorage.getItem('maNguoiDung');
+            const userRole = localStorage.getItem('vaiTros') as string;
+
+            if (!userId) {
+                throw new Error('Không tìm thấy thông tin người dùng');
+            }
+
+            // Parse role from vaiTros array
+            let role: UserRole = 'sv';
+            try {
+                const roles = JSON.parse(userRole);
+                if (roles.includes('GV')) {
+                    role = 'gv';
+                } else if (roles.includes('SV')) {
+                    role = 'sv';
+                } else if (roles.includes('ADMIN')) {
+                    role = 'admin';
+                }
+            } catch (e) {
+                console.warn('Error parsing vaiTros:', e);
+            }
+
+            // Prepare update data
+            const updateData = {
+                hoTen: editForm.hoTen,
+                email: editForm.email,
+                soDienThoai: editForm.soDienThoai,
+                ngaySinh: editForm.ngaySinh,
+                gioiTinh: editForm.gioiTinh,
+            };
+
+            let response;
+            if (role === 'sv') {
+                response = await studentService.updateStudent(userId, updateData);
+            } else if (role === 'gv') {
+                response = await lecturerService.updateLecturer(userId, updateData);
+            } else {
+                throw new Error('Không hỗ trợ cập nhật cho role này');
+            }
+
+            if (response.success) {
+                toast.current?.show({
+                    severity: 'success',
+                    summary: 'Thành công',
+                    detail: 'Cập nhật thông tin thành công',
+                    life: 3000
+                });
+                setProfile(editForm);
+                setShowEditDialog(false);
+                // Refresh profile data
+                await fetchProfile();
+            } else {
+                throw new Error(response.message || 'Cập nhật thất bại');
+            }
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Lỗi',
+                detail: error instanceof Error ? error.message : 'Không thể cập nhật thông tin',
+                life: 3000
+            });
+        } finally {
+            setSaving(false);
+        }
     };
 
     const isEmpty = (val: string | undefined) => !val || val.trim() === '';
@@ -110,10 +249,14 @@ export default function ProfilePage() {
         soDienThoai: editTouched.soDienThoai && isEmpty(editForm?.soDienThoai || ''),
     };
 
-    if (!profile) return <div>Đang tải thông tin...</div>;
+    if (loading) return <div className="flex justify-center items-center h-64">Đang tải thông tin...</div>;
+
+    if (!profile) return <div className="text-center text-red-500">Không thể tải thông tin cá nhân</div>;
 
     return (
         <div className="max-w-2xl mx-auto p-6 bg-white rounded shadow mt-8">
+            <Toast ref={toast} />
+
             <div className="flex items-center gap-4 mb-6">
                 <img
                     src={profile.avatarUrl || '/default-avatar.png'}
@@ -188,12 +331,13 @@ export default function ProfilePage() {
             </div>
             <div className="flex gap-4 mt-8">
                 <button
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                     onClick={() => {
                         setEditForm(profile);
                         setEditTouched({});
                         setShowEditDialog(true);
                     }}
+                    disabled={profile.role === 'admin'}
                 >
                     Cập nhật thông tin
                 </button>
@@ -214,11 +358,21 @@ export default function ProfilePage() {
                 className="p-fluid w-full max-w-2xl"
                 footer={
                     <div className="flex justify-end gap-2 mt-4">
-                        <button type="button" className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md font-semibold hover:bg-gray-300" onClick={() => setShowEditDialog(false)}>
+                        <button
+                            type="button"
+                            className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md font-semibold hover:bg-gray-300 disabled:opacity-50"
+                            onClick={() => setShowEditDialog(false)}
+                            disabled={saving}
+                        >
                             Hủy
                         </button>
-                        <button type="button" className="bg-blue-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-700" onClick={() => setShowEditDialog(false)}>
-                            Lưu
+                        <button
+                            type="button"
+                            className="bg-blue-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-700 disabled:opacity-50"
+                            onClick={handleSaveProfile}
+                            disabled={saving}
+                        >
+                            {saving ? 'Đang lưu...' : 'Lưu'}
                         </button>
                     </div>
                 }

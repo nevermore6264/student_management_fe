@@ -18,6 +18,22 @@ class StudentService {
         return res.json();
     }
 
+    async getStudentById(id: string): Promise<any> {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/${id}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {})
+            },
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || 'Không thể lấy thông tin sinh viên');
+        }
+        return res.json();
+    }
+
     async createStudent(data: any) {
         const token = localStorage.getItem('token');
         const res = await fetch(`${API_BASE}`, {
