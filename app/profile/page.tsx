@@ -31,12 +31,13 @@ interface StudentProfile extends BaseProfile {
     namNhapHoc?: string;
 }
 
-interface LecturerProfile extends BaseProfile {
+interface LecturerProfile {
     role: 'gv';
     maGiangVien: string;
-    khoa: string;
-    hocVi?: string;
-    chucVu?: string;
+    tenGiangVien: string;
+    email: string;
+    soDienThoai: string;
+    tenKhoa: string;
 }
 
 type Profile = StudentProfile | LecturerProfile | BaseProfile;
@@ -110,16 +111,11 @@ export default function ProfilePage() {
                     const lecturerData = response.data;
                     setProfile({
                         role: 'gv',
-                        hoTen: lecturerData.hoTen || '',
+                        maGiangVien: lecturerData.maGiangVien || '',
+                        tenGiangVien: lecturerData.tenGiangVien || '',
                         email: lecturerData.email || '',
                         soDienThoai: lecturerData.soDienThoai || '',
-                        ngaySinh: lecturerData.ngaySinh || '',
-                        gioiTinh: lecturerData.gioiTinh || '',
-                        avatarUrl: lecturerData.avatarUrl || '',
-                        maGiangVien: lecturerData.maGiangVien || '',
-                        khoa: lecturerData.khoa || '',
-                        hocVi: lecturerData.hocVi || '',
-                        chucVu: lecturerData.chucVu || '',
+                        tenKhoa: lecturerData.tenKhoa || '',
                     });
                 } else {
                     throw new Error(response.message || 'Không thể lấy thông tin giảng viên');
@@ -162,7 +158,13 @@ export default function ProfilePage() {
         if (!editForm || !profile) return;
 
         // Validate required fields
-        if (!editForm.hoTen?.trim() || !editForm.email?.trim() || !editForm.soDienThoai?.trim()) {
+        if (
+            !editForm ||
+            (editForm.role === 'gv' && !(editForm as LecturerProfile).tenGiangVien?.trim()) ||
+            (editForm.role !== 'gv' && !(editForm as StudentProfile | BaseProfile).hoTen?.trim()) ||
+            !editForm.email?.trim() ||
+            !editForm.soDienThoai?.trim()
+        ) {
             toast.current?.show({
                 severity: 'error',
                 summary: 'Lỗi',
@@ -197,19 +199,34 @@ export default function ProfilePage() {
             }
 
             // Prepare update data
-            const updateData = {
-                hoTen: editForm.hoTen,
-                email: editForm.email,
-                soDienThoai: editForm.soDienThoai,
-                ngaySinh: editForm.ngaySinh,
-                gioiTinh: editForm.gioiTinh,
-            };
+            const updateData =
+                editForm && editForm.role === 'gv'
+                    ? {
+                        tenGiangVien: (editForm as LecturerProfile).tenGiangVien,
+                        email: editForm.email,
+                        soDienThoai: editForm.soDienThoai,
+                    }
+                    : editForm
+                        ? {
+                            hoTen: (editForm as StudentProfile | BaseProfile).hoTen,
+                            email: editForm.email,
+                            soDienThoai: editForm.soDienThoai,
+                            ngaySinh: (editForm as StudentProfile | BaseProfile).ngaySinh,
+                            gioiTinh: (editForm as StudentProfile | BaseProfile).gioiTinh,
+                        }
+                        : {};
 
             let response;
             if (role === 'sv') {
                 response = await studentService.updateStudent(userId, updateData);
             } else if (role === 'gv') {
-                response = await lecturerService.updateLecturer(userId, updateData);
+                // For lecturer, use tenGiangVien instead of hoTen
+                const lecturerUpdateData = {
+                    tenGiangVien: (editForm as LecturerProfile).tenGiangVien,
+                    email: editForm.email,
+                    soDienThoai: editForm.soDienThoai,
+                };
+                response = await lecturerService.updateLecturer(userId, lecturerUpdateData);
             } else {
                 throw new Error('Không hỗ trợ cập nhật cho role này');
             }
@@ -244,7 +261,10 @@ export default function ProfilePage() {
     const isEmpty = (val: string | undefined) => !val || val.trim() === '';
 
     const editErrors = {
-        hoTen: editTouched.hoTen && isEmpty(editForm?.hoTen || ''),
+        hoTen:
+            editForm && editForm.role === 'gv'
+                ? editTouched.hoTen && !((editForm as LecturerProfile).tenGiangVien?.trim())
+                : editTouched.hoTen && !((editForm as StudentProfile | BaseProfile).hoTen?.trim()),
         email: editTouched.email && isEmpty(editForm?.email || ''),
         soDienThoai: editTouched.soDienThoai && isEmpty(editForm?.soDienThoai || ''),
     };
@@ -259,73 +279,86 @@ export default function ProfilePage() {
 
             <div className="flex items-center gap-4 mb-6">
                 <img
-                    src={profile.avatarUrl || '/default-avatar.png'}
+                    src={'/default-avatar.png'}
                     alt="avatar"
                     className="w-20 h-20 rounded-full object-cover border"
                 />
                 <div>
-                    <h2 className="text-2xl font-bold">{profile.hoTen}</h2>
-                    <p className="text-gray-500">{profile.email}</p>
+                    <h2 className="text-2xl font-bold">
+                        {profile.role === 'gv'
+                            ? (profile as LecturerProfile).tenGiangVien
+                            : (profile as StudentProfile | BaseProfile).hoTen}
+                    </h2>
+                    <p className="text-gray-500">
+                        {profile.role === 'gv' ? (profile as LecturerProfile).email : (profile as any).email}
+                    </p>
                     <span className="inline-block mt-1 px-2 py-1 text-xs rounded bg-blue-100 text-blue-700">
                         {profile.role === 'sv' ? 'Sinh viên' : profile.role === 'gv' ? 'Giảng viên' : 'Admin'}
                     </span>
                 </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label className="font-semibold">Số điện thoại:</label>
-                    <div>{profile.soDienThoai || '-'}</div>
-                </div>
-                <div>
-                    <label className="font-semibold">Ngày sinh:</label>
-                    <div>{profile.ngaySinh || '-'}</div>
-                </div>
-                <div>
-                    <label className="font-semibold">Giới tính:</label>
-                    <div>{profile.gioiTinh || '-'}</div>
-                </div>
-                {profile.role === 'sv' && (
+                {profile.role === 'gv' ? (
                     <>
                         <div>
-                            <label className="font-semibold">Mã sinh viên:</label>
-                            <div>{(profile as StudentProfile).maSinhVien}</div>
+                            <label className="font-semibold">Tên giảng viên:</label>
+                            <div>{(profile as LecturerProfile).tenGiangVien || '-'}</div>
                         </div>
                         <div>
-                            <label className="font-semibold">Khoa:</label>
-                            <div>{(profile as StudentProfile).khoa}</div>
+                            <label className="font-semibold">Email:</label>
+                            <div>{(profile as LecturerProfile).email || '-'}</div>
                         </div>
                         <div>
-                            <label className="font-semibold">Lớp:</label>
-                            <div>{(profile as StudentProfile).lop}</div>
+                            <label className="font-semibold">Số điện thoại:</label>
+                            <div>{(profile as LecturerProfile).soDienThoai || '-'}</div>
                         </div>
-                        <div>
-                            <label className="font-semibold">Chuyên ngành:</label>
-                            <div>{(profile as StudentProfile).chuyenNganh}</div>
-                        </div>
-                        <div>
-                            <label className="font-semibold">Năm nhập học:</label>
-                            <div>{(profile as StudentProfile).namNhapHoc || '-'}</div>
-                        </div>
-                    </>
-                )}
-                {profile.role === 'gv' && (
-                    <>
                         <div>
                             <label className="font-semibold">Mã giảng viên:</label>
-                            <div>{(profile as LecturerProfile).maGiangVien}</div>
+                            <div>{(profile as LecturerProfile).maGiangVien || '-'}</div>
                         </div>
                         <div>
                             <label className="font-semibold">Khoa:</label>
-                            <div>{(profile as LecturerProfile).khoa}</div>
+                            <div>{(profile as LecturerProfile).tenKhoa || '-'}</div>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <div>
+                            <label className="font-semibold">Số điện thoại:</label>
+                            <div>{(profile as StudentProfile | BaseProfile).soDienThoai || '-'}</div>
                         </div>
                         <div>
-                            <label className="font-semibold">Học vị:</label>
-                            <div>{(profile as LecturerProfile).hocVi || '-'}</div>
+                            <label className="font-semibold">Ngày sinh:</label>
+                            <div>{(profile as StudentProfile | BaseProfile).ngaySinh || '-'}</div>
                         </div>
                         <div>
-                            <label className="font-semibold">Chức vụ:</label>
-                            <div>{(profile as LecturerProfile).chucVu || '-'}</div>
+                            <label className="font-semibold">Giới tính:</label>
+                            <div>{(profile as StudentProfile | BaseProfile).gioiTinh || '-'}</div>
                         </div>
+                        {profile.role === 'sv' && (
+                            <>
+                                <div>
+                                    <label className="font-semibold">Mã sinh viên:</label>
+                                    <div>{(profile as StudentProfile).maSinhVien}</div>
+                                </div>
+                                <div>
+                                    <label className="font-semibold">Khoa:</label>
+                                    <div>{(profile as StudentProfile).khoa}</div>
+                                </div>
+                                <div>
+                                    <label className="font-semibold">Lớp:</label>
+                                    <div>{(profile as StudentProfile).lop}</div>
+                                </div>
+                                <div>
+                                    <label className="font-semibold">Chuyên ngành:</label>
+                                    <div>{(profile as StudentProfile).chuyenNganh}</div>
+                                </div>
+                                <div>
+                                    <label className="font-semibold">Năm nhập học:</label>
+                                    <div>{(profile as StudentProfile).namNhapHoc || '-'}</div>
+                                </div>
+                            </>
+                        )}
                     </>
                 )}
             </div>
@@ -377,11 +410,37 @@ export default function ProfilePage() {
                     </div>
                 }
             >
-                {editForm ? (
+                {editForm && editForm.role === 'gv' ? (
+                    <div className="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-field mb-3">
+                            <label htmlFor="tenGiangVien" className="p-d-block font-semibold mb-1">Tên giảng viên *</label>
+                            <InputText id="tenGiangVien" className={"p-inputtext p-component w-full" + (editErrors.hoTen ? ' p-invalid' : '')} value={(editForm as LecturerProfile).tenGiangVien} onChange={e => setEditForm({ ...editForm, tenGiangVien: e.target.value })} />
+                            {editErrors.hoTen && <small className="p-error">Tên giảng viên không được để trống</small>}
+                        </div>
+                        <div className="p-field mb-3">
+                            <label htmlFor="email" className="p-d-block font-semibold mb-1">Email *</label>
+                            <InputText id="email" className={"p-inputtext p-component w-full" + (editErrors.email ? ' p-invalid' : '')} value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })} />
+                            {editErrors.email && <small className="p-error">Email không được để trống</small>}
+                        </div>
+                        <div className="p-field mb-3">
+                            <label htmlFor="soDienThoai" className="p-d-block font-semibold mb-1">Số điện thoại *</label>
+                            <InputText id="soDienThoai" className={"p-inputtext p-component w-full" + (editErrors.soDienThoai ? ' p-invalid' : '')} value={editForm.soDienThoai} onChange={e => setEditForm({ ...editForm, soDienThoai: e.target.value })} />
+                            {editErrors.soDienThoai && <small className="p-error">Số điện thoại không được để trống</small>}
+                        </div>
+                        <div className="p-field mb-3">
+                            <label htmlFor="tenKhoa" className="p-d-block font-semibold mb-1">Khoa</label>
+                            <InputText id="tenKhoa" className="p-inputtext p-component w-full bg-gray-100" value={(editForm as LecturerProfile).tenKhoa} disabled />
+                        </div>
+                        <div className="p-field mb-3">
+                            <label htmlFor="maGiangVien" className="p-d-block font-semibold mb-1">Mã giảng viên</label>
+                            <InputText id="maGiangVien" className="p-inputtext p-component w-full bg-gray-100" value={(editForm as LecturerProfile).maGiangVien} disabled />
+                        </div>
+                    </div>
+                ) : (
                     <div className="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="p-field mb-3">
                             <label htmlFor="hoTen" className="p-d-block font-semibold mb-1">Họ tên *</label>
-                            <InputText id="hoTen" className={"p-inputtext p-component w-full" + (editErrors.hoTen ? ' p-invalid' : '')} value={editForm.hoTen} onChange={e => handleEditInput('hoTen', e.target.value)} />
+                            <InputText id="hoTen" className={"p-inputtext p-component w-full" + (editErrors.hoTen ? ' p-invalid' : '')} value={(editForm as StudentProfile | BaseProfile).hoTen || ''} onChange={e => handleEditInput('hoTen', e.target.value)} />
                             {editErrors.hoTen && <small className="p-error">Họ tên không được để trống</small>}
                         </div>
                         <div className="p-field mb-3">
@@ -396,11 +455,11 @@ export default function ProfilePage() {
                         </div>
                         <div className="p-field mb-3">
                             <label htmlFor="ngaySinh" className="p-d-block font-semibold mb-1">Ngày sinh</label>
-                            <InputText id="ngaySinh" className="p-inputtext p-component w-full" value={editForm.ngaySinh || ''} onChange={e => handleEditInput('ngaySinh', e.target.value)} />
+                            <InputText id="ngaySinh" className="p-inputtext p-component w-full" value={(editForm as StudentProfile | BaseProfile).ngaySinh || ''} onChange={e => handleEditInput('ngaySinh', e.target.value)} />
                         </div>
                         <div className="p-field mb-3">
                             <label htmlFor="gioiTinh" className="p-d-block font-semibold mb-1">Giới tính</label>
-                            <Dropdown id="gioiTinh" className="w-full" value={editForm.gioiTinh || ''} options={genderOptions} onChange={e => handleEditInput('gioiTinh', e.value)} placeholder="Chọn giới tính" />
+                            <Dropdown id="gioiTinh" className="w-full" value={(editForm as StudentProfile | BaseProfile).gioiTinh || ''} options={genderOptions} onChange={e => handleEditInput('gioiTinh', e.value)} placeholder="Chọn giới tính" />
                         </div>
                         {editForm.role === 'sv' && (
                             <>
@@ -426,28 +485,8 @@ export default function ProfilePage() {
                                 </div>
                             </>
                         )}
-                        {editForm.role === 'gv' && (
-                            <>
-                                <div className="p-field mb-3">
-                                    <label htmlFor="maGiangVien" className="p-d-block font-semibold mb-1">Mã giảng viên</label>
-                                    <InputText id="maGiangVien" className="p-inputtext p-component w-full bg-gray-100" value={(editForm as LecturerProfile).maGiangVien} disabled />
-                                </div>
-                                <div className="p-field mb-3">
-                                    <label htmlFor="khoa" className="p-d-block font-semibold mb-1">Khoa</label>
-                                    <InputText id="khoa" className="p-inputtext p-component w-full bg-gray-100" value={(editForm as LecturerProfile).khoa} disabled />
-                                </div>
-                                <div className="p-field mb-3">
-                                    <label htmlFor="hocVi" className="p-d-block font-semibold mb-1">Học vị</label>
-                                    <InputText id="hocVi" className="p-inputtext p-component w-full bg-gray-100" value={(editForm as LecturerProfile).hocVi || ''} disabled />
-                                </div>
-                                <div className="p-field mb-3">
-                                    <label htmlFor="chucVu" className="p-d-block font-semibold mb-1">Chức vụ</label>
-                                    <InputText id="chucVu" className="p-inputtext p-component w-full bg-gray-100" value={(editForm as LecturerProfile).chucVu || ''} disabled />
-                                </div>
-                            </>
-                        )}
                     </div>
-                ) : null}
+                )}
             </Dialog>
 
             {/* Dialog đổi mật khẩu */}
