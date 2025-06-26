@@ -23,10 +23,22 @@ interface Student {
 }
 
 interface ClassOverview {
+    maLopHP: string;
+    tenLopHP: string;
+    tenHocPhan: string;
+    soTinChi: number;
     tongSoSinhVien: number;
-    diemTrungBinh: number;
-    soLuongDat: number;
-    soLuongKhongDat: number;
+    soSinhVienCoDiem: number;
+    diemTrungBinhLop: number;
+    diemCaoNhat: number;
+    diemThapNhat: number;
+    soSinhVienDat: number;
+    soSinhVienKhongDat: number;
+    thongKeDiem: Array<{
+        khoangDiem: string;
+        soLuong: number;
+        tyLe: number;
+    }>;
 }
 
 export default function CourseManagementPage() {
@@ -344,7 +356,7 @@ export default function CourseManagementPage() {
                 onHide={() => setOverviewDialogVisible(false)}
                 header={`Tổng quan lớp - ${selectedClass?.tenLopHP}`}
                 modal
-                className="p-fluid w-full max-w-2xl"
+                className="p-fluid w-full max-w-4xl"
                 footer={
                     <div className="flex justify-end gap-2 mt-4">
                         <Button
@@ -359,22 +371,85 @@ export default function CourseManagementPage() {
                 {loadingPopup ? (
                     <div className="text-center py-8 text-blue-500 font-semibold">Đang tải tổng quan lớp...</div>
                 ) : overview ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-blue-50 p-4 rounded-lg shadow">
-                            <div className="font-semibold">Tổng số sinh viên</div>
-                            <div className="text-2xl font-bold text-blue-700">{overview.tongSoSinhVien}</div>
+                    <div className="space-y-6">
+                        {/* Thông tin cơ bản */}
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h3 className="text-lg font-semibold mb-3">Thông tin lớp học phần</h3>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div>
+                                    <span className="font-medium">Mã lớp:</span> {overview.maLopHP}
+                                </div>
+                                <div>
+                                    <span className="font-medium">Tên lớp:</span> {overview.tenLopHP}
+                                </div>
+                                <div>
+                                    <span className="font-medium">Học phần:</span> {overview.tenHocPhan}
+                                </div>
+                                <div>
+                                    <span className="font-medium">Số tín chỉ:</span> {overview.soTinChi}
+                                </div>
+                            </div>
                         </div>
-                        <div className="bg-green-50 p-4 rounded-lg shadow">
-                            <div className="font-semibold">Điểm trung bình</div>
-                            <div className="text-2xl font-bold text-green-700">{overview.diemTrungBinh}</div>
+
+                        {/* Thống kê tổng quan */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="bg-blue-50 p-4 rounded-lg shadow">
+                                <div className="font-semibold text-blue-600">Tổng số sinh viên</div>
+                                <div className="text-2xl font-bold text-blue-700">{overview.tongSoSinhVien}</div>
+                            </div>
+                            <div className="bg-green-50 p-4 rounded-lg shadow">
+                                <div className="font-semibold text-green-600">Điểm trung bình lớp</div>
+                                <div className="text-2xl font-bold text-green-700">{overview.diemTrungBinhLop}</div>
+                            </div>
+                            <div className="bg-yellow-50 p-4 rounded-lg shadow">
+                                <div className="font-semibold text-yellow-600">Số lượng đạt</div>
+                                <div className="text-2xl font-bold text-yellow-700">{overview.soSinhVienDat}</div>
+                            </div>
+                            <div className="bg-red-50 p-4 rounded-lg shadow">
+                                <div className="font-semibold text-red-600">Số lượng không đạt</div>
+                                <div className="text-2xl font-bold text-red-700">{overview.soSinhVienKhongDat}</div>
+                            </div>
                         </div>
-                        <div className="bg-yellow-50 p-4 rounded-lg shadow">
-                            <div className="font-semibold">Số lượng đạt</div>
-                            <div className="text-2xl font-bold text-yellow-700">{overview.soLuongDat}</div>
+
+                        {/* Thống kê chi tiết */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="bg-purple-50 p-4 rounded-lg shadow">
+                                <div className="font-semibold text-purple-600">Sinh viên có điểm</div>
+                                <div className="text-2xl font-bold text-purple-700">{overview.soSinhVienCoDiem}</div>
+                            </div>
+                            <div className="bg-indigo-50 p-4 rounded-lg shadow">
+                                <div className="font-semibold text-indigo-600">Điểm cao nhất</div>
+                                <div className="text-2xl font-bold text-indigo-700">{overview.diemCaoNhat}</div>
+                            </div>
+                            <div className="bg-pink-50 p-4 rounded-lg shadow">
+                                <div className="font-semibold text-pink-600">Điểm thấp nhất</div>
+                                <div className="text-2xl font-bold text-pink-700">{overview.diemThapNhat}</div>
+                            </div>
                         </div>
-                        <div className="bg-red-50 p-4 rounded-lg shadow">
-                            <div className="font-semibold">Số lượng không đạt</div>
-                            <div className="text-2xl font-bold text-red-700">{overview.soLuongKhongDat}</div>
+
+                        {/* Bảng thống kê điểm */}
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h3 className="text-lg font-semibold mb-3">Thống kê phân bố điểm</h3>
+                            <div className="overflow-x-auto">
+                                <table className="w-full border rounded-lg overflow-hidden">
+                                    <thead className="bg-blue-100">
+                                        <tr>
+                                            <th className="px-4 py-2 text-left">Khoảng điểm</th>
+                                            <th className="px-4 py-2 text-center">Số lượng</th>
+                                            <th className="px-4 py-2 text-center">Tỷ lệ (%)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {overview.thongKeDiem.map((item, index) => (
+                                            <tr key={index} className="border-b hover:bg-blue-50">
+                                                <td className="px-4 py-2 font-medium">{item.khoangDiem}</td>
+                                                <td className="px-4 py-2 text-center">{item.soLuong}</td>
+                                                <td className="px-4 py-2 text-center">{item.tyLe.toFixed(1)}%</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 ) : (
