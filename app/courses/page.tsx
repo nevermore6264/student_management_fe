@@ -5,17 +5,21 @@ import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Message } from 'primereact/message';
 import { Dialog } from 'primereact/dialog';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
 import { useRouter } from 'next/navigation';
 import classSectionService, { ClassSection } from '../services/classSectionService';
 import gradeService, { GradeManagement } from '../services/gradeService';
 
 interface Student {
     maSinhVien: string;
-    tenSinhVien: string;
+    hoTenSinhVien: string;
     email: string;
-    lop: string;
+    soDienThoai: string;
+    diaChi: string;
+    gioiTinh: boolean;
+    maKhoa: string;
+    tenKhoa: string;
+    maLop: string;
+    tenLop: string;
 }
 
 interface ClassOverview {
@@ -298,12 +302,39 @@ export default function CourseManagementPage() {
                 {loadingPopup ? (
                     <div className="text-center py-8 text-blue-500 font-semibold">Đang tải danh sách sinh viên...</div>
                 ) : (
-                    <DataTable value={students} paginator rows={10} emptyMessage="Không có sinh viên nào">
-                        <Column field="maSinhVien" header="Mã SV" sortable />
-                        <Column field="tenSinhVien" header="Tên sinh viên" sortable />
-                        <Column field="email" header="Email" />
-                        <Column field="lop" header="Lớp" />
-                    </DataTable>
+                    <div className="overflow-x-auto w-full">
+                        <table className="w-full border rounded-lg overflow-hidden">
+                            <thead className="bg-blue-100">
+                                <tr>
+                                    <th className="px-4 py-2 text-left">Mã SV</th>
+                                    <th className="px-4 py-2 text-left">Tên sinh viên</th>
+                                    <th className="px-4 py-2 text-left">Email</th>
+                                    <th className="px-4 py-2 text-left">Số điện thoại</th>
+                                    <th className="px-4 py-2 text-left">Địa chỉ</th>
+                                    <th className="px-4 py-2 text-left">Giới tính</th>
+                                    <th className="px-4 py-2 text-left">Khoa</th>
+                                    <th className="px-4 py-2 text-left">Lớp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {students.map((student, index) => (
+                                    <tr key={index} className="border-b hover:bg-blue-50">
+                                        <td className="px-4 py-2 font-mono">{student.maSinhVien}</td>
+                                        <td className="px-4 py-2">{student.hoTenSinhVien}</td>
+                                        <td className="px-4 py-2">{student.email}</td>
+                                        <td className="px-4 py-2">{student.soDienThoai}</td>
+                                        <td className="px-4 py-2">{student.diaChi}</td>
+                                        <td className="px-4 py-2">{student.gioiTinh ? 'Nam' : 'Nữ'}</td>
+                                        <td className="px-4 py-2">{student.maKhoa}</td>
+                                        <td className="px-4 py-2">{student.tenLop}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        {students.length === 0 && (
+                            <div className="text-center py-8 text-gray-500">Không có sinh viên nào</div>
+                        )}
+                    </div>
                 )}
             </Dialog>
 
@@ -377,16 +408,46 @@ export default function CourseManagementPage() {
                 {loadingPopup ? (
                     <div className="text-center py-8 text-blue-500 font-semibold">Đang tải điểm lớp...</div>
                 ) : (
-                    <DataTable value={classGrades} paginator rows={10} emptyMessage="Không có dữ liệu điểm">
-                        <Column field="maSinhVien" header="Mã SV" sortable />
-                        <Column field="tenSinhVien" header="Tên sinh viên" sortable />
-                        <Column field="diemQuaTrinh" header="Điểm QT" />
-                        <Column field="diemGiuaKy" header="Điểm GK" />
-                        <Column field="diemCuoiKy" header="Điểm CK" />
-                        <Column field="diemTrungBinh" header="Điểm TB" sortable />
-                        <Column field="diemChu" header="Điểm chữ" />
-                        <Column field="trangThai" header="Trạng thái" />
-                    </DataTable>
+                    <div className="overflow-x-auto w-full">
+                        <table className="w-full border rounded-lg overflow-hidden">
+                            <thead className="bg-blue-100">
+                                <tr>
+                                    <th className="px-4 py-2 text-left">Mã SV</th>
+                                    <th className="px-4 py-2 text-left">Tên sinh viên</th>
+                                    <th className="px-4 py-2 text-center">Điểm QT</th>
+                                    <th className="px-4 py-2 text-center">Điểm GK</th>
+                                    <th className="px-4 py-2 text-center">Điểm CK</th>
+                                    <th className="px-4 py-2 text-center">Điểm TB</th>
+                                    <th className="px-4 py-2 text-center">Điểm chữ</th>
+                                    <th className="px-4 py-2 text-center">Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {classGrades.map((grade, index) => (
+                                    <tr key={index} className="border-b hover:bg-blue-50">
+                                        <td className="px-4 py-2 font-mono">{grade.maSinhVien}</td>
+                                        <td className="px-4 py-2">{grade.tenSinhVien}</td>
+                                        <td className="px-4 py-2 text-center">{grade.diemQuaTrinh}</td>
+                                        <td className="px-4 py-2 text-center">{grade.diemGiuaKy}</td>
+                                        <td className="px-4 py-2 text-center">{grade.diemCuoiKy}</td>
+                                        <td className="px-4 py-2 text-center font-semibold">{grade.diemTrungBinh}</td>
+                                        <td className="px-4 py-2 text-center">{grade.diemChu}</td>
+                                        <td className="px-4 py-2 text-center">
+                                            <span className={`px-2 py-1 rounded-full text-xs ${grade.trangThai === 'Đã nhập'
+                                                ? 'bg-green-100 text-green-800'
+                                                : 'bg-yellow-100 text-yellow-800'
+                                                }`}>
+                                                {grade.trangThai}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        {classGrades.length === 0 && (
+                            <div className="text-center py-8 text-gray-500">Không có dữ liệu điểm</div>
+                        )}
+                    </div>
                 )}
             </Dialog>
 
