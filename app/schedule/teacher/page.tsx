@@ -135,7 +135,22 @@ export default function TeacherSchedule() {
                     font-weight: 500;
                     box-shadow: 0 2px 8px 0 rgba(59,130,246,0.10);
                 }
-            `}</style>
+
+         
+                .custom-timetable th {
+                    position: relative;
+                }
+                .custom-timetable th[data-day="monday"]::after { content: "Thứ 2"; position: absolute; left: 0; right: 0; top: 0; bottom: 0; color: #1e40af; font-weight: 700; background: #e0e7ff; z-index: 2; }
+                .custom-timetable th[data-day="tuesday"]::after { content: "Thứ 3"; position: absolute; left: 0; right: 0; top: 0; bottom: 0; color: #1e40af; font-weight: 700; background: #e0e7ff; z-index: 2; }
+                .custom-timetable th[data-day="wednesday"]::after { content: "Thứ 4"; position: absolute; left: 0; right: 0; top: 0; bottom: 0; color: #1e40af; font-weight: 700; background: #e0e7ff; z-index: 2; }
+                .custom-timetable th[data-day="thursday"]::after { content: "Thứ 5"; position: absolute; left: 0; right: 0; top: 0; bottom: 0; color: #1e40af; font-weight: 700; background: #e0e7ff; z-index: 2; }
+                .custom-timetable th[data-day="friday"]::after { content: "Thứ 6"; position: absolute; left: 0; right: 0; top: 0; bottom: 0; color: #1e40af; font-weight: 700; background: #e0e7ff; z-index: 2; }
+                .custom-timetable th[data-day="saturday"]::after { content: "Thứ 7"; position: absolute; left: 0; right: 0; top: 0; bottom: 0; color: #1e40af; font-weight: 700; background: #e0e7ff; z-index: 2; }
+                .custom-timetable th[data-day="sunday"]::after { content: "Chủ nhật"; position: absolute; left: 0; right: 0; top: 0; bottom: 0; color: #1e40af; font-weight: 700; background: #e0e7ff; z-index: 2; }
+                .custom-timetable th[data-time]::after { content: "Tiết"; position: absolute; left: 0; right: 0; top: 0; bottom: 0; color: #1e40af; font-weight: 700; background: #e0e7ff; z-index: 2; }
+                .custom-timetable th[data-day], .custom-timetable th[data-time] { color: transparent !important; }
+                `}
+            </style>
             <div className="card custom-timetable">
                 <h1 className="text-2xl font-bold mb-4 text-blue-700">Lịch giảng dạy của tôi</h1>
                 {error && <div className="text-red-500 mb-4">{error}</div>}
@@ -151,6 +166,6 @@ export default function TeacherSchedule() {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 } 

@@ -62,7 +62,7 @@ const menuItems = [
     {
         label: 'Giảng dạy',
         icon: 'pi pi-book',
-        path: '/teaching',
+        path: '',
         roles: ['gv'],
         subItems: [
             {
