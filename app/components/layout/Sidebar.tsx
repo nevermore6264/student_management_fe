@@ -14,8 +14,14 @@ const menuItems = [
     {
         label: 'Thông tin cá nhân',
         icon: 'pi pi-user',
+        path: '/profile/teacher',
+        roles: ['gv']
+    },
+    {
+        label: 'Thông tin cá nhân',
+        icon: 'pi pi-user',
         path: '/profile',
-        roles: ['admin', 'sv', 'gv']
+        roles: ['sv']
     },
     {
         label: 'Quản lý người dùng',
