@@ -42,7 +42,7 @@ function mapSchedulesToDxEvents(schedules: Array<{ schedule: Schedule, classInfo
     return events;
 }
 
-function CustomAppointment(props: any) {
+function CustomAppointment({ data }: any) {
     return (
         <div
             style={{
@@ -52,10 +52,18 @@ function CustomAppointment(props: any) {
                 fontWeight: 500,
                 padding: 8,
                 whiteSpace: 'pre-line',
-                boxShadow: '0 2px 8px 0 rgba(59,130,246,0.10)'
+                boxShadow: '0 2px 8px 0 rgba(59,130,246,0.10)',
+                fontSize: 14,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                height: '100%',
             }}
         >
-            {props.data.text}
+            <div>{data.text}</div>
+            <div style={{ fontSize: 12, opacity: 0.85 }}>
+                {data.startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {data.endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </div>
         </div>
     );
 }
