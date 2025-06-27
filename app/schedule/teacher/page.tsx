@@ -43,6 +43,10 @@ function mapSchedulesToDxEvents(schedules: Array<{ schedule: Schedule, classInfo
 }
 
 function CustomAppointment({ data }: any) {
+    const getEventTitle = () =>
+        data.text || data.lop || data.title ||
+        data.appointmentData?.text || data.appointmentData?.lop || data.appointmentData?.title ||
+        "Không có tên lớp";
     return (
         <div
             style={{
@@ -60,9 +64,11 @@ function CustomAppointment({ data }: any) {
                 height: '100%',
             }}
         >
-            <div>{data.text}</div>
+            <div>{getEventTitle()}</div>
             <div style={{ fontSize: 12, opacity: 0.85 }}>
-                {data.startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {data.endDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {(data.startDate && data.endDate)
+                    ? `${new Date(data.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(data.endDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                    : ""}
             </div>
         </div>
     );

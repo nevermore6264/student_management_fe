@@ -35,27 +35,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             label: 'Trang chủ',
             icon: 'pi pi-home',
             command: () => router.push('/')
-        },
-        {
-            label: 'Đăng ký tín chỉ',
-            icon: 'pi pi-book',
-            command: () => router.push('/course-registration')
-        },
-        {
-            label: 'Lịch học',
-            icon: 'pi pi-calendar',
-            command: () => router.push('/schedule')
-        },
-        {
-            label: 'Lịch giảng dạy',
-            icon: 'pi pi-briefcase',
-            command: () => router.push('/schedule/teacher')
-        },
-        {
-            label: 'Kết quả học tập',
-            icon: 'pi pi-chart-bar',
-            command: () => router.push('/academic-results')
         }
+
     ];
 
     const handleLogin = () => {
@@ -112,7 +93,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                                 <Menubar
                                     model={menuItems}
                                     end={end}
-                                    className="border-none shadow-none font-semibold bg-transparent text-blue-800"
+                                    className="border-none shadow-none font-semibold bg-transparent text-blue-800   "
                                     pt={{
                                         root: { className: "gap-4" },
                                         menu: { className: "flex gap-4" },
