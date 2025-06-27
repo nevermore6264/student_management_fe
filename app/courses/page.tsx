@@ -939,7 +939,7 @@ export default function CourseManagementPage() {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Xếp loại</label>
                                 <input
                                     type="text"
-                                    value={editingGrade.xepLoai || ''}
+                                    value={getXepLoai(editingGrade.diemTongKet)}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
                                     placeholder="Tự động tính"
                                     readOnly
