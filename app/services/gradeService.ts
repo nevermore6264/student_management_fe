@@ -213,11 +213,14 @@ class GradeService {
             },
             body: JSON.stringify(gradeData)
         });
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || 'Không thể cập nhật điểm');
-        }
+
         const data = await res.json();
+
+        // Kiểm tra cả HTTP status và success field
+        if (!res.ok || !data.success) {
+            throw new Error(data.message || 'Không thể cập nhật điểm');
+        }
+
         return data.data || data;
     }
 
@@ -231,11 +234,14 @@ class GradeService {
             },
             body: JSON.stringify(gradeData)
         });
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || 'Không thể tạo điểm');
-        }
+
         const data = await res.json();
+
+        // Kiểm tra cả HTTP status và success field
+        if (!res.ok || !data.success) {
+            throw new Error(data.message || 'Không thể tạo điểm');
+        }
+
         return data.data || data;
     }
 

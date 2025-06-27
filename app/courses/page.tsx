@@ -190,7 +190,6 @@ export default function CourseManagementPage() {
         try {
             // Tạo request body theo DiemRequest (không bao gồm xepLoai)
             const diemRequest: DiemRequest = {
-                id: editingGrade.maDiem || undefined, // Thêm id nếu có
                 maSinhVien: editingGrade.maSinhVien,
                 maLopHP: editingGrade.maLopHP,
                 diemChuyenCan: editingGrade.diemChuyenCan,
@@ -201,12 +200,17 @@ export default function CourseManagementPage() {
             };
 
             let response;
-            if (editingGrade.maDiem) {
-                // Cập nhật điểm đã tồn tại
-                response = await gradeService.updateGrade(editingGrade.maDiem, diemRequest);
-            } else {
-                // Tạo điểm mới
+            // Thử tạo mới trước, nếu lỗi "đã tồn tại" thì cập nhật
+            try {
                 response = await gradeService.createGrade(diemRequest);
+            } catch (createError: unknown) {
+                const errorMessage = createError instanceof Error ? createError.message : '';
+                // Nếu lỗi "đã tồn tại" và có maDiem thì cập nhật
+                if (errorMessage.includes('đã tồn tại') && editingGrade.maDiem) {
+                    response = await gradeService.updateGrade(editingGrade.maDiem, diemRequest);
+                } else {
+                    throw createError;
+                }
             }
 
             // Update local state với response từ server
