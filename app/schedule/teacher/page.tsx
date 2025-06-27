@@ -96,6 +96,27 @@ export default function TeacherSchedule() {
 
     const events = useMemo(() => mapSchedulesToEvents(schedules), [schedules]);
 
+    // Việt hóa header timetable bằng MutationObserver
+    useEffect(() => {
+        const dayMap = [
+            "Tiết", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"
+        ];
+        function vietHoaHeader() {
+            const headerCells = document.querySelectorAll('.custom-timetable th');
+            headerCells.forEach((th, idx) => {
+                if (dayMap[idx]) th.textContent = dayMap[idx];
+            });
+        }
+        vietHoaHeader();
+        const table = document.querySelector('.custom-timetable table');
+        if (!table) return;
+        const observer = new MutationObserver(() => {
+            vietHoaHeader();
+        });
+        observer.observe(table, { childList: true, subtree: true });
+        return () => observer.disconnect();
+    }, [schedules]);
+
     return (
         <div className="container mx-auto px-4 py-4">
             <style>{`
