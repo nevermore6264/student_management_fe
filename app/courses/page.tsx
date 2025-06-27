@@ -8,6 +8,10 @@ import { Dialog } from 'primereact/dialog';
 import { useRouter } from 'next/navigation';
 import classSectionService, { ClassSection } from '../services/classSectionService';
 import gradeService, { GradeManagement } from '../services/gradeService';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
+import { Pie, Bar } from 'react-chartjs-2';
+
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
 
 interface Student {
     maSinhVien: string;
@@ -151,6 +155,90 @@ export default function CourseManagementPage() {
         }
     };
 
+    // Chart data functions
+    const getPieChartData = () => {
+        if (!overview) return null;
+
+        return {
+            labels: ['Đạt', 'Không đạt'],
+            datasets: [
+                {
+                    data: [overview.soSinhVienDat, overview.soSinhVienKhongDat],
+                    backgroundColor: ['#10B981', '#EF4444'],
+                    borderColor: ['#059669', '#DC2626'],
+                    borderWidth: 2,
+                },
+            ],
+        };
+    };
+
+    const getBarChartData = () => {
+        if (!overview) return null;
+
+        return {
+            labels: overview.thongKeDiem.map(item => item.khoangDiem),
+            datasets: [
+                {
+                    label: 'Số lượng sinh viên',
+                    data: overview.thongKeDiem.map(item => item.soLuong),
+                    backgroundColor: [
+                        '#EF4444', // 0-2: Đỏ
+                        '#F97316', // 2-4: Cam
+                        '#EAB308', // 4-5: Vàng
+                        '#F59E0B', // 5-6.5: Vàng đậm
+                        '#10B981', // 6.5-8: Xanh lá
+                        '#3B82F6', // 8-9: Xanh dương
+                        '#8B5CF6', // 9-10: Tím
+                    ],
+                    borderColor: [
+                        '#DC2626',
+                        '#EA580C',
+                        '#CA8A04',
+                        '#D97706',
+                        '#059669',
+                        '#2563EB',
+                        '#7C3AED',
+                    ],
+                    borderWidth: 1,
+                },
+            ],
+        };
+    };
+
+    const barChartOptions = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top' as const,
+            },
+            title: {
+                display: true,
+                text: 'Phân bố điểm sinh viên',
+            },
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1,
+                },
+            },
+        },
+    };
+
+    const pieChartOptions = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom' as const,
+            },
+            title: {
+                display: true,
+                text: 'Tỷ lệ đạt/không đạt',
+            },
+        },
+    };
+
     const filteredMyClasses = myClasses.filter(cls =>
         (cls.maLopHP?.toLowerCase() || '').includes(searchClassText.toLowerCase()) ||
         (cls.tenLopHP?.toLowerCase() || '').includes(searchClassText.toLowerCase())
@@ -247,47 +335,47 @@ export default function CourseManagementPage() {
 
             {/* Thống kê nhanh */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg p-4 shadow-lg">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-blue-600 text-sm font-medium mb-1">Tổng số lớp</p>
-                            <p className="text-2xl font-bold text-blue-700">{myClasses.length}</p>
+                            <p className="text-blue-100 text-sm font-medium mb-1">Tổng số lớp</p>
+                            <p className="text-2xl font-bold">{myClasses.length}</p>
                         </div>
-                        <div className="bg-blue-100 rounded-full p-3">
-                            <i className="pi pi-users text-xl text-blue-600"></i>
+                        <div className="bg-blue-400 rounded-full p-3">
+                            <i className="pi pi-users text-xl"></i>
                         </div>
                     </div>
                 </div>
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg p-4 shadow-lg">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-green-600 text-sm font-medium mb-1">Lớp đang hoạt động</p>
-                            <p className="text-2xl font-bold text-green-700">{myClasses.filter(cls => cls.trangThai).length}</p>
+                            <p className="text-green-100 text-sm font-medium mb-1">Lớp đang hoạt động</p>
+                            <p className="text-2xl font-bold">{myClasses.filter(cls => cls.trangThai).length}</p>
                         </div>
-                        <div className="bg-green-100 rounded-full p-3">
-                            <i className="pi pi-check-circle text-xl text-green-600"></i>
+                        <div className="bg-green-400 rounded-full p-3">
+                            <i className="pi pi-check-circle text-xl"></i>
                         </div>
                     </div>
                 </div>
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg p-4 shadow-lg">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-yellow-600 text-sm font-medium mb-1">Tổng sinh viên</p>
-                            <p className="text-2xl font-bold text-yellow-700">{myClasses.reduce((sum, cls) => sum + cls.soLuong, 0)}</p>
+                            <p className="text-yellow-100 text-sm font-medium mb-1">Tổng sinh viên</p>
+                            <p className="text-2xl font-bold">{myClasses.reduce((sum, cls) => sum + cls.soLuong, 0)}</p>
                         </div>
-                        <div className="bg-yellow-100 rounded-full p-3">
-                            <i className="pi pi-user text-xl text-yellow-600"></i>
+                        <div className="bg-yellow-400 rounded-full p-3">
+                            <i className="pi pi-user text-xl"></i>
                         </div>
                     </div>
                 </div>
-                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg p-4 shadow-lg">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-purple-600 text-sm font-medium mb-1">Điểm chưa nhập</p>
-                            <p className="text-2xl font-bold text-purple-700">{myGrades.filter(grade => grade.trangThai !== 'Đã nhập').length}</p>
+                            <p className="text-purple-100 text-sm font-medium mb-1">Điểm chưa nhập</p>
+                            <p className="text-2xl font-bold">{myGrades.filter(grade => grade.trangThai !== 'Đã nhập').length}</p>
                         </div>
-                        <div className="bg-purple-100 rounded-full p-3">
-                            <i className="pi pi-exclamation-triangle text-xl text-purple-600"></i>
+                        <div className="bg-purple-400 rounded-full p-3">
+                            <i className="pi pi-exclamation-triangle text-xl"></i>
                         </div>
                     </div>
                 </div>
@@ -299,7 +387,7 @@ export default function CourseManagementPage() {
                 onHide={() => setStudentsDialogVisible(false)}
                 header={`Danh sách sinh viên - ${selectedClass?.tenLopHP}`}
                 modal
-                className="p-fluid w-full max-w-4xl"
+                className="p-fluid w-full max-w-6xl"
                 footer={
                     <div className="flex justify-end gap-2 mt-4">
                         <Button
@@ -316,29 +404,33 @@ export default function CourseManagementPage() {
                 ) : (
                     <div className="overflow-x-auto w-full">
                         <table className="w-full border rounded-lg overflow-hidden">
-                            <thead className="bg-blue-100">
+                            <thead className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
                                 <tr>
-                                    <th className="px-4 py-2 text-left">Mã SV</th>
-                                    <th className="px-4 py-2 text-left">Tên sinh viên</th>
-                                    <th className="px-4 py-2 text-left">Email</th>
-                                    <th className="px-4 py-2 text-left">Số điện thoại</th>
-                                    <th className="px-4 py-2 text-left">Địa chỉ</th>
-                                    <th className="px-4 py-2 text-left">Giới tính</th>
-                                    <th className="px-4 py-2 text-left">Khoa</th>
-                                    <th className="px-4 py-2 text-left">Lớp</th>
+                                    <th className="px-4 py-3 text-left">Mã SV</th>
+                                    <th className="px-4 py-3 text-left">Tên sinh viên</th>
+                                    <th className="px-4 py-3 text-left">Email</th>
+                                    <th className="px-4 py-3 text-left">Số điện thoại</th>
+                                    <th className="px-4 py-3 text-left">Địa chỉ</th>
+                                    <th className="px-4 py-3 text-left">Giới tính</th>
+                                    <th className="px-4 py-3 text-left">Khoa</th>
+                                    <th className="px-4 py-3 text-left">Lớp</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {students.map((student, index) => (
-                                    <tr key={index} className="border-b hover:bg-blue-50">
-                                        <td className="px-4 py-2 font-mono">{student.maSinhVien}</td>
-                                        <td className="px-4 py-2">{student.hoTenSinhVien}</td>
-                                        <td className="px-4 py-2">{student.email}</td>
-                                        <td className="px-4 py-2">{student.soDienThoai}</td>
-                                        <td className="px-4 py-2">{student.diaChi}</td>
-                                        <td className="px-4 py-2">{student.gioiTinh ? 'Nam' : 'Nữ'}</td>
-                                        <td className="px-4 py-2">{student.maKhoa}</td>
-                                        <td className="px-4 py-2">{student.tenLop}</td>
+                                    <tr key={index} className="border-b hover:bg-blue-50 transition-colors">
+                                        <td className="px-4 py-3 font-mono bg-gray-50">{student.maSinhVien}</td>
+                                        <td className="px-4 py-3 font-medium">{student.hoTenSinhVien}</td>
+                                        <td className="px-4 py-3">{student.email}</td>
+                                        <td className="px-4 py-3">{student.soDienThoai}</td>
+                                        <td className="px-4 py-3">{student.diaChi}</td>
+                                        <td className="px-4 py-3">
+                                            <span className={`px-2 py-1 rounded-full text-xs ${student.gioiTinh ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'}`}>
+                                                {student.gioiTinh ? 'Nam' : 'Nữ'}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3">{student.maKhoa}</td>
+                                        <td className="px-4 py-3">{student.tenLop}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -356,7 +448,7 @@ export default function CourseManagementPage() {
                 onHide={() => setOverviewDialogVisible(false)}
                 header={`Tổng quan lớp - ${selectedClass?.tenLopHP}`}
                 modal
-                className="p-fluid w-full max-w-4xl"
+                className="p-fluid w-full max-w-6xl"
                 footer={
                     <div className="flex justify-end gap-2 mt-4">
                         <Button
@@ -373,82 +465,136 @@ export default function CourseManagementPage() {
                 ) : overview ? (
                     <div className="space-y-6">
                         {/* Thông tin cơ bản */}
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                            <h3 className="text-lg font-semibold mb-3">Thông tin lớp học phần</h3>
+                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-xl shadow-sm border">
+                            <h3 className="text-xl font-bold mb-4 text-gray-800 flex items-center">
+                                <i className="pi pi-info-circle mr-2 text-blue-500"></i>
+                                Thông tin lớp học phần
+                            </h3>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div>
-                                    <span className="font-medium">Mã lớp:</span> {overview.maLopHP}
+                                <div className="bg-white p-3 rounded-lg shadow-sm">
+                                    <div className="text-sm text-gray-600">Mã lớp</div>
+                                    <div className="font-semibold text-gray-800">{overview.maLopHP}</div>
                                 </div>
-                                <div>
-                                    <span className="font-medium">Tên lớp:</span> {overview.tenLopHP}
+                                <div className="bg-white p-3 rounded-lg shadow-sm">
+                                    <div className="text-sm text-gray-600">Tên lớp</div>
+                                    <div className="font-semibold text-gray-800">{overview.tenLopHP}</div>
                                 </div>
-                                <div>
-                                    <span className="font-medium">Học phần:</span> {overview.tenHocPhan}
+                                <div className="bg-white p-3 rounded-lg shadow-sm">
+                                    <div className="text-sm text-gray-600">Học phần</div>
+                                    <div className="font-semibold text-gray-800">{overview.tenHocPhan}</div>
                                 </div>
-                                <div>
-                                    <span className="font-medium">Số tín chỉ:</span> {overview.soTinChi}
+                                <div className="bg-white p-3 rounded-lg shadow-sm">
+                                    <div className="text-sm text-gray-600">Số tín chỉ</div>
+                                    <div className="font-semibold text-gray-800">{overview.soTinChi}</div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Thống kê tổng quan */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div className="bg-blue-50 p-4 rounded-lg shadow">
-                                <div className="font-semibold text-blue-600">Tổng số sinh viên</div>
-                                <div className="text-2xl font-bold text-blue-700">{overview.tongSoSinhVien}</div>
+                            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-lg">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="text-blue-100 text-sm font-medium mb-1">Tổng số sinh viên</div>
+                                        <div className="text-3xl font-bold">{overview.tongSoSinhVien}</div>
+                                    </div>
+                                    <div className="bg-blue-400 rounded-full p-3">
+                                        <i className="pi pi-users text-2xl"></i>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="bg-green-50 p-4 rounded-lg shadow">
-                                <div className="font-semibold text-green-600">Điểm trung bình lớp</div>
-                                <div className="text-2xl font-bold text-green-700">{overview.diemTrungBinhLop}</div>
+                            <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-xl shadow-lg">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="text-green-100 text-sm font-medium mb-1">Điểm trung bình</div>
+                                        <div className="text-3xl font-bold">{overview.diemTrungBinhLop}</div>
+                                    </div>
+                                    <div className="bg-green-400 rounded-full p-3">
+                                        <i className="pi pi-chart-line text-2xl"></i>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="bg-yellow-50 p-4 rounded-lg shadow">
-                                <div className="font-semibold text-yellow-600">Số lượng đạt</div>
-                                <div className="text-2xl font-bold text-yellow-700">{overview.soSinhVienDat}</div>
+                            <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white p-6 rounded-xl shadow-lg">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="text-yellow-100 text-sm font-medium mb-1">Số lượng đạt</div>
+                                        <div className="text-3xl font-bold">{overview.soSinhVienDat}</div>
+                                    </div>
+                                    <div className="bg-yellow-400 rounded-full p-3">
+                                        <i className="pi pi-check-circle text-2xl"></i>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="bg-red-50 p-4 rounded-lg shadow">
-                                <div className="font-semibold text-red-600">Số lượng không đạt</div>
-                                <div className="text-2xl font-bold text-red-700">{overview.soSinhVienKhongDat}</div>
+                            <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-6 rounded-xl shadow-lg">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="text-red-100 text-sm font-medium mb-1">Không đạt</div>
+                                        <div className="text-3xl font-bold">{overview.soSinhVienKhongDat}</div>
+                                    </div>
+                                    <div className="bg-red-400 rounded-full p-3">
+                                        <i className="pi pi-times-circle text-2xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Charts */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Pie Chart */}
+                            <div className="bg-white p-6 rounded-xl shadow-lg border">
+                                <h3 className="text-lg font-semibold mb-4 text-gray-800">Tỷ lệ đạt/không đạt</h3>
+                                {getPieChartData() && (
+                                    <div className="h-64">
+                                        <Pie data={getPieChartData()!} options={pieChartOptions} />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Bar Chart */}
+                            <div className="bg-white p-6 rounded-xl shadow-lg border">
+                                <h3 className="text-lg font-semibold mb-4 text-gray-800">Phân bố điểm</h3>
+                                {getBarChartData() && (
+                                    <div className="h-64">
+                                        <Bar data={getBarChartData()!} options={barChartOptions} />
+                                    </div>
+                                )}
                             </div>
                         </div>
 
                         {/* Thống kê chi tiết */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="bg-purple-50 p-4 rounded-lg shadow">
-                                <div className="font-semibold text-purple-600">Sinh viên có điểm</div>
-                                <div className="text-2xl font-bold text-purple-700">{overview.soSinhVienCoDiem}</div>
+                            <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow-lg">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="text-purple-100 text-sm font-medium mb-1">Sinh viên có điểm</div>
+                                        <div className="text-2xl font-bold">{overview.soSinhVienCoDiem}</div>
+                                    </div>
+                                    <div className="bg-purple-400 rounded-full p-3">
+                                        <i className="pi pi-star text-xl"></i>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="bg-indigo-50 p-4 rounded-lg shadow">
-                                <div className="font-semibold text-indigo-600">Điểm cao nhất</div>
-                                <div className="text-2xl font-bold text-indigo-700">{overview.diemCaoNhat}</div>
+                            <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white p-6 rounded-xl shadow-lg">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="text-indigo-100 text-sm font-medium mb-1">Điểm cao nhất</div>
+                                        <div className="text-2xl font-bold">{overview.diemCaoNhat}</div>
+                                    </div>
+                                    <div className="bg-indigo-400 rounded-full p-3">
+                                        <i className="pi pi-arrow-up text-xl"></i>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="bg-pink-50 p-4 rounded-lg shadow">
-                                <div className="font-semibold text-pink-600">Điểm thấp nhất</div>
-                                <div className="text-2xl font-bold text-pink-700">{overview.diemThapNhat}</div>
-                            </div>
-                        </div>
-
-                        {/* Bảng thống kê điểm */}
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                            <h3 className="text-lg font-semibold mb-3">Thống kê phân bố điểm</h3>
-                            <div className="overflow-x-auto">
-                                <table className="w-full border rounded-lg overflow-hidden">
-                                    <thead className="bg-blue-100">
-                                        <tr>
-                                            <th className="px-4 py-2 text-left">Khoảng điểm</th>
-                                            <th className="px-4 py-2 text-center">Số lượng</th>
-                                            <th className="px-4 py-2 text-center">Tỷ lệ (%)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {overview.thongKeDiem.map((item, index) => (
-                                            <tr key={index} className="border-b hover:bg-blue-50">
-                                                <td className="px-4 py-2 font-medium">{item.khoangDiem}</td>
-                                                <td className="px-4 py-2 text-center">{item.soLuong}</td>
-                                                <td className="px-4 py-2 text-center">{item.tyLe.toFixed(1)}%</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                            <div className="bg-gradient-to-r from-pink-500 to-pink-600 text-white p-6 rounded-xl shadow-lg">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="text-pink-100 text-sm font-medium mb-1">Điểm thấp nhất</div>
+                                        <div className="text-2xl font-bold">{overview.diemThapNhat}</div>
+                                    </div>
+                                    <div className="bg-pink-400 rounded-full p-3">
+                                        <i className="pi pi-arrow-down text-xl"></i>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -463,7 +609,7 @@ export default function CourseManagementPage() {
                 onHide={() => setGradesDialogVisible(false)}
                 header={`Quản lý điểm - ${selectedClass?.tenLopHP}`}
                 modal
-                className="p-fluid w-full max-w-6xl"
+                className="p-fluid w-full max-w-7xl"
                 footer={
                     <div className="flex justify-end gap-2 mt-4">
                         <Button
@@ -485,29 +631,33 @@ export default function CourseManagementPage() {
                 ) : (
                     <div className="overflow-x-auto w-full">
                         <table className="w-full border rounded-lg overflow-hidden">
-                            <thead className="bg-blue-100">
+                            <thead className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white">
                                 <tr>
-                                    <th className="px-4 py-2 text-left">Mã SV</th>
-                                    <th className="px-4 py-2 text-left">Tên sinh viên</th>
-                                    <th className="px-4 py-2 text-center">Điểm QT</th>
-                                    <th className="px-4 py-2 text-center">Điểm GK</th>
-                                    <th className="px-4 py-2 text-center">Điểm CK</th>
-                                    <th className="px-4 py-2 text-center">Điểm TB</th>
-                                    <th className="px-4 py-2 text-center">Điểm chữ</th>
-                                    <th className="px-4 py-2 text-center">Trạng thái</th>
+                                    <th className="px-4 py-3 text-left">Mã SV</th>
+                                    <th className="px-4 py-3 text-left">Tên sinh viên</th>
+                                    <th className="px-4 py-3 text-center">Điểm QT</th>
+                                    <th className="px-4 py-3 text-center">Điểm GK</th>
+                                    <th className="px-4 py-3 text-center">Điểm CK</th>
+                                    <th className="px-4 py-3 text-center">Điểm TB</th>
+                                    <th className="px-4 py-3 text-center">Điểm chữ</th>
+                                    <th className="px-4 py-3 text-center">Trạng thái</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {classGrades.map((grade, index) => (
-                                    <tr key={index} className="border-b hover:bg-blue-50">
-                                        <td className="px-4 py-2 font-mono">{grade.maSinhVien}</td>
-                                        <td className="px-4 py-2">{grade.tenSinhVien}</td>
-                                        <td className="px-4 py-2 text-center">{grade.diemQuaTrinh}</td>
-                                        <td className="px-4 py-2 text-center">{grade.diemGiuaKy}</td>
-                                        <td className="px-4 py-2 text-center">{grade.diemCuoiKy}</td>
-                                        <td className="px-4 py-2 text-center font-semibold">{grade.diemTrungBinh}</td>
-                                        <td className="px-4 py-2 text-center">{grade.diemChu}</td>
-                                        <td className="px-4 py-2 text-center">
+                                    <tr key={index} className="border-b hover:bg-yellow-50 transition-colors">
+                                        <td className="px-4 py-3 font-mono bg-gray-50">{grade.maSinhVien}</td>
+                                        <td className="px-4 py-3 font-medium">{grade.tenSinhVien}</td>
+                                        <td className="px-4 py-3 text-center">{grade.diemQuaTrinh}</td>
+                                        <td className="px-4 py-3 text-center">{grade.diemGiuaKy}</td>
+                                        <td className="px-4 py-3 text-center">{grade.diemCuoiKy}</td>
+                                        <td className="px-4 py-3 text-center font-semibold text-lg">{grade.diemTrungBinh}</td>
+                                        <td className="px-4 py-3 text-center">
+                                            <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 font-medium">
+                                                {grade.diemChu}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3 text-center">
                                             <span className={`px-2 py-1 rounded-full text-xs ${grade.trangThai === 'Đã nhập'
                                                 ? 'bg-green-100 text-green-800'
                                                 : 'bg-yellow-100 text-yellow-800'
@@ -553,48 +703,61 @@ export default function CourseManagementPage() {
                     <div className="text-center py-8 text-blue-500 font-semibold">Đang tải báo cáo...</div>
                 ) : (
                     <div className="space-y-6">
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                            <h3 className="text-lg font-semibold mb-3">Thông tin lớp học phần</h3>
+                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-xl shadow-sm border">
+                            <h3 className="text-xl font-bold mb-4 text-gray-800 flex items-center">
+                                <i className="pi pi-info-circle mr-2 text-blue-500"></i>
+                                Thông tin lớp học phần
+                            </h3>
                             <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <span className="font-medium">Mã lớp:</span> {selectedClass?.maLopHP}
+                                <div className="bg-white p-3 rounded-lg shadow-sm">
+                                    <div className="text-sm text-gray-600">Mã lớp</div>
+                                    <div className="font-semibold text-gray-800">{selectedClass?.maLopHP}</div>
                                 </div>
-                                <div>
-                                    <span className="font-medium">Tên lớp:</span> {selectedClass?.tenLopHP}
+                                <div className="bg-white p-3 rounded-lg shadow-sm">
+                                    <div className="text-sm text-gray-600">Tên lớp</div>
+                                    <div className="font-semibold text-gray-800">{selectedClass?.tenLopHP}</div>
                                 </div>
-                                <div>
-                                    <span className="font-medium">Học phần:</span> {selectedClass?.maHocPhan}
+                                <div className="bg-white p-3 rounded-lg shadow-sm">
+                                    <div className="text-sm text-gray-600">Học phần</div>
+                                    <div className="font-semibold text-gray-800">{selectedClass?.maHocPhan}</div>
                                 </div>
-                                <div>
-                                    <span className="font-medium">Số lượng SV:</span> {selectedClass?.soLuong}
+                                <div className="bg-white p-3 rounded-lg shadow-sm">
+                                    <div className="text-sm text-gray-600">Số lượng SV</div>
+                                    <div className="font-semibold text-gray-800">{selectedClass?.soLuong}</div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                            <h3 className="text-lg font-semibold mb-3">Thống kê điểm</h3>
+                        <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-xl shadow-sm border">
+                            <h3 className="text-xl font-bold mb-4 text-gray-800 flex items-center">
+                                <i className="pi pi-chart-bar mr-2 text-blue-500"></i>
+                                Thống kê điểm
+                            </h3>
                             <div className="grid grid-cols-4 gap-4">
-                                <div className="text-center">
+                                <div className="bg-white p-4 rounded-lg shadow-sm text-center">
                                     <div className="text-2xl font-bold text-blue-600">85%</div>
                                     <div className="text-sm text-gray-600">Tỷ lệ đạt</div>
                                 </div>
-                                <div className="text-center">
+                                <div className="bg-white p-4 rounded-lg shadow-sm text-center">
                                     <div className="text-2xl font-bold text-green-600">7.8</div>
                                     <div className="text-sm text-gray-600">Điểm TB</div>
                                 </div>
-                                <div className="text-center">
+                                <div className="bg-white p-4 rounded-lg shadow-sm text-center">
                                     <div className="text-2xl font-bold text-yellow-600">15</div>
                                     <div className="text-sm text-gray-600">SV xuất sắc</div>
                                 </div>
-                                <div className="text-center">
+                                <div className="bg-white p-4 rounded-lg shadow-sm text-center">
                                     <div className="text-2xl font-bold text-red-600">3</div>
                                     <div className="text-sm text-gray-600">SV cần hỗ trợ</div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                            <h3 className="text-lg font-semibold mb-3">Đề xuất cải thiện</h3>
+                        <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-xl shadow-sm border">
+                            <h3 className="text-xl font-bold mb-4 text-gray-800 flex items-center">
+                                <i className="pi pi-lightbulb mr-2 text-green-500"></i>
+                                Đề xuất cải thiện
+                            </h3>
                             <ul className="list-disc list-inside space-y-2 text-gray-700">
                                 <li>Tăng cường bài tập thực hành cho sinh viên yếu</li>
                                 <li>Tổ chức thêm buổi ôn tập trước kỳ thi</li>
