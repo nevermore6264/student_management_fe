@@ -484,7 +484,7 @@ export default function CourseManagementPage() {
             )}
 
             {/* Thống kê nhanh */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                 <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg p-4 shadow-lg">
                     <div className="flex items-center justify-between">
                         <div>
@@ -515,17 +515,6 @@ export default function CourseManagementPage() {
                         </div>
                         <div className="bg-yellow-400 rounded-full p-3">
                             <i className="pi pi-user text-xl"></i>
-                        </div>
-                    </div>
-                </div>
-                <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg p-4 shadow-lg">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-purple-100 text-sm font-medium mb-1">Điểm chưa nhập</p>
-                            <p className="text-2xl font-bold">{myGrades.filter(grade => grade.trangThai !== 'Đã nhập').length}</p>
-                        </div>
-                        <div className="bg-purple-400 rounded-full p-3">
-                            <i className="pi pi-exclamation-triangle text-xl"></i>
                         </div>
                     </div>
                 </div>
