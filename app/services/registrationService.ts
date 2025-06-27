@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const API_BASE = 'http://localhost:8080/api';
 
 export interface CourseClass {
@@ -28,12 +29,16 @@ export interface RegistrationPeriod {
 }
 
 export interface Registration {
-    id: string;
     maSinhVien: string;
-    maLopHocPhan: string;
-    ngayDangKy: string;
-    trangThai: string;
-    lopHocPhan: CourseClass;
+    hoTenSinhVien: string;
+    maLopHP: string;
+    tenLopHP: string;
+    maHocPhan: string;
+    tenHocPhan: string;
+    thoiGianDangKy: string;
+    trangThai: boolean;
+    ketQuaDangKy: number;
+    ghiChu: string | null;
 }
 
 export interface RegisterPayload {
@@ -112,11 +117,13 @@ class RegistrationService {
             headers: this.getAuthHeaders(),
             body: JSON.stringify(data),
         });
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || 'Đăng ký thất bại');
-        }
+
         const response: ApiResponse<any> = await res.json();
+
+        if (!res.ok || !response.success) {
+            throw new Error(response.message || 'Đăng ký thất bại');
+        }
+
         return response.data;
     }
 
@@ -125,11 +132,13 @@ class RegistrationService {
             method: 'DELETE',
             headers: this.getAuthHeaders(),
         });
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || 'Hủy đăng ký thất bại');
-        }
+
         const response: ApiResponse<any> = await res.json();
+
+        if (!res.ok || !response.success) {
+            throw new Error(response.message || 'Hủy đăng ký thất bại');
+        }
+
         return response.data;
     }
 }

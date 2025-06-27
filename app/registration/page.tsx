@@ -124,7 +124,20 @@ export default function CourseRegistrationPage() {
             loadData(); // Reload data to update lists
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : 'Đăng ký thất bại';
-            showToast('error', 'Lỗi', errorMessage);
+
+            // Show specific error messages for common cases
+            if (errorMessage.includes('đã đăng ký')) {
+                showToast('warn', 'Đã đăng ký', 'Bạn đã đăng ký lớp học phần này rồi!');
+            } else if (errorMessage.includes('hết chỗ')) {
+                showToast('error', 'Hết chỗ', 'Lớp học phần này đã hết chỗ!');
+            } else if (errorMessage.includes('đợt đăng ký')) {
+                showToast('error', 'Đợt đăng ký', 'Hiện tại không có đợt đăng ký nào đang mở!');
+            } else {
+                showToast('error', 'Lỗi đăng ký', errorMessage);
+            }
+
+            // Don't close dialog on error so user can try again
+            console.error('Registration error:', error);
         }
     };
 
@@ -132,13 +145,26 @@ export default function CourseRegistrationPage() {
         if (!selectedRegistration) return;
 
         try {
-            await registrationService.cancelRegistration(selectedRegistration.id);
+            // Use combination of maSinhVien and maLopHP as identifier
+            const registrationId = `${selectedRegistration.maSinhVien}-${selectedRegistration.maLopHP}`;
+            await registrationService.cancelRegistration(registrationId);
             showToast('success', 'Thành công', 'Hủy đăng ký thành công');
             setCancelDialogVisible(false);
             loadData(); // Reload data to update lists
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : 'Hủy đăng ký thất bại';
-            showToast('error', 'Lỗi', errorMessage);
+
+            // Show specific error messages for common cases
+            if (errorMessage.includes('không tìm thấy')) {
+                showToast('error', 'Không tìm thấy', 'Không tìm thấy thông tin đăng ký này!');
+            } else if (errorMessage.includes('đã hủy')) {
+                showToast('warn', 'Đã hủy', 'Đăng ký này đã được hủy rồi!');
+            } else {
+                showToast('error', 'Lỗi hủy đăng ký', errorMessage);
+            }
+
+            // Don't close dialog on error so user can try again
+            console.error('Cancel registration error:', error);
         }
     };
 
@@ -307,18 +333,18 @@ export default function CourseRegistrationPage() {
                                     </tr>
                                 ) : (
                                     registeredClasses.map((rowData) => (
-                                        <tr key={rowData?.id || 'unknown'} className="border-b hover:bg-blue-50">
-                                            <td className="px-4 py-2 border border-gray-300 font-mono">{rowData?.lopHocPhan?.maLopHP || ''}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData?.lopHocPhan?.tenLopHP || ''}</td>
-                                            <td className="px-4 py-2 border border-gray-300 font-mono">{rowData?.lopHocPhan?.maHocPhan || ''}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData?.lopHocPhan?.tenHocPhan || ''}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData?.lopHocPhan?.soTinChi || ''}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData?.lopHocPhan?.giangVien || ''}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData?.lopHocPhan?.phongHoc || ''}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData?.ngayDangKy ? new Date(rowData.ngayDangKy).toLocaleDateString('vi-VN') : ''}</td>
+                                        <tr key={`${rowData?.maSinhVien}-${rowData?.maLopHP}`} className="border-b hover:bg-blue-50">
+                                            <td className="px-4 py-2 border border-gray-300 font-mono">{rowData?.maLopHP || ''}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData?.tenLopHP || ''}</td>
+                                            <td className="px-4 py-2 border border-gray-300 font-mono">{rowData?.maHocPhan || ''}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData?.tenHocPhan || ''}</td>
+                                            <td className="px-4 py-2 border border-gray-300">-</td>
+                                            <td className="px-4 py-2 border border-gray-300">-</td>
+                                            <td className="px-4 py-2 border border-gray-300">-</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData?.thoiGianDangKy ? new Date(rowData.thoiGianDangKy).toLocaleDateString('vi-VN') : ''}</td>
                                             <td className="px-4 py-2 border border-gray-300">
-                                                <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${rowData?.trangThai === 'Đã đăng ký' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
-                                                    {rowData?.trangThai || ''}
+                                                <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${rowData?.trangThai ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'}`}>
+                                                    {rowData?.trangThai ? 'Đã đăng ký' : 'Đã hủy'}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-2 border border-gray-300 text-center">
@@ -394,7 +420,7 @@ export default function CourseRegistrationPage() {
             >
                 <p>
                     Bạn có chắc chắn muốn hủy đăng ký lớp học phần{' '}
-                    <strong>{selectedRegistration?.lopHocPhan?.tenLopHP || 'N/A'}</strong>?
+                    <strong>{selectedRegistration?.tenLopHP || 'N/A'}</strong>?
                 </p>
             </Dialog>
         </div>
