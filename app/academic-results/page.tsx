@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Card } from 'primereact/card';
-import { ProgressBar } from 'primereact/progressbar';
 import { Toast } from 'primereact/toast';
 import gradeService, { KetQuaHocTapResponse } from '../services/gradeService';
 

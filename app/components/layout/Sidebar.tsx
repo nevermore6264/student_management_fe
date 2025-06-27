@@ -107,10 +107,16 @@ const menuItems = [
                     { label: 'Lịch sử đăng ký', path: '/registration/history', roles: ['sv'] }
                 ]
             },
+            // {
+            //     label: 'Kế hoạch học tập',
+            //     icon: 'pi pi-list',
+            //     path: '/study-plan',
+            //     roles: ['sv']
+            // },
             {
-                label: 'Kế hoạch học tập',
+                label: 'Thời khoá biểu',
                 icon: 'pi pi-list',
-                path: '/study-plan',
+                path: '/schedule',
                 roles: ['sv']
             },
             {
