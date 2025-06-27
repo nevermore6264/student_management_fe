@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -5,16 +6,39 @@ import { Pie, Bar } from 'react-chartjs-2';
 import { Message } from 'primereact/message';
 import gradeService from '../../services/gradeService';
 
+// Đăng ký các thành phần Chart.js
+import {
+    Chart as ChartJS,
+    ArcElement,
+    BarElement,
+    CategoryScale,
+    LinearScale,
+    Tooltip,
+    Legend,
+    Title
+} from 'chart.js';
+
+ChartJS.register(
+    ArcElement,
+    BarElement,
+    CategoryScale,
+    LinearScale,
+    Tooltip,
+    Legend,
+    Title
+);
+
 export default function TeacherGradeOverviewPage() {
     const [overview, setOverview] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const teacherId = typeof window !== 'undefined' ? localStorage.getItem('teacherId') : '';
+    const teacherId = typeof window !== 'undefined' ? localStorage.getItem('maNguoiDung') : '';
 
     useEffect(() => {
         const fetchOverview = async () => {
-            setLoading(true); setError('');
+            setLoading(true);
+            setError('');
             try {
                 const data = await gradeService.getTeacherOverview(teacherId || '');
                 if (data.success && data.data) {

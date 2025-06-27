@@ -47,6 +47,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             command: () => router.push('/schedule')
         },
         {
+            label: 'Lịch giảng dạy',
+            icon: 'pi pi-briefcase',
+            command: () => router.push('/schedule/teacher')
+        },
+        {
             label: 'Kết quả học tập',
             icon: 'pi pi-chart-bar',
             command: () => router.push('/academic-results')

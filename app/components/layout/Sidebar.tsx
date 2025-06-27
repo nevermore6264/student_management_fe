@@ -66,35 +66,23 @@ const menuItems = [
         roles: ['gv'],
         subItems: [
             {
+                label: 'Lịch giảng dạy',
+                icon: 'pi pi-calendar',
+                path: '/schedule/teacher',
+                roles: ['gv']
+            },
+            {
                 label: 'Quản lý học phần',
-                icon: 'pi pi-book',
+                icon: 'pi pi-users',
                 path: '/courses',
-                subItems: [
-                    { label: 'Danh sách học phần', path: '/courses/list', roles: ['gv'] },
-                    { label: 'Lớp học phần', path: '/courses/classes', roles: ['gv'] },
-                    { label: 'Thời khóa biểu', path: '/courses/schedule', roles: ['gv'] }
-                ]
+                roles: ['gv']
             },
             {
-                label: 'Quản lý điểm',
+                label: 'Tổng quan điểm',
                 icon: 'pi pi-chart-bar',
-                path: '/grades',
-                subItems: [
-                    { label: 'Nhập điểm', path: '/grades/input', roles: ['gv'] },
-                    { label: 'Xem điểm', path: '/grades/view', roles: ['gv'] },
-                    { label: 'Thống kê điểm', path: '/grades/statistics', roles: ['gv'] }
-                ]
+                path: '/grades/teacher',
+                roles: ['gv']
             },
-            {
-                label: 'Báo cáo',
-                icon: 'pi pi-file',
-                path: '/reports',
-                subItems: [
-                    { label: 'Thống kê đăng ký', path: '/reports/registration', roles: ['gv'] },
-                    { label: 'Kết quả học tập', path: '/reports/academic', roles: ['gv'] },
-                    { label: 'Báo cáo giảng dạy', path: '/reports/teaching', roles: ['gv'] }
-                ]
-            }
         ]
     },
     {
