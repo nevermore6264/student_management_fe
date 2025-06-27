@@ -69,6 +69,27 @@ export interface DiemResponse {
     trangThai: string;
 }
 
+export interface GradeOverview {
+    maSinhVien: string;
+    hoTenSinhVien: string;
+    tongSoTinChi: number;
+    tongSoTinChiDat: number;
+    diemTrungBinh: number;
+    xepLoai: string;
+    danhSachDiem: GradeDetail[];
+}
+
+export interface GradeDetail {
+    maHocPhan: string;
+    tenHocPhan: string;
+    soTinChi: number;
+    diemQuaTrinh: number;
+    diemThi: number;
+    diemTongKet: number;
+    diemChu: string;
+    trangThai: string;
+}
+
 class GradeService {
     async getOverview(maSinhVien: string): Promise<SemesterSummary[]> {
         const token = localStorage.getItem('token');
@@ -271,6 +292,29 @@ class GradeService {
         });
         const data = await res.json();
         return data;
+    }
+
+    private getAuthHeaders() {
+        const token = localStorage.getItem('token');
+        return {
+            'Content-Type': 'application/json',
+            ...(token && { Authorization: `Bearer ${token}` })
+        };
+    }
+
+    async getStudentGradeOverview(maSinhVien: string): Promise<GradeOverview> {
+        const res = await fetch(`${API_BASE}/api/diem/sinhvien/${maSinhVien}/tongquan`, {
+            method: 'GET',
+            headers: this.getAuthHeaders(),
+        });
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || 'Không thể lấy thông tin điểm');
+        }
+
+        const response: ApiResponse<GradeOverview> = await res.json();
+        return response.data;
     }
 }
 

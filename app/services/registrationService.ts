@@ -35,6 +35,9 @@ export interface Registration {
     tenLopHP: string;
     maHocPhan: string;
     tenHocPhan: string;
+    soTinChi: number;
+    giangVien: string;
+    phongHoc: string;
     thoiGianDangKy: string;
     trangThai: boolean;
     ketQuaDangKy: number;
@@ -127,8 +130,8 @@ class RegistrationService {
         return response.data;
     }
 
-    async cancelRegistration(id: string) {
-        const res = await fetch(`${API_BASE}/dangky/${id}`, {
+    async cancelRegistration(maPhienDK: number, maSinhVien: string, maLopHP: string) {
+        const res = await fetch(`${API_BASE}/dangky/${maPhienDK}/${maSinhVien}/${maLopHP}`, {
             method: 'DELETE',
             headers: this.getAuthHeaders(),
         });

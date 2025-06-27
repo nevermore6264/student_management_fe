@@ -12,6 +12,7 @@ export default function CourseRegistrationPage() {
     const [activeTab, setActiveTab] = useState(0);
     const [loading, setLoading] = useState(true);
     const toast = useRef<Toast>(null);
+    const [toastMessage, setToastMessage] = useState<{ severity: 'success' | 'error' | 'info' | 'warn', summary: string, detail: string } | null>(null);
 
     const [registrationPeriods, setRegistrationPeriods] = useState<RegistrationPeriod[]>([]);
     const [availableClasses, setAvailableClasses] = useState<CourseClass[]>([]);
@@ -29,6 +30,19 @@ export default function CourseRegistrationPage() {
     useEffect(() => {
         loadData();
     }, []);
+
+    // Effect to show toast when toastMessage changes
+    useEffect(() => {
+        if (toastMessage && toast.current) {
+            toast.current.show({
+                severity: toastMessage.severity,
+                summary: toastMessage.summary,
+                detail: toastMessage.detail,
+                life: 3000
+            });
+            setToastMessage(null); // Clear the message after showing
+        }
+    }, [toastMessage]);
 
     const loadData = async () => {
         try {
@@ -66,7 +80,8 @@ export default function CourseRegistrationPage() {
     };
 
     const showToast = (severity: 'success' | 'error' | 'info' | 'warn', summary: string, detail: string) => {
-        toast.current?.show({ severity, summary, detail, life: 3000 });
+        console.log('Showing toast:', { severity, summary, detail });
+        setToastMessage({ severity, summary, detail });
     };
 
     const actionTemplate = (rowData: CourseClass) => {
@@ -119,8 +134,9 @@ export default function CourseRegistrationPage() {
                 ketQuaDangKy: 1 // Default to 1 (success)
             });
 
-            showToast('success', 'Thành công', 'Đăng ký lớp học phần thành công');
+            console.log('Registration successful, showing toast...');
             setRegisterDialogVisible(false);
+            showToast('success', 'Thành công', 'Đăng ký lớp học phần thành công');
             loadData(); // Reload data to update lists
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : 'Đăng ký thất bại';
@@ -145,11 +161,17 @@ export default function CourseRegistrationPage() {
         if (!selectedRegistration) return;
 
         try {
-            // Use combination of maSinhVien and maLopHP as identifier
-            const registrationId = `${selectedRegistration.maSinhVien}-${selectedRegistration.maLopHP}`;
-            await registrationService.cancelRegistration(registrationId);
-            showToast('success', 'Thành công', 'Hủy đăng ký thành công');
+            // Get maPhienDK from registration period if available
+            const maPhienDK = registrationPeriods.length > 0 ? parseInt(registrationPeriods[0].maDotDK.replace(/\D/g, '')) || 1 : 1;
+
+            await registrationService.cancelRegistration(
+                maPhienDK,
+                selectedRegistration.maSinhVien,
+                selectedRegistration.maLopHP
+            );
+            console.log('Cancel successful, showing toast...');
             setCancelDialogVisible(false);
+            showToast('success', 'Thành công', 'Hủy đăng ký thành công');
             loadData(); // Reload data to update lists
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : 'Hủy đăng ký thất bại';
@@ -338,9 +360,9 @@ export default function CourseRegistrationPage() {
                                             <td className="px-4 py-2 border border-gray-300">{rowData?.tenLopHP || ''}</td>
                                             <td className="px-4 py-2 border border-gray-300 font-mono">{rowData?.maHocPhan || ''}</td>
                                             <td className="px-4 py-2 border border-gray-300">{rowData?.tenHocPhan || ''}</td>
-                                            <td className="px-4 py-2 border border-gray-300">-</td>
-                                            <td className="px-4 py-2 border border-gray-300">-</td>
-                                            <td className="px-4 py-2 border border-gray-300">-</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData?.soTinChi || ''}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData?.giangVien || ''}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData?.phongHoc || ''}</td>
                                             <td className="px-4 py-2 border border-gray-300">{rowData?.thoiGianDangKy ? new Date(rowData.thoiGianDangKy).toLocaleDateString('vi-VN') : ''}</td>
                                             <td className="px-4 py-2 border border-gray-300">
                                                 <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${rowData?.trangThai ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'}`}>
