@@ -45,6 +45,25 @@ interface ClassOverview {
     }>;
 }
 
+interface StudentGrade {
+    maDiem: string | null;
+    maSinhVien: string;
+    hoTenSinhVien: string;
+    maLopHP: string;
+    tenLopHP: string | null;
+    tenMon: string | null;
+    soTinChi: number;
+    diem: number;
+    xepLoai: string | null;
+    hocKy: number | null;
+    namHoc: string | null;
+    diemChuyenCan: number | null;
+    diemGiuaKy: number | null;
+    diemCuoiKy: number | null;
+    diemTongKet: number | null;
+    ghiChu: string | null;
+}
+
 export default function CourseManagementPage() {
     const router = useRouter();
 
@@ -54,6 +73,7 @@ export default function CourseManagementPage() {
     const [loading, setLoading] = useState(false);
     const [searchClassText, setSearchClassText] = useState('');
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
 
     // Popup states
     const [studentsDialogVisible, setStudentsDialogVisible] = useState(false);
@@ -65,8 +85,10 @@ export default function CourseManagementPage() {
     const [selectedClass, setSelectedClass] = useState<ClassSection | null>(null);
     const [students, setStudents] = useState<Student[]>([]);
     const [overview, setOverview] = useState<ClassOverview | null>(null);
-    const [classGrades, setClassGrades] = useState<GradeManagement[]>([]);
+    const [classGrades, setClassGrades] = useState<StudentGrade[]>([]);
     const [loadingPopup, setLoadingPopup] = useState(false);
+    const [editingGrade, setEditingGrade] = useState<StudentGrade | null>(null);
+    const [editGradeDialogVisible, setEditGradeDialogVisible] = useState(false);
 
     // Fetch data for teacher
     useEffect(() => {
@@ -132,8 +154,9 @@ export default function CourseManagementPage() {
         setGradesDialogVisible(true);
         setLoadingPopup(true);
         try {
-            const data = await gradeService.getGradesByClass(cls.maLopHP);
-            setClassGrades(data);
+            const response = await gradeService.getGradesByClass(cls.maLopHP);
+            // The API returns data that matches StudentGrade interface directly
+            setClassGrades(response as unknown as StudentGrade[]);
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'Không thể tải điểm lớp');
         } finally {
@@ -153,6 +176,73 @@ export default function CourseManagementPage() {
         } finally {
             setLoadingPopup(false);
         }
+    };
+
+    const handleEditGrade = (grade: StudentGrade) => {
+        setEditingGrade(grade);
+        setEditGradeDialogVisible(true);
+    };
+
+    const handleSaveGrade = async () => {
+        if (!editingGrade) return;
+
+        setLoadingPopup(true);
+        try {
+            // TODO: Implement save grade API call
+            console.log('Saving grade:', editingGrade);
+
+            // Update local state
+            setClassGrades(classGrades.map(grade =>
+                grade.maSinhVien === editingGrade.maSinhVien ? editingGrade : grade
+            ));
+
+            setEditGradeDialogVisible(false);
+            setEditingGrade(null);
+            setSuccess('Cập nhật điểm thành công');
+            setTimeout(() => setSuccess(''), 3000);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Không thể cập nhật điểm');
+        } finally {
+            setLoadingPopup(false);
+        }
+    };
+
+    // Calculate total grade and classification
+    const calculateGrade = (diemChuyenCan: number | null, diemGiuaKy: number | null, diemCuoiKy: number | null) => {
+        const cc = diemChuyenCan || 0;
+        const gk = diemGiuaKy || 0;
+        const ck = diemCuoiKy || 0;
+
+        // Tính điểm tổng kết: 20% chuyên cần + 30% giữa kỳ + 50% cuối kỳ
+        const diemTongKet = (cc * 0.2) + (gk * 0.3) + (ck * 0.5);
+
+        // Tính xếp loại
+        let xepLoai = '';
+        if (diemTongKet >= 8.5) xepLoai = 'A';
+        else if (diemTongKet >= 7.0) xepLoai = 'B';
+        else if (diemTongKet >= 5.5) xepLoai = 'C';
+        else if (diemTongKet >= 4.0) xepLoai = 'D';
+        else xepLoai = 'F';
+
+        return { diemTongKet: Math.round(diemTongKet * 10) / 10, xepLoai };
+    };
+
+    // Update grade calculation when any component grade changes
+    const updateGradeCalculation = (grade: StudentGrade, field: string, value: number | null) => {
+        const updatedGrade = { ...grade, [field]: value };
+
+        // Recalculate total grade and classification
+        const { diemTongKet, xepLoai } = calculateGrade(
+            updatedGrade.diemChuyenCan,
+            updatedGrade.diemGiuaKy,
+            updatedGrade.diemCuoiKy
+        );
+
+        return {
+            ...updatedGrade,
+            diemTongKet,
+            xepLoai
+        };
     };
 
     // Chart data functions
@@ -248,6 +338,7 @@ export default function CourseManagementPage() {
         <div className="w-4/5 max-w-6xl mx-auto p-6 bg-white rounded-2xl shadow-lg mt-12 flex flex-col items-center">
             <h1 className="text-2xl font-bold mb-6 text-blue-700 text-center">Lớp học phần của tôi</h1>
             {error && <Message severity="error" text={error} className="mb-4" />}
+            {success && <Message severity="success" text={success} className="mb-4" />}
 
             <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4">
                 <div className="flex gap-2 w-full md:w-1/2">
@@ -613,11 +704,6 @@ export default function CourseManagementPage() {
                 footer={
                     <div className="flex justify-end gap-2 mt-4">
                         <Button
-                            label="Lưu thay đổi"
-                            icon="pi pi-save"
-                            className="p-button-success"
-                        />
-                        <Button
                             label="Đóng"
                             icon="pi pi-times"
                             onClick={() => setGradesDialogVisible(false)}
@@ -635,35 +721,45 @@ export default function CourseManagementPage() {
                                 <tr>
                                     <th className="px-4 py-3 text-left">Mã SV</th>
                                     <th className="px-4 py-3 text-left">Tên sinh viên</th>
-                                    <th className="px-4 py-3 text-center">Điểm QT</th>
-                                    <th className="px-4 py-3 text-center">Điểm GK</th>
-                                    <th className="px-4 py-3 text-center">Điểm CK</th>
-                                    <th className="px-4 py-3 text-center">Điểm TB</th>
-                                    <th className="px-4 py-3 text-center">Điểm chữ</th>
-                                    <th className="px-4 py-3 text-center">Trạng thái</th>
+                                    <th className="px-4 py-3 text-center">Điểm chuyên cần</th>
+                                    <th className="px-4 py-3 text-center">Điểm giữa kỳ</th>
+                                    <th className="px-4 py-3 text-center">Điểm cuối kỳ</th>
+                                    <th className="px-4 py-3 text-center">Điểm tổng kết</th>
+                                    <th className="px-4 py-3 text-center">Xếp loại</th>
+                                    <th className="px-4 py-3 text-center">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {classGrades.map((grade, index) => (
                                     <tr key={index} className="border-b hover:bg-yellow-50 transition-colors">
                                         <td className="px-4 py-3 font-mono bg-gray-50">{grade.maSinhVien}</td>
-                                        <td className="px-4 py-3 font-medium">{grade.tenSinhVien}</td>
-                                        <td className="px-4 py-3 text-center">{grade.diemQuaTrinh}</td>
-                                        <td className="px-4 py-3 text-center">{grade.diemGiuaKy}</td>
-                                        <td className="px-4 py-3 text-center">{grade.diemCuoiKy}</td>
-                                        <td className="px-4 py-3 text-center font-semibold text-lg">{grade.diemTrungBinh}</td>
+                                        <td className="px-4 py-3 font-medium">{grade?.hoTenSinhVien}</td>
                                         <td className="px-4 py-3 text-center">
-                                            <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 font-medium">
-                                                {grade.diemChu}
-                                            </span>
+                                            {grade.diemChuyenCan !== null ? grade.diemChuyenCan : '-'}
                                         </td>
                                         <td className="px-4 py-3 text-center">
-                                            <span className={`px-2 py-1 rounded-full text-xs ${grade.trangThai === 'Đã nhập'
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-yellow-100 text-yellow-800'
-                                                }`}>
-                                                {grade.trangThai}
-                                            </span>
+                                            {grade.diemGiuaKy !== null ? grade.diemGiuaKy : '-'}
+                                        </td>
+                                        <td className="px-4 py-3 text-center">
+                                            {grade.diemCuoiKy !== null ? grade.diemCuoiKy : '-'}
+                                        </td>
+                                        <td className="px-4 py-3 text-center font-semibold text-lg">
+                                            {grade.diemTongKet !== null ? grade.diemTongKet : '-'}
+                                        </td>
+                                        <td className="px-4 py-3 text-center">
+                                            {grade.xepLoai ? (
+                                                <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 font-medium">
+                                                    {grade.xepLoai}
+                                                </span>
+                                            ) : '-'}
+                                        </td>
+                                        <td className="px-4 py-3 text-center">
+                                            <Button
+                                                icon="pi pi-pencil"
+                                                className="p-button-rounded p-button-warning text-sm"
+                                                tooltip="Sửa điểm"
+                                                onClick={() => handleEditGrade(grade)}
+                                            />
                                         </td>
                                     </tr>
                                 ))}
@@ -672,6 +768,146 @@ export default function CourseManagementPage() {
                         {classGrades.length === 0 && (
                             <div className="text-center py-8 text-gray-500">Không có dữ liệu điểm</div>
                         )}
+                    </div>
+                )}
+            </Dialog>
+
+            {/* Popup Edit Grade */}
+            <Dialog
+                visible={editGradeDialogVisible}
+                onHide={() => setEditGradeDialogVisible(false)}
+                header={`Sửa điểm - ${editingGrade?.hoTenSinhVien}`}
+                modal
+                className="p-fluid w-full max-w-2xl"
+                footer={
+                    <div className="flex justify-end gap-2 mt-4">
+                        <Button
+                            label="Lưu"
+                            icon="pi pi-save"
+                            onClick={handleSaveGrade}
+                            className="p-button-success"
+                            loading={loadingPopup}
+                        />
+                        <Button
+                            label="Hủy"
+                            icon="pi pi-times"
+                            onClick={() => setEditGradeDialogVisible(false)}
+                            className="p-button-secondary"
+                            disabled={loadingPopup}
+                        />
+                    </div>
+                }
+            >
+                {editingGrade && (
+                    <div className="space-y-4">
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Mã sinh viên</label>
+                                    <div className="bg-gray-100 px-3 py-2 rounded-md font-mono">{editingGrade.maSinhVien}</div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tên sinh viên</label>
+                                    <div className="bg-gray-100 px-3 py-2 rounded-md">{editingGrade.hoTenSinhVien}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Điểm chuyên cần</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="10"
+                                    step="0.1"
+                                    value={editingGrade.diemChuyenCan || ''}
+                                    onChange={(e) => {
+                                        const value = e.target.value ? parseFloat(e.target.value) : null;
+                                        setEditingGrade(updateGradeCalculation(editingGrade, 'diemChuyenCan', value));
+                                    }}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Nhập điểm"
+                                />
+                                <div className="text-xs text-gray-500 mt-1">Hệ số: 20%</div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Điểm giữa kỳ</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="10"
+                                    step="0.1"
+                                    value={editingGrade.diemGiuaKy || ''}
+                                    onChange={(e) => {
+                                        const value = e.target.value ? parseFloat(e.target.value) : null;
+                                        setEditingGrade(updateGradeCalculation(editingGrade, 'diemGiuaKy', value));
+                                    }}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Nhập điểm"
+                                />
+                                <div className="text-xs text-gray-500 mt-1">Hệ số: 30%</div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Điểm cuối kỳ</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="10"
+                                    step="0.1"
+                                    value={editingGrade.diemCuoiKy || ''}
+                                    onChange={(e) => {
+                                        const value = e.target.value ? parseFloat(e.target.value) : null;
+                                        setEditingGrade(updateGradeCalculation(editingGrade, 'diemCuoiKy', value));
+                                    }}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Nhập điểm"
+                                />
+                                <div className="text-xs text-gray-500 mt-1">Hệ số: 50%</div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Điểm tổng kết</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="10"
+                                    step="0.1"
+                                    value={editingGrade.diemTongKet || ''}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                                    placeholder="Tự động tính"
+                                    readOnly
+                                />
+                                <div className="text-xs text-gray-500 mt-1">Tự động tính từ 3 điểm thành phần</div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Xếp loại</label>
+                                <input
+                                    type="text"
+                                    value={editingGrade.xepLoai || ''}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                                    placeholder="Tự động tính"
+                                    readOnly
+                                />
+                                <div className="text-xs text-gray-500 mt-1">Tự động tính từ điểm tổng kết</div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
+                            <textarea
+                                value={editingGrade.ghiChu || ''}
+                                onChange={(e) => setEditingGrade({
+                                    ...editingGrade,
+                                    ghiChu: e.target.value || null
+                                })}
+                                rows={3}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Nhập ghi chú (nếu có)"
+                            />
+                        </div>
                     </div>
                 )}
             </Dialog>
