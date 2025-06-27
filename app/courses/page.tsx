@@ -165,17 +165,30 @@ export default function CourseManagementPage() {
         }
     };
 
-    const handleViewReport = async (cls: ClassSection) => {
-        setSelectedClass(cls);
-        setReportDialogVisible(true);
-        setLoadingPopup(true);
+    const handleDownloadReport = async (cls: ClassSection) => {
         try {
-            // TODO: Fetch report data
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-        } catch (err: unknown) {
+            const token = localStorage.getItem('token');
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/lophocphan/${cls.maLopHP}/baocao`,
+                {
+                    method: 'GET',
+                    headers: {
+                        ...(token ? { Authorization: `Bearer ${token}` } : {})
+                    }
+                }
+            );
+            if (!res.ok) throw new Error('Không thể tải file báo cáo');
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `BaoCao_Lop_${cls.maLopHP}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
             setError(err instanceof Error ? err.message : 'Không thể tải báo cáo');
-        } finally {
-            setLoadingPopup(false);
         }
     };
 
@@ -460,7 +473,7 @@ export default function CourseManagementPage() {
                                             icon="pi pi-file-pdf"
                                             className="p-button-rounded p-button-secondary text-lg"
                                             tooltip="Báo cáo"
-                                            onClick={() => handleViewReport(cls)}
+                                            onClick={() => handleDownloadReport(cls)}
                                         />
                                     </td>
                                 </tr>
@@ -960,98 +973,6 @@ export default function CourseManagementPage() {
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="Nhập ghi chú (nếu có)"
                             />
-                        </div>
-                    </div>
-                )}
-            </Dialog>
-
-            {/* Popup 4: Báo cáo */}
-            <Dialog
-                visible={reportDialogVisible}
-                onHide={() => setReportDialogVisible(false)}
-                header={`Báo cáo lớp - ${selectedClass?.tenLopHP}`}
-                modal
-                className="p-fluid w-full max-w-4xl"
-                footer={
-                    <div className="flex justify-end gap-2 mt-4">
-                        <Button
-                            label="Xuất PDF"
-                            icon="pi pi-file-pdf"
-                            className="p-button-danger"
-                        />
-                        <Button
-                            label="Đóng"
-                            icon="pi pi-times"
-                            onClick={() => setReportDialogVisible(false)}
-                            className="p-button-secondary"
-                        />
-                    </div>
-                }
-            >
-                {loadingPopup ? (
-                    <div className="text-center py-8 text-blue-500 font-semibold">Đang tải báo cáo...</div>
-                ) : (
-                    <div className="space-y-6">
-                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-xl shadow-sm border">
-                            <h3 className="text-xl font-bold mb-4 text-gray-800 flex items-center">
-                                <i className="pi pi-info-circle mr-2 text-blue-500"></i>
-                                Thông tin lớp học phần
-                            </h3>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-white p-3 rounded-lg shadow-sm">
-                                    <div className="text-sm text-gray-600">Mã lớp</div>
-                                    <div className="font-semibold text-gray-800">{selectedClass?.maLopHP}</div>
-                                </div>
-                                <div className="bg-white p-3 rounded-lg shadow-sm">
-                                    <div className="text-sm text-gray-600">Tên lớp</div>
-                                    <div className="font-semibold text-gray-800">{selectedClass?.tenLopHP}</div>
-                                </div>
-                                <div className="bg-white p-3 rounded-lg shadow-sm">
-                                    <div className="text-sm text-gray-600">Học phần</div>
-                                    <div className="font-semibold text-gray-800">{selectedClass?.maHocPhan}</div>
-                                </div>
-                                <div className="bg-white p-3 rounded-lg shadow-sm">
-                                    <div className="text-sm text-gray-600">Số lượng SV</div>
-                                    <div className="font-semibold text-gray-800">{selectedClass?.soLuong}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-xl shadow-sm border">
-                            <h3 className="text-xl font-bold mb-4 text-gray-800 flex items-center">
-                                <i className="pi pi-chart-bar mr-2 text-blue-500"></i>
-                                Thống kê điểm
-                            </h3>
-                            <div className="grid grid-cols-4 gap-4">
-                                <div className="bg-white p-4 rounded-lg shadow-sm text-center">
-                                    <div className="text-2xl font-bold text-blue-600">85%</div>
-                                    <div className="text-sm text-gray-600">Tỷ lệ đạt</div>
-                                </div>
-                                <div className="bg-white p-4 rounded-lg shadow-sm text-center">
-                                    <div className="text-2xl font-bold text-green-600">7.8</div>
-                                    <div className="text-sm text-gray-600">Điểm TB</div>
-                                </div>
-                                <div className="bg-white p-4 rounded-lg shadow-sm text-center">
-                                    <div className="text-2xl font-bold text-yellow-600">15</div>
-                                    <div className="text-sm text-gray-600">SV xuất sắc</div>
-                                </div>
-                                <div className="bg-white p-4 rounded-lg shadow-sm text-center">
-                                    <div className="text-2xl font-bold text-red-600">3</div>
-                                    <div className="text-sm text-gray-600">SV cần hỗ trợ</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-xl shadow-sm border">
-                            <h3 className="text-xl font-bold mb-4 text-gray-800 flex items-center">
-                                <i className="pi pi-lightbulb mr-2 text-green-500"></i>
-                                Đề xuất cải thiện
-                            </h3>
-                            <ul className="list-disc list-inside space-y-2 text-gray-700">
-                                <li>Tăng cường bài tập thực hành cho sinh viên yếu</li>
-                                <li>Tổ chức thêm buổi ôn tập trước kỳ thi</li>
-                                <li>Cải thiện phương pháp giảng dạy</li>
-                            </ul>
                         </div>
                     </div>
                 )}
