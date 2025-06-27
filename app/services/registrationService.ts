@@ -1,18 +1,18 @@
 const API_BASE = 'http://localhost:8080/api';
 
 export interface CourseClass {
-    maLopHocPhan: string;
-    tenLopHocPhan: string;
+    maLopHP: string;
+    tenLopHP: string;
+    soLuong: number;
+    siSoHienTai: number;
+    giangVien: string;
+    thoiGianBatDau: string;
+    thoiGianKetThuc: string;
+    phongHoc: string;
+    trangThai: boolean;
     maHocPhan: string;
     tenHocPhan: string;
     soTinChi: number;
-    hocKy: string;
-    namHoc: string;
-    siSoToiDa: number;
-    siSoHienTai: number;
-    giangVien: string;
-    phongHoc: string;
-    trangThai: string;
 }
 
 export interface RegistrationPeriod {
@@ -38,7 +38,11 @@ export interface Registration {
 
 export interface RegisterPayload {
     maSinhVien: string;
-    maLopHocPhan: string;
+    maLopHP: string;
+    maPhienDK: number;
+    thoiGianDangKy: string;
+    trangThai: boolean;
+    ketQuaDangKy: number;
 }
 
 interface ApiResponse<T> {

@@ -50,12 +50,16 @@ export default function CourseRegistrationPage() {
             console.log('Periods array:', periodsArray);
 
             setRegistrationPeriods(periodsArray);
-            setAvailableClasses(classes);
-            setRegisteredClasses(registrations);
+            setAvailableClasses(Array.isArray(classes) ? classes : []);
+            setRegisteredClasses(Array.isArray(registrations) ? registrations : []);
         } catch (error: unknown) {
             console.error('Error loading data:', error);
             const errorMessage = error instanceof Error ? error.message : 'Không thể tải dữ liệu';
             showToast('error', 'Lỗi', errorMessage);
+            // Set empty arrays as fallback
+            setRegistrationPeriods([]);
+            setAvailableClasses([]);
+            setRegisteredClasses([]);
         } finally {
             setLoading(false);
         }
@@ -66,7 +70,7 @@ export default function CourseRegistrationPage() {
     };
 
     const actionTemplate = (rowData: CourseClass) => {
-        if (rowData.trangThai === 'Còn chỗ') {
+        if (!rowData || rowData.trangThai) {
             return (
                 <Button
                     label="Đăng ký"
@@ -83,6 +87,8 @@ export default function CourseRegistrationPage() {
     };
 
     const registeredActionTemplate = (rowData: Registration) => {
+        if (!rowData) return null;
+
         return (
             <Button
                 label="Hủy đăng ký"
@@ -100,9 +106,17 @@ export default function CourseRegistrationPage() {
         if (!selectedClass) return;
 
         try {
+            const currentTime = new Date().toISOString();
+            // Get maPhienDK from registration period if available
+            const maPhienDK = registrationPeriods.length > 0 ? parseInt(registrationPeriods[0].maDotDK.replace(/\D/g, '')) || 1 : 1;
+
             await registrationService.registerClass({
                 maSinhVien,
-                maLopHocPhan: selectedClass.maLopHocPhan
+                maLopHP: selectedClass.maLopHP,
+                maPhienDK: maPhienDK,
+                thoiGianDangKy: currentTime,
+                trangThai: true,
+                ketQuaDangKy: 1 // Default to 1 (success)
             });
 
             showToast('success', 'Thành công', 'Đăng ký lớp học phần thành công');
@@ -129,10 +143,12 @@ export default function CourseRegistrationPage() {
     };
 
     const filteredAvailableClasses = availableClasses.filter(cls =>
-        cls.tenLopHocPhan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cls.tenHocPhan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cls.maLopHocPhan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cls.maHocPhan.toLowerCase().includes(searchTerm.toLowerCase())
+        cls && (
+            (cls.tenLopHP?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+            (cls.tenHocPhan?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+            (cls.maLopHP?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+            (cls.maHocPhan?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+        )
     );
 
     if (loading) {
@@ -239,19 +255,19 @@ export default function CourseRegistrationPage() {
                                     </tr>
                                 ) : (
                                     filteredAvailableClasses.map((rowData) => (
-                                        <tr key={rowData.maLopHocPhan} className="border-b hover:bg-blue-50">
-                                            <td className="px-4 py-2 border border-gray-300 font-mono">{rowData.maLopHocPhan}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData.tenLopHocPhan}</td>
-                                            <td className="px-4 py-2 border border-gray-300 font-mono">{rowData.maHocPhan}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData.tenHocPhan}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData.soTinChi}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData.giangVien}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData.phongHoc}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData.siSoHienTai}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData.siSoToiDa}</td>
+                                        <tr key={rowData?.maLopHP || 'unknown'} className="border-b hover:bg-blue-50">
+                                            <td className="px-4 py-2 border border-gray-300 font-mono">{rowData?.maLopHP || ''}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData?.tenLopHP || ''}</td>
+                                            <td className="px-4 py-2 border border-gray-300 font-mono">{rowData?.maHocPhan || ''}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData?.tenHocPhan || ''}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData?.soTinChi || ''}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData?.giangVien || ''}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData?.phongHoc || ''}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData?.siSoHienTai || ''}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData?.soLuong || ''}</td>
                                             <td className="px-4 py-2 border border-gray-300">
-                                                <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${rowData.trangThai === 'Còn chỗ' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
-                                                    {rowData.trangThai}
+                                                <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${rowData?.trangThai ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                    {rowData?.trangThai ? 'Còn chỗ' : 'Hết chỗ'}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-2 border border-gray-300 text-center">
@@ -291,18 +307,18 @@ export default function CourseRegistrationPage() {
                                     </tr>
                                 ) : (
                                     registeredClasses.map((rowData) => (
-                                        <tr key={rowData.id} className="border-b hover:bg-blue-50">
-                                            <td className="px-4 py-2 border border-gray-300 font-mono">{rowData.lopHocPhan.maLopHocPhan}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData.lopHocPhan.tenLopHocPhan}</td>
-                                            <td className="px-4 py-2 border border-gray-300 font-mono">{rowData.lopHocPhan.maHocPhan}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData.lopHocPhan.tenHocPhan}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData.lopHocPhan.soTinChi}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData.lopHocPhan.giangVien}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData.lopHocPhan.phongHoc}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{new Date(rowData.ngayDangKy).toLocaleDateString('vi-VN')}</td>
+                                        <tr key={rowData?.id || 'unknown'} className="border-b hover:bg-blue-50">
+                                            <td className="px-4 py-2 border border-gray-300 font-mono">{rowData?.lopHocPhan?.maLopHP || ''}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData?.lopHocPhan?.tenLopHP || ''}</td>
+                                            <td className="px-4 py-2 border border-gray-300 font-mono">{rowData?.lopHocPhan?.maHocPhan || ''}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData?.lopHocPhan?.tenHocPhan || ''}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData?.lopHocPhan?.soTinChi || ''}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData?.lopHocPhan?.giangVien || ''}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData?.lopHocPhan?.phongHoc || ''}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData?.ngayDangKy ? new Date(rowData.ngayDangKy).toLocaleDateString('vi-VN') : ''}</td>
                                             <td className="px-4 py-2 border border-gray-300">
-                                                <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${rowData.trangThai === 'Đã đăng ký' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
-                                                    {rowData.trangThai}
+                                                <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${rowData?.trangThai === 'Đã đăng ký' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+                                                    {rowData?.trangThai || ''}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-2 border border-gray-300 text-center">
@@ -342,7 +358,7 @@ export default function CourseRegistrationPage() {
             >
                 <p>
                     Bạn có chắc chắn muốn đăng ký lớp học phần{' '}
-                    <strong>{selectedClass?.tenLopHocPhan}</strong>?
+                    <strong>{selectedClass?.tenLopHP}</strong>?
                 </p>
                 <div className="mt-4">
                     <p><strong>Mã học phần:</strong> {selectedClass?.maHocPhan}</p>
@@ -378,7 +394,7 @@ export default function CourseRegistrationPage() {
             >
                 <p>
                     Bạn có chắc chắn muốn hủy đăng ký lớp học phần{' '}
-                    <strong>{selectedRegistration?.lopHocPhan.tenLopHocPhan}</strong>?
+                    <strong>{selectedRegistration?.lopHocPhan?.tenLopHP || 'N/A'}</strong>?
                 </p>
             </Dialog>
         </div>
