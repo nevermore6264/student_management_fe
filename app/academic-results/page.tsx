@@ -4,84 +4,44 @@ import { useState, useEffect, useRef } from 'react';
 import { Card } from 'primereact/card';
 import { ProgressBar } from 'primereact/progressbar';
 import { Toast } from 'primereact/toast';
-import { Button } from 'primereact/button';
-import { TabView, TabPanel } from 'primereact/tabview';
-import gradeService, { GradeOverview, GradeDetail } from '../services/gradeService';
+import gradeService, { KetQuaHocTapResponse } from '../services/gradeService';
 
 export default function AcademicResultsPage() {
     const [loading, setLoading] = useState(true);
-    const [gradeOverview, setGradeOverview] = useState<GradeOverview | null>(null);
+    const [result, setResult] = useState<KetQuaHocTapResponse | null>(null);
     const toast = useRef<Toast>(null);
-    const [toastMessage, setToastMessage] = useState<{ severity: 'success' | 'error' | 'info' | 'warn', summary: string, detail: string } | null>(null);
 
-    // Mock student ID - in real app this would come from user context/auth
     const maSinhVien = 'SV001';
 
     useEffect(() => {
-        loadGradeOverview();
+        loadResult();
     }, []);
 
-    // Effect to show toast when toastMessage changes
-    useEffect(() => {
-        if (toastMessage && toast.current) {
-            toast.current.show({
-                severity: toastMessage.severity,
-                summary: toastMessage.summary,
-                detail: toastMessage.detail,
-                life: 3000
-            });
-            setToastMessage(null);
-        }
-    }, [toastMessage]);
-
-    const loadGradeOverview = async () => {
+    const loadResult = async () => {
         try {
             setLoading(true);
-            const data = await gradeService.getStudentGradeOverview(maSinhVien);
-            setGradeOverview(data);
+            const data = await gradeService.getStudentSummary(maSinhVien);
+            setResult(data);
         } catch (error: unknown) {
-            const errorMessage = error instanceof Error ? error.message : 'Không thể tải thông tin điểm';
-            setToastMessage({ severity: 'error', summary: 'Lỗi', detail: errorMessage });
-            console.error('Error loading grade overview:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Không thể tải dữ liệu';
+            toast.current?.show({ severity: 'error', summary: 'Lỗi', detail: errorMessage, life: 3000 });
         } finally {
             setLoading(false);
         }
     };
 
-    const getGradeColor = (diemTongKet: number) => {
-        if (diemTongKet >= 8.5) return 'text-green-600 font-bold';
-        if (diemTongKet >= 7.0) return 'text-blue-600 font-semibold';
-        if (diemTongKet >= 5.5) return 'text-yellow-600 font-semibold';
+    const getGradeColor = (diem: number) => {
+        if (diem >= 8.5) return 'text-green-600 font-bold';
+        if (diem >= 7.0) return 'text-blue-600 font-semibold';
+        if (diem >= 5.5) return 'text-yellow-600 font-semibold';
         return 'text-red-600 font-semibold';
     };
 
     const getStatusColor = (trangThai: string) => {
         switch (trangThai.toLowerCase()) {
-            case 'đạt':
-                return 'bg-green-100 text-green-700';
-            case 'không đạt':
-                return 'bg-red-100 text-red-700';
-            case 'chưa hoàn thành':
-                return 'bg-yellow-100 text-yellow-700';
-            default:
-                return 'bg-gray-100 text-gray-700';
-        }
-    };
-
-    const getXepLoaiColor = (xepLoai: string) => {
-        switch (xepLoai.toLowerCase()) {
-            case 'xuất sắc':
-                return 'bg-purple-100 text-purple-700';
-            case 'giỏi':
-                return 'bg-blue-100 text-blue-700';
-            case 'khá':
-                return 'bg-green-100 text-green-700';
-            case 'trung bình':
-                return 'bg-yellow-100 text-yellow-700';
-            case 'yếu':
-                return 'bg-red-100 text-red-700';
-            default:
-                return 'bg-gray-100 text-gray-700';
+            case 'đạt': return 'bg-green-100 text-green-700';
+            case 'không đạt': return 'bg-red-100 text-red-700';
+            default: return 'bg-gray-100 text-gray-700';
         }
     };
 
@@ -98,7 +58,7 @@ export default function AcademicResultsPage() {
         );
     }
 
-    if (!gradeOverview) {
+    if (!result) {
         return (
             <div className="card">
                 <div className="text-center py-4">
@@ -110,82 +70,42 @@ export default function AcademicResultsPage() {
         );
     }
 
-    const tiLeDat = gradeOverview.tongSoTinChi > 0 ?
-        (gradeOverview.tongSoTinChiDat / gradeOverview.tongSoTinChi) * 100 : 0;
-
     return (
         <div className="card">
             <Toast ref={toast} />
-
-            <div className="flex justify-content-between align-items-center mb-4">
-                <h1 className="text-2xl font-bold">Kết quả học tập</h1>
-                <Button
-                    label="Làm mới"
-                    icon="pi pi-refresh"
-                    onClick={loadGradeOverview}
-                    className="p-button-outlined"
-                />
-            </div>
-
-            {/* Student Info Card */}
-            <Card className="mb-4">
-                <div className="grid">
-                    <div className="col-12 md:col-6">
-                        <h3 className="text-lg font-semibold mb-2">Thông tin sinh viên</h3>
-                        <p><strong>Mã sinh viên:</strong> {gradeOverview.maSinhVien}</p>
-                        <p><strong>Họ tên:</strong> {gradeOverview.hoTenSinhVien}</p>
-                    </div>
-                    <div className="col-12 md:col-6">
-                        <h3 className="text-lg font-semibold mb-2">Tổng quan</h3>
-                        <p><strong>Điểm trung bình:</strong>
-                            <span className={`ml-2 text-xl ${getGradeColor(gradeOverview.diemTrungBinh)}`}>
-                                {gradeOverview.diemTrungBinh.toFixed(2)}
-                            </span>
-                        </p>
-                        <p><strong>Xếp loại:</strong>
-                            <span className={`ml-2 px-2 py-1 rounded text-xs font-semibold ${getXepLoaiColor(gradeOverview.xepLoai)}`}>
-                                {gradeOverview.xepLoai}
-                            </span>
-                        </p>
-                    </div>
-                </div>
-            </Card>
-
-            {/* Statistics Cards */}
-            <div className="grid mb-4">
-                <div className="col-12 md:col-4">
-                    <Card className="text-center">
-                        <div className="text-3xl font-bold text-blue-600">{gradeOverview.tongSoTinChi}</div>
+            <div className="flex flex-col md:flex-row gap-4 mb-4">
+                <Card className="flex-1">
+                    <h3 className="text-lg font-semibold mb-2">Thông tin sinh viên</h3>
+                    <p><strong>Mã sinh viên:</strong> {result.maSinhVien}</p>
+                    <p><strong>Họ tên:</strong> {result.hoTenSinhVien}</p>
+                    <h3 className="text-lg font-semibold mt-4 mb-2">Tổng quan</h3>
+                    <p><strong>Điểm trung bình:</strong>
+                        <span className={`ml-2 text-xl ${getGradeColor(result.diemTrungBinh)}`}>
+                            {result.diemTrungBinh?.toFixed(2)}
+                        </span>
+                    </p>
+                    <p><strong>Xếp loại:</strong>
+                        <span className="ml-2 px-2 py-1 rounded text-xs font-semibold bg-red-100 text-red-700">
+                            {result.xepLoai}
+                        </span>
+                    </p>
+                </Card>
+                <div className="flex flex-col gap-4 flex-1">
+                    <Card className="text-center flex-1">
+                        <div className="text-3xl font-bold text-blue-600">{result.tongSoTinChi}</div>
                         <div className="text-gray-600">Tổng số tín chỉ</div>
                     </Card>
-                </div>
-                <div className="col-12 md:col-4">
-                    <Card className="text-center">
-                        <div className="text-3xl font-bold text-green-600">{gradeOverview.tongSoTinChiDat}</div>
+                    <Card className="text-center flex-1">
+                        <div className="text-3xl font-bold text-green-600">{result.tinChiDat}</div>
                         <div className="text-gray-600">Tín chỉ đạt</div>
                     </Card>
-                </div>
-                <div className="col-12 md:col-4">
-                    <Card className="text-center">
-                        <div className="text-3xl font-bold text-purple-600">{tiLeDat.toFixed(1)}%</div>
+                    <Card className="text-center flex-1">
+                        <div className="text-3xl font-bold text-purple-600">{result.tyLeDat?.toFixed(1)}%</div>
                         <div className="text-gray-600">Tỷ lệ đạt</div>
                     </Card>
                 </div>
             </div>
 
-            {/* Progress Bar */}
-            <Card className="mb-4">
-                <h3 className="text-lg font-semibold mb-3">Tiến độ học tập</h3>
-                <div className="mb-2">
-                    <div className="flex justify-content-between mb-1">
-                        <span>Tín chỉ đã đạt: {gradeOverview.tongSoTinChiDat}/{gradeOverview.tongSoTinChi}</span>
-                        <span>{tiLeDat.toFixed(1)}%</span>
-                    </div>
-                    <ProgressBar value={tiLeDat} color={tiLeDat >= 80 ? 'green' : tiLeDat >= 60 ? 'blue' : 'orange'} />
-                </div>
-            </Card>
-
-            {/* Grade Details */}
             <Card>
                 <h3 className="text-lg font-semibold mb-3">Chi tiết điểm từng môn học</h3>
                 <div className="overflow-x-auto">
@@ -203,14 +123,14 @@ export default function AcademicResultsPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {gradeOverview.danhSachDiem.length === 0 ? (
+                            {(!result.chiTietDiem || result.chiTietDiem.length === 0) ? (
                                 <tr>
                                     <td colSpan={8} className="text-center py-4 text-gray-500">
                                         Chưa có điểm học phần nào
                                     </td>
                                 </tr>
                             ) : (
-                                gradeOverview.danhSachDiem.map((diem, index) => (
+                                result.chiTietDiem.map((diem, index) => (
                                     <tr key={index} className="border-b hover:bg-blue-50">
                                         <td className="px-4 py-2 border border-gray-300 font-mono">{diem.maHocPhan}</td>
                                         <td className="px-4 py-2 border border-gray-300">{diem.tenHocPhan}</td>

@@ -90,6 +90,30 @@ export interface GradeDetail {
     trangThai: string;
 }
 
+export interface ChiTietDiem {
+    maHocPhan: string;
+    tenHocPhan: string;
+    soTinChi: number;
+    diemQuaTrinh: number;
+    diemThi: number;
+    diemTongKet: number;
+    diemChu: string;
+    trangThai: string;
+}
+
+export interface KetQuaHocTapResponse {
+    maSinhVien: string;
+    hoTenSinhVien: string;
+    diemTrungBinh: number;
+    xepLoai: string;
+    tongSoTinChi: number;
+    tinChiDat: number;
+    tyLeDat: number;
+    tinChiDaDat: number;
+    tyLeHoanThanh: number;
+    chiTietDiem: ChiTietDiem[];
+}
+
 class GradeService {
     async getOverview(maSinhVien: string): Promise<SemesterSummary[]> {
         const token = localStorage.getItem('token');
@@ -314,6 +338,19 @@ class GradeService {
         }
 
         const response: ApiResponse<GradeOverview> = await res.json();
+        return response.data;
+    }
+
+    async getStudentSummary(maSinhVien: string): Promise<KetQuaHocTapResponse> {
+        const res = await fetch(`${API_BASE}/api/diem/sinhvien/${maSinhVien}/ketquahoctap`, {
+            method: 'GET',
+            headers: this.getAuthHeaders(),
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || 'Không thể lấy kết quả học tập');
+        }
+        const response: ApiResponse<KetQuaHocTapResponse> = await res.json();
         return response.data;
     }
 }

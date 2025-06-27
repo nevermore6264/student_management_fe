@@ -116,7 +116,7 @@ const menuItems = [
             {
                 label: 'Kết quả học tập',
                 icon: 'pi pi-chart-bar',
-                path: '/grades',
+                path: '/academic-results',
                 roles: ['sv']
             }
         ]
