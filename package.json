@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "chart.js": "^4.5.0",
+    "devextreme": "^24.2.8",
+    "devextreme-react": "^24.2.8",
     "next": "15.3.3",
     "primeflex": "^4.0.0",
     "primeicons": "^7.0.0",
