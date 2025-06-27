@@ -203,9 +203,9 @@ class GradeService {
         return data.data || data;
     }
 
-    async updateGrade(id: string, gradeData: DiemRequest): Promise<DiemResponse> {
+    async updateGrade(gradeData: DiemRequest): Promise<DiemResponse> {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${API_BASE}/api/diem/capnhat/${id}`, {
+        const res = await fetch(`${API_BASE}/api/diem/capnhat?maSinhVien=${gradeData.maSinhVien}&maLopHP=${gradeData.maLopHP}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -216,12 +216,12 @@ class GradeService {
 
         const data = await res.json();
 
-        // Kiểm tra cả HTTP status và success field
-        if (!res.ok || !data.success) {
-            throw new Error(data.message || 'Không thể cập nhật điểm');
+        // Kiểm tra success field từ response
+        if (!data.success) {
+            throw new Error(data.message);
         }
 
-        return data.data || data;
+        return data.data;
     }
 
     async createGrade(gradeData: DiemRequest): Promise<DiemResponse> {
@@ -237,12 +237,12 @@ class GradeService {
 
         const data = await res.json();
 
-        // Kiểm tra cả HTTP status và success field
-        if (!res.ok || !data.success) {
-            throw new Error(data.message || 'Không thể tạo điểm');
+        // Kiểm tra success field từ response
+        if (!data.success) {
+            throw new Error(data.message);
         }
 
-        return data.data || data;
+        return data.data;
     }
 
     async deleteGrade(id: string): Promise<void> {

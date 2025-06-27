@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -200,14 +201,16 @@ export default function CourseManagementPage() {
             };
 
             let response;
+
             // Thử tạo mới trước, nếu lỗi "đã tồn tại" thì cập nhật
             try {
                 response = await gradeService.createGrade(diemRequest);
             } catch (createError: unknown) {
                 const errorMessage = createError instanceof Error ? createError.message : '';
-                // Nếu lỗi "đã tồn tại" và có maDiem thì cập nhật
-                if (errorMessage.includes('đã tồn tại') && editingGrade.maDiem) {
-                    response = await gradeService.updateGrade(editingGrade.maDiem, diemRequest);
+                // Nếu lỗi "đã tồn tại" thì cập nhật
+                if (errorMessage.includes('đã tồn tại')) {
+                    console.log("Oke");
+                    response = await gradeService.updateGrade(diemRequest);
                 } else {
                     throw createError;
                 }
@@ -257,6 +260,17 @@ export default function CourseManagementPage() {
         else xepLoai = 'F (Kém)';
 
         return { diemTongKet: Math.round(diemTongKet * 10) / 10, xepLoai };
+    };
+
+    // Function tính xếp loại từ điểm tổng kết
+    const getXepLoai = (diemTongKet: number | null): string => {
+        if (diemTongKet === null || diemTongKet === undefined) return '-';
+
+        if (diemTongKet >= 8.5) return 'A (Xuất sắc)';
+        else if (diemTongKet >= 7.0) return 'B (Tốt)';
+        else if (diemTongKet >= 5.5) return 'C (Trung bình)';
+        else if (diemTongKet >= 4.0) return 'D (Yếu)';
+        else return 'F (Kém)';
     };
 
     // Update grade calculation when any component grade changes
@@ -783,7 +797,11 @@ export default function CourseManagementPage() {
                                                 <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 font-medium">
                                                     {grade.xepLoai}
                                                 </span>
-                                            ) : '-'}
+                                            ) : (
+                                                <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800 font-medium">
+                                                    {getXepLoai(grade.diemTongKet)}
+                                                </span>
+                                            )}
                                         </td>
                                         <td className="px-4 py-3 text-center">
                                             <Button
