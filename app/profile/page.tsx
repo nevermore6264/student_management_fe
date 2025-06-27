@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect, useState, useRef } from 'react';
@@ -6,19 +7,17 @@ import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { Toast } from 'primereact/toast';
 import studentService from '../services/studentService';
+import Image from 'next/image';
 
 interface StudentProfile {
     maSinhVien: string;
-    hoTen: string;
+    hoTenSinhVien: string;
     email: string;
     soDienThoai: string;
+    diaChi?: string;
     ngaySinh?: string;
-    gioiTinh?: string;
-    avatarUrl?: string;
-    khoa: string;
-    lop: string;
-    chuyenNganh: string;
-    namNhapHoc?: string;
+    gioiTinh?: boolean;
+    maLop: string;
 }
 
 export default function StudentProfilePage() {
@@ -30,9 +29,8 @@ export default function StudentProfilePage() {
     const toast = useRef<Toast>(null);
     const [editTouched, setEditTouched] = useState<{ [key: string]: boolean }>({});
     const genderOptions = [
-        { label: 'Nam', value: 'Nam' },
-        { label: 'Nữ', value: 'Nữ' },
-        { label: 'Khác', value: 'Khác' },
+        { label: 'Nam', value: true },
+        { label: 'Nữ', value: false }
     ];
 
     const fetchProfile = async () => {
@@ -41,20 +39,18 @@ export default function StudentProfilePage() {
             const userId = localStorage.getItem('maNguoiDung');
             if (!userId) throw new Error('Không tìm thấy thông tin người dùng');
             const response = await studentService.getStudentById(userId);
+            console.log('API response:', response);
             if (response.success) {
                 const studentData = response.data;
                 setProfile({
                     maSinhVien: studentData.maSinhVien || '',
-                    hoTen: studentData.hoTen || '',
+                    hoTenSinhVien: studentData.hoTenSinhVien || '',
                     email: studentData.email || '',
                     soDienThoai: studentData.soDienThoai || '',
+                    diaChi: studentData.diaChi || '',
                     ngaySinh: studentData.ngaySinh || '',
-                    gioiTinh: studentData.gioiTinh || '',
-                    avatarUrl: studentData.avatarUrl || '',
-                    khoa: studentData.khoa || '',
-                    lop: studentData.lop || '',
-                    chuyenNganh: studentData.chuyenNganh || '',
-                    namNhapHoc: studentData.namNhapHoc || '',
+                    gioiTinh: studentData.gioiTinh,
+                    maLop: studentData.maLop || '',
                 });
             } else {
                 throw new Error(response.message || 'Không thể lấy thông tin sinh viên');
@@ -75,7 +71,7 @@ export default function StudentProfilePage() {
         fetchProfile();
     }, []);
 
-    const handleEditInput = (field: keyof StudentProfile, value: string) => {
+    const handleEditInput = (field: keyof StudentProfile, value: string | boolean) => {
         if (!editForm) return;
         setEditForm({ ...editForm, [field]: value });
         setEditTouched({ ...editTouched, [field]: true });
@@ -83,7 +79,7 @@ export default function StudentProfilePage() {
 
     const handleSaveProfile = async () => {
         if (!editForm) return;
-        if (!editForm.hoTen.trim() || !editForm.email.trim() || !editForm.soDienThoai.trim()) {
+        if (!editForm.hoTenSinhVien.trim() || !editForm.email.trim() || !editForm.soDienThoai.trim()) {
             toast.current?.show({
                 severity: 'error',
                 summary: 'Lỗi',
@@ -97,11 +93,14 @@ export default function StudentProfilePage() {
             const userId = localStorage.getItem('maNguoiDung');
             if (!userId) throw new Error('Không tìm thấy thông tin người dùng');
             const updateData = {
-                hoTen: editForm.hoTen,
+                maSinhVien: editForm.maSinhVien,
+                hoTenSinhVien: editForm.hoTenSinhVien,
                 email: editForm.email,
                 soDienThoai: editForm.soDienThoai,
+                diaChi: editForm.diaChi,
                 ngaySinh: editForm.ngaySinh,
                 gioiTinh: editForm.gioiTinh,
+                maLop: editForm.maLop,
             };
             const response = await studentService.updateStudent(userId, updateData);
             if (response.success) {
@@ -131,7 +130,7 @@ export default function StudentProfilePage() {
 
     const isEmpty = (val: string | undefined) => !val || val.trim() === '';
     const editErrors = {
-        hoTen: editTouched.hoTen && isEmpty(editForm?.hoTen),
+        hoTenSinhVien: editTouched.hoTenSinhVien && isEmpty(editForm?.hoTenSinhVien),
         email: editTouched.email && isEmpty(editForm?.email),
         soDienThoai: editTouched.soDienThoai && isEmpty(editForm?.soDienThoai),
     };
@@ -143,13 +142,15 @@ export default function StudentProfilePage() {
         <div className="max-w-2xl mx-auto p-6 bg-white rounded shadow mt-8">
             <Toast ref={toast} />
             <div className="flex items-center gap-4 mb-6">
-                <img
-                    src={profile.avatarUrl || '/avatar-default.svg'}
+                <Image
+                    src={'/avatar-default.svg'}
                     alt="avatar"
-                    className="w-20 h-20 rounded-full object-cover border"
+                    width={96}
+                    height={96}
+                    className="rounded-full border-2 border-gray-300 object-cover"
                 />
                 <div>
-                    <h2 className="text-2xl font-bold">{profile.hoTen}</h2>
+                    <h2 className="text-2xl font-bold">{profile.hoTenSinhVien}</h2>
                     <p className="text-gray-500">{profile.email}</p>
                     <span className="inline-block mt-1 px-2 py-1 text-xs rounded bg-green-100 text-green-700">
                         Sinh viên
@@ -159,7 +160,7 @@ export default function StudentProfilePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label className="font-semibold">Họ tên:</label>
-                    <div>{profile.hoTen || '-'}</div>
+                    <div>{profile.hoTenSinhVien || '-'}</div>
                 </div>
                 <div>
                     <label className="font-semibold">Email:</label>
@@ -174,28 +175,20 @@ export default function StudentProfilePage() {
                     <div>{profile.maSinhVien || '-'}</div>
                 </div>
                 <div>
-                    <label className="font-semibold">Khoa:</label>
-                    <div>{profile.khoa || '-'}</div>
+                    <label className="font-semibold">Mã lớp:</label>
+                    <div>{profile.maLop || '-'}</div>
                 </div>
                 <div>
-                    <label className="font-semibold">Lớp:</label>
-                    <div>{profile.lop || '-'}</div>
-                </div>
-                <div>
-                    <label className="font-semibold">Chuyên ngành:</label>
-                    <div>{profile.chuyenNganh || '-'}</div>
-                </div>
-                <div>
-                    <label className="font-semibold">Năm nhập học:</label>
-                    <div>{profile.namNhapHoc || '-'}</div>
+                    <label className="font-semibold">Địa chỉ:</label>
+                    <div>{profile.diaChi || '-'}</div>
                 </div>
                 <div>
                     <label className="font-semibold">Ngày sinh:</label>
-                    <div>{profile.ngaySinh || '-'}</div>
+                    <div>{profile.ngaySinh ? new Date(profile.ngaySinh).toLocaleDateString('vi-VN') : '-'}</div>
                 </div>
                 <div>
                     <label className="font-semibold">Giới tính:</label>
-                    <div>{profile.gioiTinh || '-'}</div>
+                    <div>{profile.gioiTinh === true ? 'Nam' : profile.gioiTinh === false ? 'Nữ' : '-'}</div>
                 </div>
             </div>
             <div className="flex gap-4 mt-8">
@@ -241,9 +234,9 @@ export default function StudentProfilePage() {
                 {editForm && (
                     <div className="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="p-field mb-3">
-                            <label htmlFor="hoTen" className="p-d-block font-semibold mb-1">Họ tên *</label>
-                            <InputText id="hoTen" className={"p-inputtext p-component w-full" + (editErrors.hoTen ? ' p-invalid' : '')} value={editForm.hoTen} onChange={e => handleEditInput('hoTen', e.target.value)} />
-                            {editErrors.hoTen && <small className="p-error">Họ tên không được để trống</small>}
+                            <label htmlFor="hoTenSinhVien" className="p-d-block font-semibold mb-1">Họ tên *</label>
+                            <InputText id="hoTenSinhVien" className={"p-inputtext p-component w-full" + (editErrors.hoTenSinhVien ? ' p-invalid' : '')} value={editForm.hoTenSinhVien} onChange={e => handleEditInput('hoTenSinhVien', e.target.value)} />
+                            {editErrors.hoTenSinhVien && <small className="p-error">Họ tên không được để trống</small>}
                         </div>
                         <div className="p-field mb-3">
                             <label htmlFor="email" className="p-d-block font-semibold mb-1">Email *</label>
@@ -256,32 +249,24 @@ export default function StudentProfilePage() {
                             {editErrors.soDienThoai && <small className="p-error">Số điện thoại không được để trống</small>}
                         </div>
                         <div className="p-field mb-3">
+                            <label htmlFor="diaChi" className="p-d-block font-semibold mb-1">Địa chỉ</label>
+                            <InputText id="diaChi" className="p-inputtext p-component w-full" value={editForm.diaChi || ''} onChange={e => handleEditInput('diaChi', e.target.value)} />
+                        </div>
+                        <div className="p-field mb-3">
                             <label htmlFor="ngaySinh" className="p-d-block font-semibold mb-1">Ngày sinh</label>
                             <InputText id="ngaySinh" className="p-inputtext p-component w-full" value={editForm.ngaySinh || ''} onChange={e => handleEditInput('ngaySinh', e.target.value)} />
                         </div>
                         <div className="p-field mb-3">
                             <label htmlFor="gioiTinh" className="p-d-block font-semibold mb-1">Giới tính</label>
-                            <Dropdown id="gioiTinh" className="w-full" value={editForm.gioiTinh || ''} options={genderOptions} onChange={e => handleEditInput('gioiTinh', e.value)} placeholder="Chọn giới tính" />
+                            <Dropdown id="gioiTinh" className="w-full" value={editForm.gioiTinh} options={genderOptions} onChange={e => handleEditInput('gioiTinh', e.value)} placeholder="Chọn giới tính" />
                         </div>
                         <div className="p-field mb-3">
                             <label htmlFor="maSinhVien" className="p-d-block font-semibold mb-1">Mã sinh viên</label>
                             <InputText id="maSinhVien" className="p-inputtext p-component w-full bg-gray-100" value={editForm.maSinhVien} disabled />
                         </div>
                         <div className="p-field mb-3">
-                            <label htmlFor="khoa" className="p-d-block font-semibold mb-1">Khoa</label>
-                            <InputText id="khoa" className="p-inputtext p-component w-full bg-gray-100" value={editForm.khoa} disabled />
-                        </div>
-                        <div className="p-field mb-3">
-                            <label htmlFor="lop" className="p-d-block font-semibold mb-1">Lớp</label>
-                            <InputText id="lop" className="p-inputtext p-component w-full bg-gray-100" value={editForm.lop} disabled />
-                        </div>
-                        <div className="p-field mb-3">
-                            <label htmlFor="chuyenNganh" className="p-d-block font-semibold mb-1">Chuyên ngành</label>
-                            <InputText id="chuyenNganh" className="p-inputtext p-component w-full bg-gray-100" value={editForm.chuyenNganh} disabled />
-                        </div>
-                        <div className="p-field mb-3">
-                            <label htmlFor="namNhapHoc" className="p-d-block font-semibold mb-1">Năm nhập học</label>
-                            <InputText id="namNhapHoc" className="p-inputtext p-component w-full bg-gray-100" value={editForm.namNhapHoc || ''} disabled />
+                            <label htmlFor="maLop" className="p-d-block font-semibold mb-1">Mã lớp</label>
+                            <InputText id="maLop" className="p-inputtext p-component w-full bg-gray-100" value={editForm.maLop} disabled />
                         </div>
                     </div>
                 )}

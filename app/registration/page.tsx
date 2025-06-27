@@ -1,98 +1,69 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Dialog } from 'primereact/dialog';
 import { TabView, TabPanel } from 'primereact/tabview';
-
-interface CourseClass {
-    maLopHocPhan: string;
-    tenLopHocPhan: string;
-    maHocPhan: string;
-    tenHocPhan: string;
-    soTinChi: number;
-    hocKy: string;
-    namHoc: string;
-    siSoToiDa: number;
-    siSoHienTai: number;
-    giangVien: string;
-    phongHoc: string;
-    trangThai: string;
-}
-
-interface RegistrationPeriod {
-    maDotDangKy: string;
-    tenDotDangKy: string;
-    ngayBatDau: string;
-    ngayKetThuc: string;
-    trangThai: string;
-}
+import { Toast } from 'primereact/toast';
+import registrationService, { CourseClass, RegistrationPeriod, Registration } from '../services/registrationService';
 
 export default function CourseRegistrationPage() {
     const [activeTab, setActiveTab] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const toast = useRef<Toast>(null);
 
-    const [registrationPeriods] = useState<RegistrationPeriod[]>([
-        {
-            maDotDangKy: 'DK001',
-            tenDotDangKy: 'Đăng ký học kỳ 1 năm 2023-2024',
-            ngayBatDau: '2023-08-01',
-            ngayKetThuc: '2023-08-15',
-            trangThai: 'Đang mở'
-        }
-    ]);
-
-    const [availableClasses] = useState<CourseClass[]>([
-        {
-            maLopHocPhan: 'LHP001',
-            tenLopHocPhan: 'Lập trình Web - Nhóm 1',
-            maHocPhan: 'INT1234',
-            tenHocPhan: 'Lập trình Web',
-            soTinChi: 3,
-            hocKy: '1',
-            namHoc: '2023-2024',
-            siSoToiDa: 50,
-            siSoHienTai: 30,
-            giangVien: 'Nguyễn Văn A',
-            phongHoc: 'A101',
-            trangThai: 'Còn chỗ'
-        },
-        {
-            maLopHocPhan: 'LHP002',
-            tenLopHocPhan: 'Cơ sở dữ liệu - Nhóm 1',
-            maHocPhan: 'INT1235',
-            tenHocPhan: 'Cơ sở dữ liệu',
-            soTinChi: 3,
-            hocKy: '1',
-            namHoc: '2023-2024',
-            siSoToiDa: 50,
-            siSoHienTai: 25,
-            giangVien: 'Trần Thị B',
-            phongHoc: 'A102',
-            trangThai: 'Còn chỗ'
-        }
-    ]);
-
-    const [registeredClasses] = useState<CourseClass[]>([
-        {
-            maLopHocPhan: 'LHP001',
-            tenLopHocPhan: 'Lập trình Web - Nhóm 1',
-            maHocPhan: 'INT1234',
-            tenHocPhan: 'Lập trình Web',
-            soTinChi: 3,
-            hocKy: '1',
-            namHoc: '2023-2024',
-            siSoToiDa: 50,
-            siSoHienTai: 30,
-            giangVien: 'Nguyễn Văn A',
-            phongHoc: 'A101',
-            trangThai: 'Đã đăng ký'
-        }
-    ]);
+    const [registrationPeriods, setRegistrationPeriods] = useState<RegistrationPeriod[]>([]);
+    const [availableClasses, setAvailableClasses] = useState<CourseClass[]>([]);
+    const [registeredClasses, setRegisteredClasses] = useState<Registration[]>([]);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const [selectedClass, setSelectedClass] = useState<CourseClass | null>(null);
+    const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
     const [registerDialogVisible, setRegisterDialogVisible] = useState(false);
     const [cancelDialogVisible, setCancelDialogVisible] = useState(false);
+
+    // Mock student ID - in real app this would come from user context/auth
+    const maSinhVien = 'SV001';
+
+    useEffect(() => {
+        loadData();
+    }, []);
+
+    const loadData = async () => {
+        try {
+            setLoading(true);
+            console.log('Loading data...');
+
+            const [periods, classes, registrations] = await Promise.all([
+                registrationService.getCurrentRegistrationPeriod(),
+                registrationService.getAvailableClasses(),
+                registrationService.getRegisteredClasses(maSinhVien)
+            ]);
+
+            console.log('API Response - periods:', periods);
+            console.log('API Response - classes:', classes);
+            console.log('API Response - registrations:', registrations);
+
+            // Handle single registration period object
+            const periodsArray = periods ? [periods] : [];
+            console.log('Periods array:', periodsArray);
+
+            setRegistrationPeriods(periodsArray);
+            setAvailableClasses(classes);
+            setRegisteredClasses(registrations);
+        } catch (error: unknown) {
+            console.error('Error loading data:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Không thể tải dữ liệu';
+            showToast('error', 'Lỗi', errorMessage);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const showToast = (severity: 'success' | 'error' | 'info' | 'warn', summary: string, detail: string) => {
+        toast.current?.show({ severity, summary, detail, life: 3000 });
+    };
 
     const actionTemplate = (rowData: CourseClass) => {
         if (rowData.trangThai === 'Còn chỗ') {
@@ -107,36 +78,80 @@ export default function CourseRegistrationPage() {
                     }}
                 />
             );
-        } else if (rowData.trangThai === 'Đã đăng ký') {
-            return (
-                <Button
-                    label="Hủy đăng ký"
-                    icon="pi pi-times"
-                    className="p-button-danger"
-                    onClick={() => {
-                        setSelectedClass(rowData);
-                        setCancelDialogVisible(true);
-                    }}
-                />
-            );
         }
         return null;
     };
 
-    const handleRegister = () => {
-        // TODO: Implement registration logic
-        console.log('Registering for class:', selectedClass);
-        setRegisterDialogVisible(false);
+    const registeredActionTemplate = (rowData: Registration) => {
+        return (
+            <Button
+                label="Hủy đăng ký"
+                icon="pi pi-times"
+                className="p-button-danger"
+                onClick={() => {
+                    setSelectedRegistration(rowData);
+                    setCancelDialogVisible(true);
+                }}
+            />
+        );
     };
 
-    const handleCancel = () => {
-        // TODO: Implement cancel registration logic
-        console.log('Canceling registration for class:', selectedClass);
-        setCancelDialogVisible(false);
+    const handleRegister = async () => {
+        if (!selectedClass) return;
+
+        try {
+            await registrationService.registerClass({
+                maSinhVien,
+                maLopHocPhan: selectedClass.maLopHocPhan
+            });
+
+            showToast('success', 'Thành công', 'Đăng ký lớp học phần thành công');
+            setRegisterDialogVisible(false);
+            loadData(); // Reload data to update lists
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Đăng ký thất bại';
+            showToast('error', 'Lỗi', errorMessage);
+        }
     };
+
+    const handleCancel = async () => {
+        if (!selectedRegistration) return;
+
+        try {
+            await registrationService.cancelRegistration(selectedRegistration.id);
+            showToast('success', 'Thành công', 'Hủy đăng ký thành công');
+            setCancelDialogVisible(false);
+            loadData(); // Reload data to update lists
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Hủy đăng ký thất bại';
+            showToast('error', 'Lỗi', errorMessage);
+        }
+    };
+
+    const filteredAvailableClasses = availableClasses.filter(cls =>
+        cls.tenLopHocPhan.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        cls.tenHocPhan.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        cls.maLopHocPhan.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        cls.maHocPhan.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    if (loading) {
+        return (
+            <div className="card">
+                <div className="flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>
+                    <div className="text-center">
+                        <i className="pi pi-spin pi-spinner" style={{ fontSize: '2rem' }}></i>
+                        <p className="mt-2">Đang tải dữ liệu...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="card">
+            <Toast ref={toast} />
+
             <div className="flex justify-content-between align-items-center mb-4">
                 <h1 className="text-2xl font-bold">Đăng ký học phần</h1>
             </div>
@@ -150,23 +165,33 @@ export default function CourseRegistrationPage() {
                                 <th className="px-4 py-2 border border-gray-300">Tên đợt đăng ký</th>
                                 <th className="px-4 py-2 border border-gray-300">Ngày bắt đầu</th>
                                 <th className="px-4 py-2 border border-gray-300">Ngày kết thúc</th>
+                                <th className="px-4 py-2 border border-gray-300">Khoa</th>
                                 <th className="px-4 py-2 border border-gray-300">Trạng thái</th>
                             </tr>
                         </thead>
                         <tbody>
                             {registrationPeriods.length === 0 ? (
                                 <tr>
-                                    <td colSpan={4} className="text-center py-4 text-gray-500">
+                                    <td colSpan={5} className="text-center py-4 text-gray-500">
                                         Không có đợt đăng ký nào
                                     </td>
                                 </tr>
                             ) : (
                                 registrationPeriods.map((period) => (
-                                    <tr key={period.maDotDangKy} className="border-b hover:bg-blue-50">
-                                        <td className="px-4 py-2 border border-gray-300">{period.tenDotDangKy}</td>
-                                        <td className="px-4 py-2 border border-gray-300">{period.ngayBatDau}</td>
-                                        <td className="px-4 py-2 border border-gray-300">{period.ngayKetThuc}</td>
-                                        <td className="px-4 py-2 border border-gray-300">{period.trangThai}</td>
+                                    <tr key={period.maDotDK} className="border-b hover:bg-blue-50">
+                                        <td className="px-4 py-2 border border-gray-300">{period.tenDotDK}</td>
+                                        <td className="px-4 py-2 border border-gray-300">
+                                            {new Date(period.ngayGioBatDau).toLocaleDateString('vi-VN')}
+                                        </td>
+                                        <td className="px-4 py-2 border border-gray-300">
+                                            {new Date(period.ngayGioKetThuc).toLocaleDateString('vi-VN')}
+                                        </td>
+                                        <td className="px-4 py-2 border border-gray-300">{period.tenKhoa}</td>
+                                        <td className="px-4 py-2 border border-gray-300">
+                                            <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${period.trangThai ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                {period.trangThai ? 'Đang mở' : 'Đã đóng'}
+                                            </span>
+                                        </td>
                                     </tr>
                                 ))
                             )}
@@ -179,7 +204,12 @@ export default function CourseRegistrationPage() {
                 <TabPanel header="Lớp học phần có thể đăng ký">
                     <div className="flex justify-content-between mb-4">
                         <span className="p-input-icon-left">
-                            <InputText placeholder="Tìm kiếm lớp học phần..." />
+                            <i className="pi pi-search" />
+                            <InputText
+                                placeholder="Tìm kiếm lớp học phần..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
                         </span>
                     </div>
 
@@ -201,14 +231,14 @@ export default function CourseRegistrationPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {availableClasses.length === 0 ? (
+                                {filteredAvailableClasses.length === 0 ? (
                                     <tr>
                                         <td colSpan={11} className="text-center py-4 text-gray-500">
-                                            Không tìm thấy lớp học phần nào
+                                            {searchTerm ? 'Không tìm thấy lớp học phần nào phù hợp' : 'Không có lớp học phần nào'}
                                         </td>
                                     </tr>
                                 ) : (
-                                    availableClasses.map((rowData) => (
+                                    filteredAvailableClasses.map((rowData) => (
                                         <tr key={rowData.maLopHocPhan} className="border-b hover:bg-blue-50">
                                             <td className="px-4 py-2 border border-gray-300 font-mono">{rowData.maLopHocPhan}</td>
                                             <td className="px-4 py-2 border border-gray-300">{rowData.tenLopHocPhan}</td>
@@ -247,6 +277,7 @@ export default function CourseRegistrationPage() {
                                     <th className="px-4 py-2 border border-gray-300">Số tín chỉ</th>
                                     <th className="px-4 py-2 border border-gray-300">Giảng viên</th>
                                     <th className="px-4 py-2 border border-gray-300">Phòng học</th>
+                                    <th className="px-4 py-2 border border-gray-300">Ngày đăng ký</th>
                                     <th className="px-4 py-2 border border-gray-300">Trạng thái</th>
                                     <th className="px-4 py-2 border border-gray-300 text-center">Hành động</th>
                                 </tr>
@@ -254,27 +285,28 @@ export default function CourseRegistrationPage() {
                             <tbody>
                                 {registeredClasses.length === 0 ? (
                                     <tr>
-                                        <td colSpan={9} className="text-center py-4 text-gray-500">
+                                        <td colSpan={10} className="text-center py-4 text-gray-500">
                                             Chưa đăng ký lớp học phần nào
                                         </td>
                                     </tr>
                                 ) : (
                                     registeredClasses.map((rowData) => (
-                                        <tr key={rowData.maLopHocPhan} className="border-b hover:bg-blue-50">
-                                            <td className="px-4 py-2 border border-gray-300 font-mono">{rowData.maLopHocPhan}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData.tenLopHocPhan}</td>
-                                            <td className="px-4 py-2 border border-gray-300 font-mono">{rowData.maHocPhan}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData.tenHocPhan}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData.soTinChi}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData.giangVien}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData.phongHoc}</td>
+                                        <tr key={rowData.id} className="border-b hover:bg-blue-50">
+                                            <td className="px-4 py-2 border border-gray-300 font-mono">{rowData.lopHocPhan.maLopHocPhan}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData.lopHocPhan.tenLopHocPhan}</td>
+                                            <td className="px-4 py-2 border border-gray-300 font-mono">{rowData.lopHocPhan.maHocPhan}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData.lopHocPhan.tenHocPhan}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData.lopHocPhan.soTinChi}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData.lopHocPhan.giangVien}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{rowData.lopHocPhan.phongHoc}</td>
+                                            <td className="px-4 py-2 border border-gray-300">{new Date(rowData.ngayDangKy).toLocaleDateString('vi-VN')}</td>
                                             <td className="px-4 py-2 border border-gray-300">
                                                 <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${rowData.trangThai === 'Đã đăng ký' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
                                                     {rowData.trangThai}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-2 border border-gray-300 text-center">
-                                                {actionTemplate(rowData)}
+                                                {registeredActionTemplate(rowData)}
                                             </td>
                                         </tr>
                                     ))
@@ -346,7 +378,7 @@ export default function CourseRegistrationPage() {
             >
                 <p>
                     Bạn có chắc chắn muốn hủy đăng ký lớp học phần{' '}
-                    <strong>{selectedClass?.tenLopHocPhan}</strong>?
+                    <strong>{selectedRegistration?.lopHocPhan.tenLopHocPhan}</strong>?
                 </p>
             </Dialog>
         </div>
