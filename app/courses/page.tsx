@@ -7,7 +7,7 @@ import { Message } from 'primereact/message';
 import { Dialog } from 'primereact/dialog';
 import { useRouter } from 'next/navigation';
 import classSectionService, { ClassSection } from '../services/classSectionService';
-import gradeService, { GradeManagement } from '../services/gradeService';
+import gradeService, { GradeManagement, DiemRequest } from '../services/gradeService';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
 
@@ -188,12 +188,40 @@ export default function CourseManagementPage() {
 
         setLoadingPopup(true);
         try {
-            // TODO: Implement save grade API call
-            console.log('Saving grade:', editingGrade);
+            // Tạo request body theo DiemRequest (không bao gồm xepLoai)
+            const diemRequest: DiemRequest = {
+                id: editingGrade.maDiem || undefined, // Thêm id nếu có
+                maSinhVien: editingGrade.maSinhVien,
+                maLopHP: editingGrade.maLopHP,
+                diemChuyenCan: editingGrade.diemChuyenCan,
+                diemGiuaKy: editingGrade.diemGiuaKy,
+                diemCuoiKy: editingGrade.diemCuoiKy,
+                diemTongKet: editingGrade.diemTongKet,
+                ghiChu: editingGrade.ghiChu
+            };
 
-            // Update local state
+            let response;
+            if (editingGrade.maDiem) {
+                // Cập nhật điểm đã tồn tại
+                response = await gradeService.updateGrade(editingGrade.maDiem, diemRequest);
+            } else {
+                // Tạo điểm mới
+                response = await gradeService.createGrade(diemRequest);
+            }
+
+            // Update local state với response từ server
+            const updatedGrade = {
+                ...editingGrade,
+                maDiem: response.id,
+                diemChuyenCan: response.diemChuyenCan,
+                diemGiuaKy: response.diemGiuaKy,
+                diemCuoiKy: response.diemCuoiKy,
+                diemTongKet: response.diemTongKet,
+                ghiChu: response.ghiChu
+            };
+
             setClassGrades(classGrades.map(grade =>
-                grade.maSinhVien === editingGrade.maSinhVien ? editingGrade : grade
+                grade.maSinhVien === editingGrade.maSinhVien ? updatedGrade : grade
             ));
 
             setEditGradeDialogVisible(false);
@@ -216,13 +244,13 @@ export default function CourseManagementPage() {
         // Tính điểm tổng kết: 20% chuyên cần + 30% giữa kỳ + 50% cuối kỳ
         const diemTongKet = (cc * 0.2) + (gk * 0.3) + (ck * 0.5);
 
-        // Tính xếp loại
+        // Tính xếp loại (chỉ hiển thị trên UI, không gửi lên server)
         let xepLoai = '';
-        if (diemTongKet >= 8.5) xepLoai = 'A';
-        else if (diemTongKet >= 7.0) xepLoai = 'B';
-        else if (diemTongKet >= 5.5) xepLoai = 'C';
-        else if (diemTongKet >= 4.0) xepLoai = 'D';
-        else xepLoai = 'F';
+        if (diemTongKet >= 8.5) xepLoai = 'A (Xuất sắc)';
+        else if (diemTongKet >= 7.0) xepLoai = 'B (Tốt)';
+        else if (diemTongKet >= 5.5) xepLoai = 'C (Trung bình)';
+        else if (diemTongKet >= 4.0) xepLoai = 'D (Yếu)';
+        else xepLoai = 'F (Kém)';
 
         return { diemTongKet: Math.round(diemTongKet * 10) / 10, xepLoai };
     };
@@ -824,12 +852,13 @@ export default function CourseManagementPage() {
                                     value={editingGrade.diemChuyenCan || ''}
                                     onChange={(e) => {
                                         const value = e.target.value ? parseFloat(e.target.value) : null;
+                                        if (value !== null && (value < 0 || value > 10)) return; // Validate range
                                         setEditingGrade(updateGradeCalculation(editingGrade, 'diemChuyenCan', value));
                                     }}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="Nhập điểm"
+                                    placeholder="Nhập điểm (0-10)"
                                 />
-                                <div className="text-xs text-gray-500 mt-1">Hệ số: 20%</div>
+                                <div className="text-xs text-gray-500 mt-1">Hệ số: 20% (Tối đa: 10)</div>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Điểm giữa kỳ</label>
@@ -841,12 +870,13 @@ export default function CourseManagementPage() {
                                     value={editingGrade.diemGiuaKy || ''}
                                     onChange={(e) => {
                                         const value = e.target.value ? parseFloat(e.target.value) : null;
+                                        if (value !== null && (value < 0 || value > 10)) return; // Validate range
                                         setEditingGrade(updateGradeCalculation(editingGrade, 'diemGiuaKy', value));
                                     }}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="Nhập điểm"
+                                    placeholder="Nhập điểm (0-10)"
                                 />
-                                <div className="text-xs text-gray-500 mt-1">Hệ số: 30%</div>
+                                <div className="text-xs text-gray-500 mt-1">Hệ số: 30% (Tối đa: 10)</div>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Điểm cuối kỳ</label>
@@ -858,12 +888,13 @@ export default function CourseManagementPage() {
                                     value={editingGrade.diemCuoiKy || ''}
                                     onChange={(e) => {
                                         const value = e.target.value ? parseFloat(e.target.value) : null;
+                                        if (value !== null && (value < 0 || value > 10)) return; // Validate range
                                         setEditingGrade(updateGradeCalculation(editingGrade, 'diemCuoiKy', value));
                                     }}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="Nhập điểm"
+                                    placeholder="Nhập điểm (0-10)"
                                 />
-                                <div className="text-xs text-gray-500 mt-1">Hệ số: 50%</div>
+                                <div className="text-xs text-gray-500 mt-1">Hệ số: 50% (Tối đa: 10)</div>
                             </div>
                         </div>
 

@@ -44,6 +44,31 @@ export interface GradeManagement {
     trangThai: string;
 }
 
+// Interface cho request cập nhật điểm theo DiemRequest
+export interface DiemRequest {
+    id?: string;
+    maSinhVien: string;
+    maLopHP: string;
+    diemChuyenCan: number | null;
+    diemGiuaKy: number | null;
+    diemCuoiKy: number | null;
+    diemTongKet: number | null;
+    ghiChu: string | null;
+}
+
+// Interface cho response từ API
+export interface DiemResponse {
+    id: string;
+    maSinhVien: string;
+    maLopHP: string;
+    diemChuyenCan: number | null;
+    diemGiuaKy: number | null;
+    diemCuoiKy: number | null;
+    diemTongKet: number | null;
+    ghiChu: string | null;
+    trangThai: string;
+}
+
 class GradeService {
     async getOverview(maSinhVien: string): Promise<SemesterSummary[]> {
         const token = localStorage.getItem('token');
@@ -178,9 +203,9 @@ class GradeService {
         return data.data || data;
     }
 
-    async updateGrade(id: string, gradeData: Partial<GradeManagement>): Promise<GradeManagement> {
+    async updateGrade(id: string, gradeData: DiemRequest): Promise<DiemResponse> {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${API_BASE}/api/diem/${id}`, {
+        const res = await fetch(`${API_BASE}/api/diem/capnhat/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -196,9 +221,9 @@ class GradeService {
         return data.data || data;
     }
 
-    async createGrade(gradeData: Omit<GradeManagement, 'id'>): Promise<GradeManagement> {
+    async createGrade(gradeData: DiemRequest): Promise<DiemResponse> {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${API_BASE}/api/diem`, {
+        const res = await fetch(`${API_BASE}/api/diem/nhap`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
