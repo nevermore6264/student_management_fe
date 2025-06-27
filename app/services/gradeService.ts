@@ -259,6 +259,19 @@ class GradeService {
             throw new Error(err.message || 'Không thể xóa điểm');
         }
     }
+
+    async getTeacherOverview(maGiangVien: string): Promise<any> {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/api/diem/giangvien/${maGiangVien}/tongquan`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {})
+            }
+        });
+        const data = await res.json();
+        return data;
+    }
 }
 
 const gradeService = new GradeService();

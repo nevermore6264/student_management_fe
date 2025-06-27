@@ -3,21 +3,20 @@
 import { useEffect, useState } from 'react';
 import { Pie, Bar } from 'react-chartjs-2';
 import { Message } from 'primereact/message';
+import gradeService from '../../services/gradeService';
 
 export default function TeacherGradeOverviewPage() {
     const [overview, setOverview] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    // TODO: Lấy mã giảng viên từ context đăng nhập thực tế
-    const teacherId = 'GV001';
+    const teacherId = typeof window !== 'undefined' ? localStorage.getItem('teacherId') : '';
 
     useEffect(() => {
         const fetchOverview = async () => {
             setLoading(true); setError('');
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/diem/giangvien/${teacherId}/tongquan`);
-                const data = await res.json();
+                const data = await gradeService.getTeacherOverview(teacherId || '');
                 if (data.success && data.data) {
                     setOverview(data.data);
                 } else {
@@ -31,8 +30,8 @@ export default function TeacherGradeOverviewPage() {
                 setLoading(false);
             }
         };
-        fetchOverview();
-    }, []);
+        if (teacherId) fetchOverview();
+    }, [teacherId]);
 
     return (
         <div className="w-4/5 max-w-6xl mx-auto p-6 bg-white rounded-2xl shadow-lg mt-12">
