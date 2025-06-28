@@ -7,6 +7,7 @@ import { Dialog } from 'primereact/dialog';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { Tag } from 'primereact/tag';
 import { Message } from 'primereact/message';
+import { Accordion, AccordionTab } from 'primereact/accordion';
 
 interface Course {
     maHocPhan: string;
@@ -17,6 +18,8 @@ interface Course {
     namHoc: string;
     trangThai: string;
     diemTrungBinh?: number;
+    moTa?: string;
+    tienQuyet?: string[];
 }
 
 interface StudyPlan {
@@ -56,7 +59,9 @@ export default function StudyPlanPage() {
             hocKy: 1,
             namHoc: '2023-2024',
             trangThai: 'Đã hoàn thành',
-            diemTrungBinh: 3.7
+            diemTrungBinh: 3.7,
+            moTa: 'Học về HTML, CSS, JS, React...',
+            tienQuyet: [],
         },
         {
             maHocPhan: 'INT1235',
@@ -66,7 +71,9 @@ export default function StudyPlanPage() {
             hocKy: 1,
             namHoc: '2023-2024',
             trangThai: 'Đang học',
-            diemTrungBinh: 0
+            diemTrungBinh: 0,
+            moTa: 'Cơ sở dữ liệu quan hệ, SQL...',
+            tienQuyet: [],
         },
         {
             maHocPhan: 'INT1236',
@@ -76,8 +83,34 @@ export default function StudyPlanPage() {
             hocKy: 2,
             namHoc: '2023-2024',
             trangThai: 'Chưa học',
-            diemTrungBinh: 0
-        }
+            diemTrungBinh: 0,
+            moTa: 'React Native, Flutter...',
+            tienQuyet: ['INT1234'],
+        },
+        {
+            maHocPhan: 'INT1237',
+            tenHocPhan: 'Toán rời rạc',
+            soTinChi: 2,
+            loaiHocPhan: 'Bắt buộc',
+            hocKy: 1,
+            namHoc: '2024-2025',
+            trangThai: 'Chưa học',
+            diemTrungBinh: 0,
+            moTa: 'Logic, tập hợp, quan hệ...',
+            tienQuyet: [],
+        },
+        {
+            maHocPhan: 'INT1238',
+            tenHocPhan: 'Cấu trúc dữ liệu',
+            soTinChi: 3,
+            loaiHocPhan: 'Bắt buộc',
+            hocKy: 2,
+            namHoc: '2024-2025',
+            trangThai: 'Chưa học',
+            diemTrungBinh: 0,
+            moTa: 'Stack, Queue, Tree...',
+            tienQuyet: ['INT1234', 'INT1235'],
+        },
     ]);
 
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -93,6 +126,22 @@ export default function StudyPlanPage() {
     const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
+
+    // Summary
+    const totalCredits = courses.reduce((sum, c) => sum + c.soTinChi, 0);
+    const completedCredits = courses.filter((c) => c.trangThai === "Đã hoàn thành").reduce((sum, c) => sum + c.soTinChi, 0);
+    const remainingCredits = totalCredits - completedCredits;
+    const avgScore = (() => {
+        const done = courses.filter((c) => c.trangThai === "Đã hoàn thành" && c.diemTrungBinh && c.diemTrungBinh > 0);
+        if (!done.length) return 0;
+        return (
+            done.reduce((sum, c) => sum + (c.diemTrungBinh || 0), 0) / done.length
+        ).toFixed(2);
+    })();
+
+    // Group data
+    const grouped = groupByYearAndSemester(courses);
+    const years = Object.keys(grouped).sort();
 
     const statusTemplate = (rowData: Course) => {
         const status = rowData.trangThai;
@@ -215,50 +264,18 @@ export default function StudyPlanPage() {
             <div className="w-full">
                 <TabView activeIndex={activeTab} onTabChange={(e) => setActiveTab(e.index)} className="w-full">
                     <TabPanel header="Tổng quan">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                            <div className="bg-white shadow-lg rounded-lg p-4 border border-gray-200">
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <span className="block text-gray-500 font-medium mb-2">Tổng số tín chỉ</span>
-                                        <div className="text-gray-900 font-bold text-2xl">24</div>
-                                    </div>
-                                    <div className="flex items-center justify-center bg-blue-100 rounded-full w-12 h-12">
-                                        <i className="pi pi-book text-blue-500 text-xl" />
-                                    </div>
-                                </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                            <div className="bg-blue-50 rounded-lg p-4 flex flex-col items-center">
+                                <div className="text-lg font-semibold text-blue-700">Tín chỉ đã tích lũy</div>
+                                <div className="text-2xl font-bold text-green-600">{completedCredits}</div>
                             </div>
-                            <div className="bg-white shadow-lg rounded-lg p-4 border border-gray-200">
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <span className="block text-gray-500 font-medium mb-2">Đã hoàn thành</span>
-                                        <div className="text-gray-900 font-bold text-2xl">12</div>
-                                    </div>
-                                    <div className="flex items-center justify-center bg-green-100 rounded-full w-12 h-12">
-                                        <i className="pi pi-check text-green-500 text-xl" />
-                                    </div>
-                                </div>
+                            <div className="bg-blue-50 rounded-lg p-4 flex flex-col items-center">
+                                <div className="text-lg font-semibold text-blue-700">Tín chỉ còn lại</div>
+                                <div className="text-2xl font-bold text-orange-500">{remainingCredits}</div>
                             </div>
-                            <div className="bg-white shadow-lg rounded-lg p-4 border border-gray-200">
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <span className="block text-gray-500 font-medium mb-2">Đang học</span>
-                                        <div className="text-gray-900 font-bold text-2xl">6</div>
-                                    </div>
-                                    <div className="flex items-center justify-center bg-yellow-100 rounded-full w-12 h-12">
-                                        <i className="pi pi-clock text-yellow-500 text-xl" />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="bg-white shadow-lg rounded-lg p-4 border border-gray-200">
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <span className="block text-gray-500 font-medium mb-2">Điểm trung bình</span>
-                                        <div className="text-gray-900 font-bold text-2xl">3.5</div>
-                                    </div>
-                                    <div className="flex items-center justify-center bg-purple-100 rounded-full w-12 h-12">
-                                        <i className="pi pi-star text-purple-500 text-xl" />
-                                    </div>
-                                </div>
+                            <div className="bg-blue-50 rounded-lg p-4 flex flex-col items-center">
+                                <div className="text-lg font-semibold text-blue-700">Điểm TB tích lũy</div>
+                                <div className="text-2xl font-bold text-purple-600">{avgScore}</div>
                             </div>
                         </div>
                     </TabPanel>
@@ -465,13 +482,13 @@ export default function StudyPlanPage() {
                         <div className="col-span-full">
                             <h3 className="text-lg font-semibold mb-3 text-blue-700">Học phần tiên quyết</h3>
                             <div className="bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-base text-gray-600">
-                                Không có
+                                {selectedCourse.tienQuyet?.join(", ") || "Không có"}
                             </div>
                         </div>
                         <div className="col-span-full">
-                            <h3 className="text-lg font-semibold mb-3 text-blue-700">Học phần song hành</h3>
+                            <h3 className="text-lg font-semibold mb-3 text-blue-700">Mô tả</h3>
                             <div className="bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-base text-gray-600">
-                                Không có
+                                {selectedCourse.moTa || "Không có"}
                             </div>
                         </div>
                     </div>
@@ -479,4 +496,14 @@ export default function StudyPlanPage() {
             </Dialog>
         </div>
     );
+}
+
+function groupByYearAndSemester(courses: Course[]) {
+    const result: Record<string, Record<number, Course[]>> = {};
+    courses.forEach((course) => {
+        if (!result[course.namHoc]) result[course.namHoc] = {};
+        if (!result[course.namHoc][course.hocKy]) result[course.namHoc][course.hocKy] = [];
+        result[course.namHoc][course.hocKy].push(course);
+    });
+    return result;
 } 
