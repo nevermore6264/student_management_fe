@@ -128,7 +128,7 @@ class RegistrationService {
     }
 
     async getRegistrationPeriodById(maDotDK: string) {
-        const res = await fetch(`${API_BASE}/dotdangky/${maDotDK}`, {
+        const res = await fetch(`${API_BASE}/dotdangky/period?period=${maDotDK}`, {
             method: 'GET',
             headers: this.getAuthHeaders(),
         });

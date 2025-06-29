@@ -18,7 +18,7 @@ export default function CourseRegistrationPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    const [registrationPeriods, setRegistrationPeriods] = useState<RegistrationPeriod[]>([]);
+    const [registrationPeriod, setRegistrationPeriod] = useState<RegistrationPeriod | null>(null);
     const [availableClasses, setAvailableClasses] = useState<CourseClass[]>([]);
     const [registeredClasses, setRegisteredClasses] = useState<Registration[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -29,19 +29,18 @@ export default function CourseRegistrationPage() {
     const [cancelDialogVisible, setCancelDialogVisible] = useState(false);
 
     // Mock student ID - in real app this would come from user context/auth
-    const maSinhVien = 'SV001';
+    const maSinhVien = localStorage.getItem('maNguoiDung') || '';
 
     // Get selected period from URL
     const selectedPeriodId = searchParams.get('period');
 
     // Check if registration period is currently active
     const isRegistrationActive = () => {
-        if (registrationPeriods.length === 0) return false;
-        const period = registrationPeriods[0];
+        if (!registrationPeriod) return false;
         const now = new Date();
-        const startDate = new Date(period.ngayGioBatDau);
-        const endDate = new Date(period.ngayGioKetThuc);
-        return period.trangThai && now >= startDate && now <= endDate;
+        const startDate = new Date(registrationPeriod.ngayGioBatDau);
+        const endDate = new Date(registrationPeriod.ngayGioKetThuc);
+        return registrationPeriod.trangThai && now >= startDate && now <= endDate;
     };
 
     useEffect(() => {
@@ -64,43 +63,24 @@ export default function CourseRegistrationPage() {
     const loadData = async () => {
         try {
             setLoading(true);
-            console.log('Loading data...');
-
-            let periods;
+            let period;
             if (selectedPeriodId) {
-                // Get specific registration period
-                periods = await registrationService.getRegistrationPeriodById(selectedPeriodId);
-                periods = periods ? [periods] : [];
+                period = await registrationService.getRegistrationPeriodById(selectedPeriodId);
             } else {
-                // Get current registration period
-                periods = await registrationService.getCurrentRegistrationPeriod();
-                periods = periods ? [periods] : [];
+                period = await registrationService.getCurrentRegistrationPeriod();
             }
-
-            let classes;
-            if (selectedPeriodId) {
-                // Get classes for specific period
-                classes = await registrationService.getAvailableClassesByPeriod(selectedPeriodId);
-            } else {
-                // Get all available classes
-                classes = await registrationService.getAvailableClasses();
-            }
-
+            const classes = selectedPeriodId
+                ? await registrationService.getAvailableClassesByPeriod(selectedPeriodId)
+                : await registrationService.getAvailableClasses();
             const registrations = await registrationService.getRegisteredClasses(maSinhVien);
-
-            console.log('API Response - periods:', periods);
-            console.log('API Response - classes:', classes);
-            console.log('API Response - registrations:', registrations);
-
-            setRegistrationPeriods(periods);
+            setRegistrationPeriod(period || null);
             setAvailableClasses(Array.isArray(classes) ? classes : []);
             setRegisteredClasses(Array.isArray(registrations) ? registrations : []);
         } catch (error: unknown) {
             console.error('Error loading data:', error);
             const errorMessage = error instanceof Error ? error.message : 'Không thể tải dữ liệu';
             showToast('error', 'Lỗi', errorMessage);
-            // Set empty arrays as fallback
-            setRegistrationPeriods([]);
+            setRegistrationPeriod(null);
             setAvailableClasses([]);
             setRegisteredClasses([]);
         } finally {
@@ -196,7 +176,7 @@ export default function CourseRegistrationPage() {
         try {
             const currentTime = new Date().toISOString();
             // Get maPhienDK from registration period if available
-            const maPhienDK = registrationPeriods.length > 0 ? parseInt(registrationPeriods[0].maDotDK.replace(/\D/g, '')) || 1 : 1;
+            const maPhienDK = registrationPeriod ? parseInt(registrationPeriod.maDotDK.replace(/\D/g, '')) || 1 : 1;
 
             await registrationService.registerClass({
                 maSinhVien,
@@ -235,7 +215,7 @@ export default function CourseRegistrationPage() {
 
         try {
             // Get maPhienDK from registration period if available
-            const maPhienDK = registrationPeriods.length > 0 ? parseInt(registrationPeriods[0].maDotDK.replace(/\D/g, '')) || 1 : 1;
+            const maPhienDK = registrationPeriod ? parseInt(registrationPeriod.maDotDK.replace(/\D/g, '')) || 1 : 1;
 
             await registrationService.cancelRegistration(
                 maPhienDK,
@@ -294,36 +274,17 @@ export default function CourseRegistrationPage() {
                     <Button
                         icon="pi pi-arrow-left"
                         label="Quay lại"
-                        className="p-button-text mr-3"
+                        className="p-button-text mr-4"
                         onClick={() => router.push('/registration/select-period')}
                     />
-                    <h1 className="text-2xl font-bold mr-4">Đăng ký học phần</h1>
+
+                    <h1 className="text-2xl font-bold ml-4">Đăng ký học phần</h1>
                 </div>
-                <Button
-                    icon="pi pi-refresh"
-                    label="Làm mới"
-                    className="p-button-outlined"
-                    onClick={loadData}
-                    disabled={loading}
-                />
+
             </div>
 
-            {/* Selected Period Info */}
-            {selectedPeriodId && registrationPeriods.length > 0 && (
-                <div className="mb-4 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-                    <h3 className="text-lg font-semibold text-blue-800 mb-2">Đợt đăng ký đã chọn</h3>
-                    {registrationPeriods.map((period) => (
-                        <div key={period.maDotDK} className="text-sm text-blue-700">
-                            <p><strong>Tên đợt:</strong> {period.tenDotDK}</p>
-                            <p><strong>Thời gian:</strong> {new Date(period.ngayGioBatDau).toLocaleDateString('vi-VN')} - {new Date(period.ngayGioKetThuc).toLocaleDateString('vi-VN')}</p>
-                            <p><strong>Khoa:</strong> {period.tenKhoa}</p>
-                        </div>
-                    ))}
-                </div>
-            )}
-
             <div className="mb-4">
-                <h2 className="text-xl font-semibold mb-2">Đợt đăng ký hiện tại</h2>
+                <h2 className="text-xl font-semibold mb-2">Đợt đăng ký đã chọn</h2>
                 <div className="overflow-x-auto">
                     <table className="w-full border-collapse border border-gray-300">
                         <thead className="bg-blue-100">
@@ -336,41 +297,33 @@ export default function CourseRegistrationPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {registrationPeriods.length === 0 ? (
+                            {!registrationPeriod ? (
                                 <tr>
                                     <td colSpan={5} className="text-center py-4 text-gray-500">
                                         {selectedPeriodId ? 'Không tìm thấy đợt đăng ký đã chọn' : 'Không có đợt đăng ký nào'}
                                     </td>
                                 </tr>
                             ) : (
-                                registrationPeriods
-                                    .filter(period => !selectedPeriodId || period.maDotDK === selectedPeriodId)
-                                    .map((period) => (
-                                        <tr key={period.maDotDK} className="border-b hover:bg-blue-50">
-                                            <td className="px-4 py-2 border border-gray-300">{period.tenDotDK}</td>
-                                            <td className="px-4 py-2 border border-gray-300">
-                                                {new Date(period.ngayGioBatDau).toLocaleDateString('vi-VN')}
-                                            </td>
-                                            <td className="px-4 py-2 border border-gray-300">
-                                                {new Date(period.ngayGioKetThuc).toLocaleDateString('vi-VN')}
-                                            </td>
-                                            <td className="px-4 py-2 border border-gray-300">{period.tenKhoa}</td>
-                                            <td className="px-4 py-2 border border-gray-300">
-                                                <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${isRegistrationActive()
-                                                    ? 'bg-green-100 text-green-700'
-                                                    : period.trangThai
-                                                        ? 'bg-yellow-100 text-yellow-700'
-                                                        : 'bg-red-100 text-red-700'
-                                                    }`}>
-                                                    {isRegistrationActive()
-                                                        ? 'Đang mở'
-                                                        : period.trangThai
-                                                            ? 'Chưa đến thời gian'
-                                                            : 'Đã đóng'}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))
+                                <tr className="border-b hover:bg-blue-50">
+                                    <td className="px-4 py-2 border border-gray-300">{registrationPeriod.tenDotDK}</td>
+                                    <td className="px-4 py-2 border border-gray-300">{new Date(registrationPeriod.ngayGioBatDau).toLocaleDateString('vi-VN')}</td>
+                                    <td className="px-4 py-2 border border-gray-300">{new Date(registrationPeriod.ngayGioKetThuc).toLocaleDateString('vi-VN')}</td>
+                                    <td className="px-4 py-2 border border-gray-300">{registrationPeriod.tenKhoa}</td>
+                                    <td className="px-4 py-2 border border-gray-300">
+                                        <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${isRegistrationActive()
+                                            ? 'bg-green-100 text-green-700'
+                                            : registrationPeriod.trangThai
+                                                ? 'bg-yellow-100 text-yellow-700'
+                                                : 'bg-red-100 text-red-700'
+                                            }`}>
+                                            {isRegistrationActive()
+                                                ? 'Đang mở'
+                                                : registrationPeriod.trangThai
+                                                    ? 'Chưa đến thời gian'
+                                                    : 'Đã đóng'}
+                                        </span>
+                                    </td>
+                                </tr>
                             )}
                         </tbody>
                     </table>

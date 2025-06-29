@@ -10,7 +10,7 @@ export default function AcademicResultsPage() {
     const [result, setResult] = useState<KetQuaHocTapResponse | null>(null);
     const toast = useRef<Toast>(null);
 
-    const maSinhVien = 'SV001';
+    const maSinhVien = localStorage.getItem('maNguoiDung') || '';
 
     useEffect(() => {
         loadResult();

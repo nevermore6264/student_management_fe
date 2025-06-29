@@ -29,7 +29,7 @@ export default function CourseRegistrationPage() {
     const [cancelDialogVisible, setCancelDialogVisible] = useState(false);
 
     // Mock student ID - in real app this would come from user context/auth
-    const maSinhVien = 'SV001';
+    const maSinhVien = localStorage.getItem('maNguoiDung') || '';
 
     // Get selected period from URL
     const selectedPeriodId = searchParams.get('period');
