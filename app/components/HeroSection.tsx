@@ -19,7 +19,7 @@ export default function HeroSection() {
                 <div className="flex flex-wrap gap-6">
                     <button
                         className="p-button-raised shadow-xl px-8 py-4 text-xl rounded-full hover:scale-105 transition-transform duration-200 bg-gradient-to-r from-blue-500 to-green-400 text-white font-bold border-0 flex items-center gap-2"
-                        onClick={() => window.location.href = '/registration'}
+                        onClick={() => window.location.href = '/registration/select-period'}
                     >
                         <i className="pi pi-arrow-right"></i>
                         Bắt đầu ngay

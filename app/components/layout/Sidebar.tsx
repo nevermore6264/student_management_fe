@@ -100,12 +100,8 @@ const menuItems = [
             {
                 label: 'Đăng ký học phần',
                 icon: 'pi pi-calendar-plus',
-                path: '/registration',
-                subItems: [
-                    { label: 'Đợt đăng ký', path: '/registration/periods', roles: ['sv'] },
-                    { label: 'Đăng ký môn học', path: '/registration/courses', roles: ['sv'] },
-                    { label: 'Lịch sử đăng ký', path: '/registration/history', roles: ['sv'] }
-                ]
+                path: '/registration/select-period'
+
             },
             {
                 label: 'Kế hoạch học tập',

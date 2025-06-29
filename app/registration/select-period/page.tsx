@@ -125,13 +125,6 @@ export default function SelectRegistrationPeriodPage() {
                             Bắt đầu: {formatDate(selectedPeriod.ngayGioBatDau)}
                         </p>
                     </div>
-                    <Button
-                        label="Đặt lời nhắc"
-                        icon="pi pi-bell"
-                        className="p-button-outlined p-button-warning p-button-lg"
-                        onClick={() => showToast('info', 'Thông báo', 'Tính năng đặt lời nhắc sẽ được phát triển sau')}
-                        size="large"
-                    />
                 </div>
             );
         } else {
