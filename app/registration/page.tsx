@@ -2,19 +2,19 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Dialog } from 'primereact/dialog';
 import { TabView, TabPanel } from 'primereact/tabview';
-import { Toast } from 'primereact/toast';
 import { useRouter, useSearchParams } from 'next/navigation';
 import registrationService, { CourseClass, RegistrationPeriod, Registration } from '../services/registrationService';
+import { useToast } from '../context/ToastContext';
 
 export default function CourseRegistrationPage() {
     const [activeTab, setActiveTab] = useState(0);
     const [loading, setLoading] = useState(true);
-    const toast = useRef<Toast>(null);
+    const toastContext = useToast();
     const [toastMessage, setToastMessage] = useState<{ severity: 'success' | 'error' | 'info' | 'warn', summary: string, detail: string } | null>(null);
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -55,8 +55,8 @@ export default function CourseRegistrationPage() {
 
     // Effect to show toast when toastMessage changes
     useEffect(() => {
-        if (toastMessage && toast.current) {
-            toast.current.show({
+        if (toastMessage && toastContext.current) {
+            toastContext.current.show({
                 severity: toastMessage.severity,
                 summary: toastMessage.summary,
                 detail: toastMessage.detail,
@@ -195,8 +195,8 @@ export default function CourseRegistrationPage() {
 
             setRegisterDialogVisible(false);
             await loadData();
-            if (toast.current) {
-                toast.current.show({ severity: 'success', summary: 'Thành công', detail: 'Đăng ký lớp học phần thành công', life: 3000 });
+            if (toastContext.current) {
+                toastContext.current.show({ severity: 'success', summary: 'Thành công', detail: 'Đăng ký lớp học phần thành công', life: 3000 });
             }
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : 'Đăng ký thất bại';
@@ -231,8 +231,8 @@ export default function CourseRegistrationPage() {
             );
             setCancelDialogVisible(false);
             await loadData();
-            if (toast.current) {
-                toast.current.show({ severity: 'success', summary: 'Thành công', detail: 'Hủy đăng ký thành công', life: 3000 });
+            if (toastContext.current) {
+                toastContext.current.show({ severity: 'success', summary: 'Thành công', detail: 'Hủy đăng ký thành công', life: 3000 });
             }
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : 'Hủy đăng ký thất bại';
@@ -291,7 +291,6 @@ export default function CourseRegistrationPage() {
 
     return (
         <div className="card">
-            <Toast ref={toast} />
 
             <div className="flex justify-content-between align-items-center mb-4">
                 <div className="flex align-items-center">

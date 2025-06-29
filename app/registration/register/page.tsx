@@ -27,10 +27,10 @@ export default function CourseRegistrationPage() {
     const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
     const [registerDialogVisible, setRegisterDialogVisible] = useState(false);
     const [cancelDialogVisible, setCancelDialogVisible] = useState(false);
-
-    // Mock student ID - in real app this would come from user context/auth
-    const maSinhVien = localStorage.getItem('maNguoiDung') || '';
-
+    let maSinhVien: string = '';
+    if (typeof window !== 'undefined') {
+        maSinhVien = localStorage.getItem('maNguoiDung') || '';
+    }
     // Get selected period from URL
     const selectedPeriodId = searchParams.get('period');
 
@@ -281,7 +281,6 @@ export default function CourseRegistrationPage() {
 
     return (
         <div className="card">
-            <Toast ref={toast} />
 
             <div className="flex justify-content-between align-items-center mb-4">
                 <div className="flex align-items-center">

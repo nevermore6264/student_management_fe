@@ -1,509 +1,138 @@
 'use client';
 
-import { useState } from 'react';
-import { Button } from 'primereact/button';
+import { useEffect, useState } from 'react';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
-import { Dialog } from 'primereact/dialog';
-import { TabView, TabPanel } from 'primereact/tabview';
+import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
-import { Message } from 'primereact/message';
-import { Accordion, AccordionTab } from 'primereact/accordion';
 
-interface Course {
+// Định nghĩa interface cho kế hoạch học tập
+interface StudyPlan {
+    maKeHoach: string;
     maHocPhan: string;
     tenHocPhan: string;
     soTinChi: number;
-    loaiHocPhan: string;
     hocKy: number;
     namHoc: string;
-    trangThai: string;
-    diemTrungBinh?: number;
-    moTa?: string;
-    tienQuyet?: string[];
+    trangThai: 0 | 1 | 2;
+    diem?: number;
+    ghiChu?: string;
 }
 
-interface StudyPlan {
-    maKeHoach: string;
-    tenKeHoach: string;
-    ngayTao: string;
-    trangThai: string;
-    tongSoTinChi: number;
-    diemTrungBinh: number;
-}
-
-interface NewStudyPlan {
-    tenKeHoach: string;
-    namHoc: string;
-    moTa: string;
-}
+const STATUS_MAP: Record<0 | 1 | 2, { label: string; color: "info" | "success" }> = {
+    0: { label: 'Chưa học', color: 'info' },
+    1: { label: 'Đã học', color: 'success' },
+    2: { label: 'Đang học', color: 'info' },
+};
 
 export default function StudyPlanPage() {
-    const [activeTab, setActiveTab] = useState(0);
-    const [studyPlans, setStudyPlans] = useState<StudyPlan[]>([
-        {
-            maKeHoach: 'KH001',
-            tenKeHoach: 'Kế hoạch học tập năm 2023-2024',
-            ngayTao: '2023-08-01',
-            trangThai: 'Đang thực hiện',
-            tongSoTinChi: 24,
-            diemTrungBinh: 3.5
-        }
-    ]);
+    const [plans, setPlans] = useState<StudyPlan[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [statusFilter, setStatusFilter] = useState<0 | 1 | 2 | null>(null);
+    const [search, setSearch] = useState<string>('');
+    const maSinhVien = typeof window !== 'undefined' ? localStorage.getItem('maNguoiDung') : '';
 
-    const [courses] = useState<Course[]>([
-        {
-            maHocPhan: 'INT1234',
-            tenHocPhan: 'Lập trình Web',
-            soTinChi: 3,
-            loaiHocPhan: 'Bắt buộc',
-            hocKy: 1,
-            namHoc: '2023-2024',
-            trangThai: 'Đã hoàn thành',
-            diemTrungBinh: 3.7,
-            moTa: 'Học về HTML, CSS, JS, React...',
-            tienQuyet: [],
-        },
-        {
-            maHocPhan: 'INT1235',
-            tenHocPhan: 'Cơ sở dữ liệu',
-            soTinChi: 3,
-            loaiHocPhan: 'Bắt buộc',
-            hocKy: 1,
-            namHoc: '2023-2024',
-            trangThai: 'Đang học',
-            diemTrungBinh: 0,
-            moTa: 'Cơ sở dữ liệu quan hệ, SQL...',
-            tienQuyet: [],
-        },
-        {
-            maHocPhan: 'INT1236',
-            tenHocPhan: 'Lập trình di động',
-            soTinChi: 3,
-            loaiHocPhan: 'Tự chọn',
-            hocKy: 2,
-            namHoc: '2023-2024',
-            trangThai: 'Chưa học',
-            diemTrungBinh: 0,
-            moTa: 'React Native, Flutter...',
-            tienQuyet: ['INT1234'],
-        },
-        {
-            maHocPhan: 'INT1237',
-            tenHocPhan: 'Toán rời rạc',
-            soTinChi: 2,
-            loaiHocPhan: 'Bắt buộc',
-            hocKy: 1,
-            namHoc: '2024-2025',
-            trangThai: 'Chưa học',
-            diemTrungBinh: 0,
-            moTa: 'Logic, tập hợp, quan hệ...',
-            tienQuyet: [],
-        },
-        {
-            maHocPhan: 'INT1238',
-            tenHocPhan: 'Cấu trúc dữ liệu',
-            soTinChi: 3,
-            loaiHocPhan: 'Bắt buộc',
-            hocKy: 2,
-            namHoc: '2024-2025',
-            trangThai: 'Chưa học',
-            diemTrungBinh: 0,
-            moTa: 'Stack, Queue, Tree...',
-            tienQuyet: ['INT1234', 'INT1235'],
-        },
-    ]);
-
-    const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-    const [courseDetailDialogVisible, setCourseDetailDialogVisible] = useState(false);
-
-    // New study plan dialog states
-    const [newPlanDialogVisible, setNewPlanDialogVisible] = useState(false);
-    const [newPlanForm, setNewPlanForm] = useState<NewStudyPlan>({
-        tenKeHoach: '',
-        namHoc: '',
-        moTa: ''
-    });
-    const [saving, setSaving] = useState(false);
-    const [success, setSuccess] = useState('');
-    const [error, setError] = useState('');
-
-    // Summary
-    const totalCredits = courses.reduce((sum, c) => sum + c.soTinChi, 0);
-    const completedCredits = courses.filter((c) => c.trangThai === "Đã hoàn thành").reduce((sum, c) => sum + c.soTinChi, 0);
-    const remainingCredits = totalCredits - completedCredits;
-    const avgScore = (() => {
-        const done = courses.filter((c) => c.trangThai === "Đã hoàn thành" && c.diemTrungBinh && c.diemTrungBinh > 0);
-        if (!done.length) return 0;
-        return (
-            done.reduce((sum, c) => sum + (c.diemTrungBinh || 0), 0) / done.length
-        ).toFixed(2);
-    })();
-
-    // Group data
-    const grouped = groupByYearAndSemester(courses);
-    const years = Object.keys(grouped).sort();
-
-    const statusTemplate = (rowData: Course) => {
-        const status = rowData.trangThai;
-        let severity: "success" | "warning" | "info" = 'info';
-        if (status === 'Đã hoàn thành') severity = 'success';
-        else if (status === 'Đang học') severity = 'warning';
-        return <Tag value={status} severity={severity} />;
-    };
-
-    const courseTypeTemplate = (rowData: Course) => {
-        const type = rowData.loaiHocPhan;
-        const severity: "danger" | "info" = type === 'Bắt buộc' ? 'danger' : 'info';
-        return <Tag value={type} severity={severity} />;
-    };
-
-    const handleCreateNewPlan = () => {
-        setNewPlanForm({
-            tenKeHoach: '',
-            namHoc: '',
-            moTa: ''
-        });
-        setNewPlanDialogVisible(true);
-        setError('');
-        setSuccess('');
-    };
-
-    const handleSaveNewPlan = async () => {
-        if (!newPlanForm.tenKeHoach.trim() || !newPlanForm.namHoc.trim()) {
-            setError('Vui lòng điền đầy đủ thông tin bắt buộc');
-            return;
-        }
-
-        setSaving(true);
-        setError('');
-
+    const fetchPlans = async () => {
+        setLoading(true);
         try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            const newPlan: StudyPlan = {
-                maKeHoach: `KH${String(studyPlans.length + 1).padStart(3, '0')}`,
-                tenKeHoach: newPlanForm.tenKeHoach,
-                ngayTao: new Date().toISOString().split('T')[0],
-                trangThai: 'Đang thực hiện',
-                tongSoTinChi: 0,
-                diemTrungBinh: 0
-            };
-
-            setStudyPlans([...studyPlans, newPlan]);
-            setSuccess('Tạo kế hoạch học tập thành công!');
-            setNewPlanDialogVisible(false);
-
-            // Clear success message after 3 seconds
-            setTimeout(() => setSuccess(''), 3000);
-        } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : 'Tạo kế hoạch thất bại';
-            setError(errorMessage);
+            const res = await fetch(`/api/kehoachcosinhvien/sinhvien/${maSinhVien}`);
+            const data = await res.json();
+            setPlans(data.data || []);
+        } catch {
+            setPlans([]);
         } finally {
-            setSaving(false);
+            setLoading(false);
         }
     };
 
-    const handleCancelNewPlan = () => {
-        setNewPlanDialogVisible(false);
-        setNewPlanForm({
-            tenKeHoach: '',
-            namHoc: '',
-            moTa: ''
-        });
-        setError('');
-    };
+    useEffect(() => {
+        if (maSinhVien) fetchPlans();
+        // eslint-disable-next-line
+    }, [maSinhVien]);
+
+    const statusBody = (row: StudyPlan) => (
+        <Tag
+            value={STATUS_MAP[row.trangThai]?.label || 'Không xác định'}
+            severity={STATUS_MAP[row.trangThai]?.color || 'secondary'}
+            className="text-sm px-3 py-1 rounded-full"
+        />
+    );
+
+    const noteBody = (row: StudyPlan) => row.ghiChu || '';
+    const scoreBody = (row: StudyPlan) => row.diem !== undefined ? row.diem : '-';
+
+    const filteredPlans = plans.filter(plan =>
+        (statusFilter === null || plan.trangThai === statusFilter) &&
+        (
+            plan.tenHocPhan?.toLowerCase().includes(search.toLowerCase()) ||
+            plan.maHocPhan?.toLowerCase().includes(search.toLowerCase())
+        )
+    );
 
     return (
-        <div className="w-4/5 max-w-5xl mx-auto p-6 bg-white rounded-2xl shadow-lg mt-12 flex flex-col items-center">
-            <div className="w-full flex justify-content-between align-items-center mb-6">
-                <h1 className="text-2xl font-bold text-blue-700 text-center">Kế hoạch học tập</h1>
+        <div className="card">
+            <div className="flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 className="text-2xl font-bold">Kế hoạch học tập của tôi</h1>
+                    <p className="text-gray-600">Quản lý kế hoạch học tập cá nhân</p>
+                </div>
                 <Button
-                    label="Tạo kế hoạch mới"
-                    icon="pi pi-plus"
-                    className="bg-blue-600 text-white font-bold px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-                    onClick={handleCreateNewPlan}
+                    icon="pi pi-refresh"
+                    label="Làm mới"
+                    onClick={fetchPlans}
                 />
             </div>
 
-            {success && <Message severity="success" text={success} className="w-full mb-4" />}
-            {error && <Message severity="error" text={error} className="w-full mb-4" />}
-
-            <div className="w-full mb-6">
-                <h2 className="text-xl font-semibold mb-4 text-blue-700">Kế hoạch hiện tại</h2>
-                <div className="overflow-x-auto w-full">
-                    <table className="w-full border rounded-lg overflow-hidden">
-                        <thead className="bg-blue-100">
-                            <tr>
-                                <th className="px-4 py-2 text-left">Tên kế hoạch</th>
-                                <th className="px-4 py-2 text-left">Ngày tạo</th>
-                                <th className="px-4 py-2 text-left">Trạng thái</th>
-                                <th className="px-4 py-2 text-left">Tổng số tín chỉ</th>
-                                <th className="px-4 py-2 text-left">Điểm trung bình</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {studyPlans.map((plan) => (
-                                <tr key={plan.maKeHoach} className="border-b hover:bg-blue-50">
-                                    <td className="px-4 py-2">{plan.tenKeHoach}</td>
-                                    <td className="px-4 py-2">{plan.ngayTao}</td>
-                                    <td className="px-4 py-2">
-                                        <span className="inline-block px-2 py-1 rounded text-xs font-semibold bg-yellow-100 text-yellow-700">
-                                            {plan.trangThai}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-2">{plan.tongSoTinChi}</td>
-                                    <td className="px-4 py-2">{plan.diemTrungBinh}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+            <div className="flex justify-content-between mb-4">
+                <div className="flex gap-3">
+                    <span className="p-input-icon-left">
+                        <i className="pi pi-search" />
+                        <InputText
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            placeholder="Tìm kiếm học phần..."
+                            className="w-64"
+                        />
+                    </span>
+                    <Dropdown
+                        value={statusFilter}
+                        options={[
+                            { label: 'Tất cả trạng thái', value: null },
+                            { label: 'Chưa học', value: 0 },
+                            { label: 'Đã học', value: 1 },
+                            { label: 'Đang học', value: 2 },
+                        ]}
+                        onChange={e => setStatusFilter(e.value)}
+                        placeholder="Lọc theo trạng thái"
+                        className="w-56"
+                        showClear
+                    />
                 </div>
             </div>
 
-            <div className="w-full">
-                <TabView activeIndex={activeTab} onTabChange={(e) => setActiveTab(e.index)} className="w-full">
-                    <TabPanel header="Tổng quan">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                            <div className="bg-blue-50 rounded-lg p-4 flex flex-col items-center">
-                                <div className="text-lg font-semibold text-blue-700">Tín chỉ đã tích lũy</div>
-                                <div className="text-2xl font-bold text-green-600">{completedCredits}</div>
-                            </div>
-                            <div className="bg-blue-50 rounded-lg p-4 flex flex-col items-center">
-                                <div className="text-lg font-semibold text-blue-700">Tín chỉ còn lại</div>
-                                <div className="text-2xl font-bold text-orange-500">{remainingCredits}</div>
-                            </div>
-                            <div className="bg-blue-50 rounded-lg p-4 flex flex-col items-center">
-                                <div className="text-lg font-semibold text-blue-700">Điểm TB tích lũy</div>
-                                <div className="text-2xl font-bold text-purple-600">{avgScore}</div>
-                            </div>
-                        </div>
-                    </TabPanel>
-
-                    <TabPanel header="Danh sách học phần">
-                        <div className="flex justify-content-between mb-4">
-                            <span className="p-input-icon-left">
-                                <InputText placeholder="Tìm kiếm học phần..." className="w-full" />
-                            </span>
-                        </div>
-
-                        <div className="overflow-x-auto w-full">
-                            <table className="w-full border rounded-lg overflow-hidden">
-                                <thead className="bg-blue-100">
-                                    <tr>
-                                        <th className="px-4 py-2 text-left">Mã học phần</th>
-                                        <th className="px-4 py-2 text-left">Tên học phần</th>
-                                        <th className="px-4 py-2 text-left">Số tín chỉ</th>
-                                        <th className="px-4 py-2 text-left">Loại học phần</th>
-                                        <th className="px-4 py-2 text-left">Học kỳ</th>
-                                        <th className="px-4 py-2 text-left">Năm học</th>
-                                        <th className="px-4 py-2 text-left">Trạng thái</th>
-                                        <th className="px-4 py-2 text-left">Điểm trung bình</th>
-                                        <th className="px-4 py-2 text-center">Hành động</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {courses.map((course) => (
-                                        <tr key={course.maHocPhan} className="border-b hover:bg-blue-50">
-                                            <td className="px-4 py-2 font-mono">{course.maHocPhan}</td>
-                                            <td className="px-4 py-2">{course.tenHocPhan}</td>
-                                            <td className="px-4 py-2">{course.soTinChi}</td>
-                                            <td className="px-4 py-2">
-                                                {courseTypeTemplate(course)}
-                                            </td>
-                                            <td className="px-4 py-2">{course.hocKy}</td>
-                                            <td className="px-4 py-2">{course.namHoc}</td>
-                                            <td className="px-4 py-2">
-                                                {statusTemplate(course)}
-                                            </td>
-                                            <td className="px-4 py-2">{course.diemTrungBinh || 'Chưa có'}</td>
-                                            <td className="px-4 py-2 text-center">
-                                                <Button
-                                                    icon="pi pi-info-circle"
-                                                    className="p-button-rounded p-button-info text-lg"
-                                                    tooltip="Xem chi tiết"
-                                                    onClick={() => {
-                                                        setSelectedCourse(course);
-                                                        setCourseDetailDialogVisible(true);
-                                                    }}
-                                                />
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </TabPanel>
-                </TabView>
-            </div>
-
-            {/* New Study Plan Dialog */}
-            <Dialog
-                visible={newPlanDialogVisible}
-                onHide={handleCancelNewPlan}
-                header="Tạo kế hoạch học tập mới"
-                modal
-                className="p-fluid w-full max-w-2xl"
-                footer={
-                    <div className="flex justify-end gap-2 mt-4">
-                        <button
-                            type="button"
-                            className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md font-semibold hover:bg-gray-300"
-                            onClick={handleCancelNewPlan}
-                            disabled={saving}
-                        >
-                            Hủy
-                        </button>
-                        <button
-                            type="button"
-                            className="bg-blue-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-700 disabled:bg-gray-400"
-                            onClick={handleSaveNewPlan}
-                            disabled={saving}
-                        >
-                            {saving ? 'Đang tạo...' : 'Tạo kế hoạch'}
-                        </button>
-                    </div>
-                }
+            <DataTable
+                value={filteredPlans}
+                loading={loading}
+                paginator
+                rows={10}
+                rowsPerPageOptions={[5, 10, 25, 50]}
+                className="p-datatable-sm"
+                emptyMessage="Không có dữ liệu kế hoạch học tập."
+                scrollable
+                scrollHeight="500px"
+                responsiveLayout="scroll"
             >
-                <div className="grid grid-cols-1 gap-4">
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="tenKeHoach" className="text-gray-700 font-medium">
-                            Tên kế hoạch <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            id="tenKeHoach"
-                            type="text"
-                            value={newPlanForm.tenKeHoach}
-                            onChange={(e) => setNewPlanForm({ ...newPlanForm, tenKeHoach: e.target.value })}
-                            className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Nhập tên kế hoạch học tập..."
-                            required
-                        />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="namHoc" className="text-gray-700 font-medium">
-                            Năm học <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            id="namHoc"
-                            type="text"
-                            value={newPlanForm.namHoc}
-                            onChange={(e) => setNewPlanForm({ ...newPlanForm, namHoc: e.target.value })}
-                            className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="VD: 2024-2025"
-                            required
-                        />
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <label htmlFor="moTa" className="text-gray-700 font-medium">
-                            Mô tả
-                        </label>
-                        <textarea
-                            id="moTa"
-                            value={newPlanForm.moTa}
-                            onChange={(e) => setNewPlanForm({ ...newPlanForm, moTa: e.target.value })}
-                            className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                            placeholder="Mô tả chi tiết về kế hoạch học tập..."
-                            rows={4}
-                        />
-                    </div>
-                </div>
-            </Dialog>
-
-            {/* Course Detail Dialog */}
-            <Dialog
-                visible={courseDetailDialogVisible}
-                onHide={() => setCourseDetailDialogVisible(false)}
-                header="Chi tiết học phần"
-                modal
-                className="p-fluid w-full max-w-2xl"
-                footer={
-                    <div className="flex justify-end gap-2 mt-4">
-                        <button
-                            type="button"
-                            className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md font-semibold hover:bg-gray-300"
-                            onClick={() => setCourseDetailDialogVisible(false)}
-                        >
-                            Đóng
-                        </button>
-                    </div>
-                }
-            >
-                {selectedCourse && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-2">
-                            <label className="text-gray-700 font-medium">Mã học phần</label>
-                            <div className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base font-mono">
-                                {selectedCourse.maHocPhan}
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <label className="text-gray-700 font-medium">Tên học phần</label>
-                            <div className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base">
-                                {selectedCourse.tenHocPhan}
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <label className="text-gray-700 font-medium">Số tín chỉ</label>
-                            <div className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base">
-                                {selectedCourse.soTinChi}
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <label className="text-gray-700 font-medium">Loại học phần</label>
-                            <div className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base">
-                                {courseTypeTemplate(selectedCourse)}
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <label className="text-gray-700 font-medium">Học kỳ</label>
-                            <div className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base">
-                                {selectedCourse.hocKy}
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <label className="text-gray-700 font-medium">Năm học</label>
-                            <div className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base">
-                                {selectedCourse.namHoc}
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <label className="text-gray-700 font-medium">Trạng thái</label>
-                            <div className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base">
-                                {statusTemplate(selectedCourse)}
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <label className="text-gray-700 font-medium">Điểm trung bình</label>
-                            <div className="bg-blue-50 border border-gray-200 rounded-md px-3 py-2 text-base">
-                                {selectedCourse.diemTrungBinh || 'Chưa có'}
-                            </div>
-                        </div>
-                        <div className="col-span-full">
-                            <h3 className="text-lg font-semibold mb-3 text-blue-700">Học phần tiên quyết</h3>
-                            <div className="bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-base text-gray-600">
-                                {selectedCourse.tienQuyet?.join(", ") || "Không có"}
-                            </div>
-                        </div>
-                        <div className="col-span-full">
-                            <h3 className="text-lg font-semibold mb-3 text-blue-700">Mô tả</h3>
-                            <div className="bg-gray-50 border border-gray-200 rounded-md px-3 py-2 text-base text-gray-600">
-                                {selectedCourse.moTa || "Không có"}
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </Dialog>
+                <Column field="maHocPhan" header="Mã học phần" sortable style={{ minWidth: 120 }} bodyClassName="font-mono" />
+                <Column field="tenHocPhan" header="Tên học phần" sortable style={{ minWidth: 200 }} />
+                <Column field="soTinChi" header="Số tín chỉ" sortable style={{ minWidth: 80 }} bodyClassName="text-center" />
+                <Column field="hocKy" header="Học kỳ" sortable style={{ minWidth: 80 }} bodyClassName="text-center" />
+                <Column field="namHoc" header="Năm học" sortable style={{ minWidth: 100 }} bodyClassName="text-center" />
+                <Column field="trangThai" header="Trạng thái" body={statusBody} sortable style={{ minWidth: 120 }} bodyClassName="text-center" />
+                <Column field="diem" header="Điểm" body={scoreBody} style={{ minWidth: 80 }} bodyClassName="text-center" />
+                <Column field="ghiChu" header="Ghi chú" body={noteBody} style={{ minWidth: 120 }} />
+            </DataTable>
         </div>
     );
 }
-
-function groupByYearAndSemester(courses: Course[]) {
-    const result: Record<string, Record<number, Course[]>> = {};
-    courses.forEach((course) => {
-        if (!result[course.namHoc]) result[course.namHoc] = {};
-        if (!result[course.namHoc][course.hocKy]) result[course.namHoc][course.hocKy] = [];
-        result[course.namHoc][course.hocKy].push(course);
-    });
-    return result;
-} 

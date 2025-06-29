@@ -196,7 +196,6 @@ export default function SelectRegistrationPeriodPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-            <Toast ref={toast} />
 
             {/* Header */}
             <div className="bg-white shadow-sm border-b border-gray-200">

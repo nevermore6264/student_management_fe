@@ -71,7 +71,6 @@ export default function AcademicResultsPage() {
 
     return (
         <div className="card">
-            <Toast ref={toast} />
             <div className="flex flex-col md:flex-row gap-4 mb-4">
                 <Card className="flex-1">
                     <h3 className="text-lg font-semibold mb-2">Thông tin sinh viên</h3>
