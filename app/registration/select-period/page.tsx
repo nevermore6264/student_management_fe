@@ -319,31 +319,31 @@ export default function SelectRegistrationPeriodPage() {
                             })}
                         </div>
 
-                        {/* Continue Button */}
-                        {getActionButton()}
-
-                        {/* Selected Period Summary */}
+                        {/* Selected Period Action + Summary */}
                         {selectedPeriod && (
-                            <div className="mt-8 bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                    <i className="pi pi-info-circle text-blue-600 mr-2"></i>
-                                    Đợt đăng ký đã chọn
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-700">Tên đợt</p>
-                                        <p className="text-lg font-semibold text-gray-900">{selectedPeriod.tenDotDK}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-700">Khoa</p>
-                                        <p className="text-lg font-semibold text-gray-900">{selectedPeriod.tenKhoa}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-700">Trạng thái</p>
-                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPeriodStatus(selectedPeriod).bgColor} ${getPeriodStatus(selectedPeriod).color}`}>
-                                            <i className={`pi ${getPeriodStatus(selectedPeriod).icon} mr-1`}></i>
-                                            {getPeriodStatus(selectedPeriod).text}
-                                        </span>
+                            <div className="flex flex-col items-center mt-8">
+                                {getActionButton()}
+                                <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500 w-full max-w-3xl mt-4">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                        <i className="pi pi-info-circle text-blue-600 mr-2"></i>
+                                        Đợt đăng ký đã chọn
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-700">Tên đợt</p>
+                                            <p className="text-lg font-semibold text-gray-900">{selectedPeriod.tenDotDK}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-700">Khoa</p>
+                                            <p className="text-lg font-semibold text-gray-900">{selectedPeriod.tenKhoa}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-700">Trạng thái</p>
+                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPeriodStatus(selectedPeriod).bgColor} ${getPeriodStatus(selectedPeriod).color}`}>
+                                                <i className={`pi ${getPeriodStatus(selectedPeriod).icon} mr-1`}></i>
+                                                {getPeriodStatus(selectedPeriod).text}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
