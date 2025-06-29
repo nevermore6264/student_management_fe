@@ -1,10 +1,17 @@
 "use client";
 
+import { useRouter } from 'next/navigation';
+
 export default function HeroSection() {
+    const router = useRouter();
+
     return (
         <section className="relative flex flex-col md:flex-row items-center justify-between max-w-7xl mx-auto px-6 py-20 md:py-28 gap-12">
             <div className="flex-1 flex flex-col justify-center items-start text-left z-10">
-                <h1 className="text-5xl md:text-7xl font-extrabold mb-8 leading-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-blue-400 to-blue-700 drop-shadow-xl">
+                <h1
+                    className="text-5xl md:text-7xl font-extrabold mb-8 leading-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-blue-400 to-blue-700 drop-shadow-xl cursor-pointer hover:scale-105 transition-transform duration-200"
+                    onClick={() => router.push('/')}
+                >
                     Hệ thống đăng ký tín chỉ
                 </h1>
                 <p className="text-xl md:text-2xl mb-10 text-gray-700 max-w-xl font-light">Giải pháp toàn diện giúp sinh viên quản lý việc học tập một cách hiệu quả</p>

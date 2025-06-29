@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import './globals.css';
 import Sidebar from './components/layout/Sidebar';
@@ -94,8 +95,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         <div className="sticky top-0 z-50 shadow-lg bg-white/80 backdrop-blur-md">
                             <div className="mx-auto flex items-center justify-between px-6 py-3 w-full">
                                 <div className="flex items-center gap-3 font-extrabold leading-tight text-primary-900">
-                                    <img src="/logo.png" alt="Logo" className="h-10 w-10 mr-2 drop-shadow-lg" />
-                                    <h6 className="text-blue-700 text-2xl font-bold tracking-wide drop-shadow">Hệ thống Đăng ký tín chỉ</h6>
+                                    <img
+                                        src="/logo.png"
+                                        alt="Logo"
+                                        className="h-10 w-10 mr-2 drop-shadow-lg cursor-pointer"
+                                        onClick={() => router.push('/')}
+                                    />
+                                    <h6 className="text-blue-700 text-2xl font-bold tracking-wide drop-shadow cursor-pointer"
+                                        onClick={() => router.push('/')}
+                                    >Hệ thống Đăng ký tín chỉ</h6>
                                 </div>
                                 <Menubar
                                     model={menuItems}
