@@ -3,7 +3,6 @@
 import { Button } from 'primereact/button';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card } from 'primereact/card';
 import { Avatar } from 'primereact/avatar';
 
 const features = [
@@ -146,21 +145,20 @@ export default function Home() {
                     <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-800">
                         Thao tác nhanh
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {quickActions.map((action, index) => (
-                            <Card
+                            <div
                                 key={index}
-                                className="cursor-pointer hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl border-0"
+                                className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-200 cursor-pointer flex flex-col items-center"
+                                style={{ animation: `fadeInUp 0.6s ${index * 0.15 + 0.2}s both` }}
                                 onClick={() => handleQuickAction(action.path)}
                             >
-                                <div className="text-center p-4">
-                                    <div className={`w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r ${action.color} flex items-center justify-center shadow-lg`}>
-                                        <i className={`${action.icon} text-2xl text-white`}></i>
-                                    </div>
-                                    <h3 className="text-xl font-bold mb-2 text-gray-800">{action.title}</h3>
-                                    <p className="text-gray-600 text-sm">{action.description}</p>
+                                <div className={`w-16 h-16 mb-6 rounded-full bg-gradient-to-br ${action.color} flex items-center justify-center shadow-lg`}>
+                                    <i className={`${action.icon} text-white text-2xl`}></i>
                                 </div>
-                            </Card>
+                                <h3 className="text-xl font-bold mb-2 text-center text-gray-800">{action.title}</h3>
+                                <p className="text-gray-600 text-center leading-relaxed text-sm">{action.description}</p>
+                            </div>
                         ))}
                     </div>
                 </section>
