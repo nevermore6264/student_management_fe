@@ -183,9 +183,8 @@ export default function CourseRegistrationPage() {
             const currentTime = new Date().toISOString();
             // Get maPhienDK from registration period if available
             const maPhienDK = registrationPeriod ? parseInt(registrationPeriod.maDotDK.replace(/\D/g, '')) || 1 : 1;
-
             await registrationService.registerClass({
-                maSinhVien,
+                maSinhVien: maSinhVien!, // Add non-null assertion since we know it exists at this point
                 maLopHP: selectedClass.maLopHP,
                 maPhienDK: maPhienDK,
                 thoiGianDangKy: currentTime,

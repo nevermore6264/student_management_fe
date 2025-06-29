@@ -412,7 +412,7 @@ export default function CourseManagementPage() {
                     <Button
                         label="Xem lịch giảng dạy"
                         icon="pi pi-calendar"
-                        onClick={() => router.push('/courses/schedule')}
+                        onClick={() => router.push('/schedule/teacher')}
                     />
                 </div>
             </div>
