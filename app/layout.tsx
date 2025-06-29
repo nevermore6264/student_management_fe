@@ -80,7 +80,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
         <html lang="vi" className="min-h-screen w-full">
             <head>
-                <link rel="icon" type="image/png" href="/favicon.ico" />
+                <title>Hệ thống đăng ký tín chỉ</title>
+                <meta name="description" content="Hệ thống đăng ký tín chỉ, quản lý học tập cho sinh viên đại học." />
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <meta name="theme-color" content="#2563eb" />
+                <link rel="icon" type="image/png" href="/logo.png" />
             </head>
             <body className="m-0 p-0 min-h-screen w-full flex flex-col">
                 <div className="flex flex-1 min-h-0 h-full w-full">

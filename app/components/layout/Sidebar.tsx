@@ -146,6 +146,22 @@ export default function Sidebar() {
     const [isLoading, setIsLoading] = useState(true);
     const [roles, setRoles] = useState<string>("");
 
+    const [user, setUser] = useState<{ maNguoiDung: string, tenNguoiDung: string } | null>(null);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const token = localStorage.getItem('token');
+            if (token) {
+                setUser({
+                    maNguoiDung: localStorage.getItem('maNguoiDung') || '',
+                    tenNguoiDung: localStorage.getItem('tenNguoiDung') || '',
+                });
+            } else {
+                setUser(null);
+            }
+        }
+    }, []);
+
     useEffect(() => {
         const token = localStorage.getItem('token');
         setIsAuthenticated(!!token);
@@ -167,37 +183,60 @@ export default function Sidebar() {
     }
 
     return (
-        <div className="h-screen w-64 bg-blue-50 flex flex-col">
-            <nav className="mt-4 flex-1">
+        <div className="h-screen w-72 bg-gradient-to-b from-blue-50 via-white to-blue-100 flex flex-col shadow-xl rounded-r-2xl border-r border-blue-100">
+            {/* Header */}
+            <div className="p-6 pb-4 border-b border-blue-100">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center shadow-md">
+                        <i className="pi pi-graduation-cap text-white text-2xl font-bold"></i>
+                    </div>
+                    <div>
+                        <h1 className="text-blue-900 font-extrabold text-xl leading-tight">Hệ thống quản lý</h1>
+                        <p className="text-blue-400 text-xs font-medium">Education Management</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Navigation */}
+            <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
                 {menuItems
                     .filter(item => !item.roles || item.roles.some(r => roles == (r)))
                     .map((item) => (
-                        <div key={item.path} className="mb-2">
+                        <div key={item.path} className="mb-1">
                             <Link
                                 href={item.path}
-                                className={`flex items-center gap-2 w-full p-3 rounded-lg transition
+                                className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all duration-200 text-lg font-semibold
                                     ${pathname === item.path
-                                        ? 'bg-white text-primary font-semibold shadow'
-                                        : 'text-gray-700 hover:bg-blue-100'}
+                                        ? 'bg-gradient-to-r from-blue-400 to-blue-600 text-white shadow-md'
+                                        : 'text-blue-900 hover:bg-blue-100 hover:text-blue-700 hover:shadow'}
                                 `}
                             >
-                                <i className={`${item.icon} text-lg`}></i>
+                                <span className={`p-2 rounded-xl flex items-center justify-center text-xl transition-all duration-200
+                                    ${pathname === item.path
+                                        ? 'bg-white/20 text-white'
+                                        : 'bg-blue-100 text-blue-500 group-hover:bg-blue-200 group-hover:text-blue-700'}
+                                `}>
+                                    <i className={`${item.icon}`}></i>
+                                </span>
                                 <span>{item.label}</span>
                             </Link>
                             {item.subItems && (
-                                <div className="ml-4">
+                                <div className="ml-7 mt-1 space-y-1">
                                     {item.subItems
                                         .filter(sub => !sub.roles || sub.roles.some(r => roles.includes(r)))
                                         .map((subItem) => (
                                             <Link
                                                 key={subItem.path}
                                                 href={subItem.path}
-                                                className={`flex items-center gap-2 w-full p-2 rounded-lg transition text-sm
+                                                className={`flex items-center gap-2 w-full px-3 py-2 rounded-lg transition-all duration-200 text-base
                                                     ${pathname === subItem.path
-                                                        ? 'bg-white text-primary font-semibold shadow'
-                                                        : 'text-gray-600 hover:bg-blue-100'}
+                                                        ? 'bg-gradient-to-r from-blue-400 to-blue-600 text-white font-semibold shadow'
+                                                        : 'text-blue-700 hover:bg-blue-100 hover:text-blue-700'}
                                                 `}
                                             >
+                                                <span className={`w-2 h-2 rounded-full mr-2
+                                                    ${pathname === subItem.path ? 'bg-white' : 'bg-blue-400'}
+                                                `}></span>
                                                 <span>{subItem.label}</span>
                                             </Link>
                                         ))}
@@ -206,6 +245,19 @@ export default function Sidebar() {
                         </div>
                     ))}
             </nav>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-blue-100 mt-2">
+                <div className="bg-gradient-to-r from-blue-100 to-blue-200 rounded-xl p-4 flex items-center gap-4 shadow-sm">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                        <i className="pi pi-user text-white text-xl"></i>
+                    </div>
+                    <div className="flex-1">
+                        <p className="text-blue-900 text-base font-bold">{user?.tenNguoiDung}</p>
+                        <p className="text-blue-500 text-sm capitalize">{user?.maNguoiDung}</p>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 } 
