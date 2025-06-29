@@ -16,6 +16,29 @@ export interface StudyPlan {
     ghiChu?: string;
 }
 
+export interface StudyPlanDetail {
+    maKeHoach: number;
+    maSinhVien: string;
+    hoTenSinhVien: string;
+    maHocPhan: string;
+    tenHocPhan: string;
+    soTinChi: number;
+    hocKyDuKien: number;
+    namHocDuKien: string;
+    trangThai: number;
+    trangThaiText: string;
+    diem?: number;
+    ghiChu?: string;
+    // Thêm các trường chi tiết khác nếu có
+    moTaHocPhan?: string;
+    dieuKienTienQuyet?: string;
+    mucTieuHocPhan?: string;
+    noiDungHocPhan?: string;
+    phuongPhapGiangDay?: string;
+    danhGiaHocPhan?: string;
+    taiLieuThamKhao?: string;
+}
+
 class StudyPlanService {
     private getAuthHeaders() {
         const token = localStorage.getItem('token');
@@ -52,6 +75,16 @@ class StudyPlanService {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Không thể lấy chi tiết kế hoạch');
+        return data.data;
+    }
+
+    async getKeHoachChiTiet(maKeHoach: number, maSinhVien: string, maHocPhan: string) {
+        const res = await fetch(`${API_BASE}/chitiet/${maKeHoach}/${maSinhVien}/${maHocPhan}`, {
+            method: 'GET',
+            headers: this.getAuthHeaders(),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Không thể lấy chi tiết kế hoạch học tập');
         return data.data;
     }
 
