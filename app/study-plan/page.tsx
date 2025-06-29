@@ -313,118 +313,177 @@ export default function StudyPlanPage() {
                     <div className="text-center py-8 text-blue-500 font-semibold">Đang tải chi tiết...</div>
                 ) : detailPlan ? (
                     <div className="space-y-6 max-h-96 overflow-y-auto">
-                        <div className="text-center mb-4">
-                            <h2 className="text-xl font-bold text-blue-700">Chi tiết học phần</h2>
-                            <p className="text-gray-600">{detailPlan.tenHocPhan}</p>
-                        </div>
-
-                        <div className="border rounded-lg overflow-hidden">
-                            {/* Header của môn học */}
-                            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4">
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <h3 className="text-lg font-semibold">{detailPlan.tenHocPhan}</h3>
-                                        <p className="text-blue-100 font-mono">{detailPlan.maHocPhan}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-sm">{detailPlan.soTinChi} tín chỉ</p>
-                                        <p className="text-sm">Học kỳ {detailPlan.hocKyDuKien} - {detailPlan.namHocDuKien}</p>
-                                        <span className={`inline-block px-2 py-1 rounded text-xs font-semibold mt-1 ${detailPlan.trangThai === 0 ? 'bg-gray-200 text-gray-700' :
-                                            detailPlan.trangThai === 1 ? 'bg-green-200 text-green-700' :
-                                                'bg-blue-200 text-blue-700'
-                                            }`}>
-                                            {detailPlan.trangThaiText}
-                                        </span>
-                                    </div>
+                        {/* Header với thông tin học phần */}
+                        <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-lg">
+                            <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                    <h3 className="text-xl font-semibold mb-2">{detailPlan.tenHocPhan}</h3>
+                                    <p className="text-blue-100 font-mono mb-1">Mã học phần: {detailPlan.maHocPhan}</p>
+                                    <p className="text-blue-100">Khoa: {detailPlan.tenKhoaHocPhan}</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-lg font-bold">{detailPlan.soTinChi} tín chỉ</p>
+                                    <p className="text-sm">Học kỳ {detailPlan.hocKyDuKien} - {detailPlan.namHocDuKien}</p>
+                                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mt-2 ${detailPlan.trangThai === 0 ? 'bg-gray-200 text-gray-700' :
+                                        detailPlan.trangThai === 1 ? 'bg-green-200 text-green-700' :
+                                            'bg-blue-200 text-blue-700'
+                                        }`}>
+                                        {detailPlan.trangThaiText}
+                                    </span>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Nội dung chi tiết */}
-                            <div className="p-4 space-y-4">
-                                {detailPlan.moTaHocPhan && (
-                                    <div>
-                                        <h4 className="font-semibold text-gray-700 mb-2 flex items-center">
-                                            <i className="pi pi-info-circle mr-2 text-blue-500"></i>
-                                            Mô tả học phần
-                                        </h4>
-                                        <p className="text-gray-600 bg-blue-50 p-3 rounded">{detailPlan.moTaHocPhan}</p>
-                                    </div>
-                                )}
+                        {/* Thông tin sinh viên */}
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                            <h4 className="font-semibold text-gray-700 mb-3 flex items-center">
+                                <i className="pi pi-user mr-2 text-blue-500"></i>
+                                Thông tin sinh viên
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p className="text-sm text-gray-600">Họ tên:</p>
+                                    <p className="font-semibold text-gray-800">{detailPlan.hoTenSinhVien}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Mã sinh viên:</p>
+                                    <p className="font-mono text-gray-800">{detailPlan.maSinhVien}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Email:</p>
+                                    <p className="text-gray-800">{detailPlan.email}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Số điện thoại:</p>
+                                    <p className="text-gray-800">{detailPlan.soDienThoai}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Lớp:</p>
+                                    <p className="text-gray-800">{detailPlan.tenLop} ({detailPlan.maLop})</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Khoa:</p>
+                                    <p className="text-gray-800">{detailPlan.tenKhoa} ({detailPlan.maKhoa})</p>
+                                </div>
+                            </div>
+                        </div>
 
-                                {detailPlan.mucTieuHocPhan && (
-                                    <div>
-                                        <h4 className="font-semibold text-gray-700 mb-2 flex items-center">
-                                            <i className="pi pi-target mr-2 text-green-500"></i>
-                                            Mục tiêu học phần
-                                        </h4>
-                                        <p className="text-gray-600 bg-green-50 p-3 rounded">{detailPlan.mucTieuHocPhan}</p>
-                                    </div>
-                                )}
-
-                                {detailPlan.noiDungHocPhan && (
-                                    <div>
-                                        <h4 className="font-semibold text-gray-700 mb-2 flex items-center">
-                                            <i className="pi pi-book mr-2 text-yellow-500"></i>
-                                            Nội dung học phần
-                                        </h4>
-                                        <p className="text-gray-600 bg-yellow-50 p-3 rounded">{detailPlan.noiDungHocPhan}</p>
-                                    </div>
-                                )}
-
-                                {detailPlan.dieuKienTienQuyet && (
-                                    <div>
-                                        <h4 className="font-semibold text-gray-700 mb-2 flex items-center">
-                                            <i className="pi pi-lock mr-2 text-purple-500"></i>
-                                            Điều kiện tiên quyết
-                                        </h4>
-                                        <p className="text-gray-600 bg-purple-50 p-3 rounded">{detailPlan.dieuKienTienQuyet}</p>
-                                    </div>
-                                )}
-
-                                {detailPlan.phuongPhapGiangDay && (
-                                    <div>
-                                        <h4 className="font-semibold text-gray-700 mb-2 flex items-center">
-                                            <i className="pi pi-users mr-2 text-indigo-500"></i>
-                                            Phương pháp giảng dạy
-                                        </h4>
-                                        <p className="text-gray-600 bg-indigo-50 p-3 rounded">{detailPlan.phuongPhapGiangDay}</p>
-                                    </div>
-                                )}
-
-                                {detailPlan.danhGiaHocPhan && (
-                                    <div>
-                                        <h4 className="font-semibold text-gray-700 mb-2 flex items-center">
-                                            <i className="pi pi-star mr-2 text-pink-500"></i>
-                                            Đánh giá học phần
-                                        </h4>
-                                        <p className="text-gray-600 bg-pink-50 p-3 rounded">{detailPlan.danhGiaHocPhan}</p>
-                                    </div>
-                                )}
-
-                                {detailPlan.taiLieuThamKhao && (
-                                    <div>
-                                        <h4 className="font-semibold text-gray-700 mb-2 flex items-center">
-                                            <i className="pi pi-file mr-2 text-orange-500"></i>
-                                            Tài liệu tham khảo
-                                        </h4>
-                                        <p className="text-gray-600 bg-orange-50 p-3 rounded">{detailPlan.taiLieuThamKhao}</p>
-                                    </div>
-                                )}
-
-                                {detailPlan.diem !== undefined && (
-                                    <div className="bg-gray-50 p-3 rounded">
-                                        <span className="font-semibold text-gray-700">Điểm: </span>
-                                        <span className="text-lg font-bold text-blue-600">{detailPlan.diem}</span>
-                                    </div>
-                                )}
-
-                                {detailPlan.ghiChu && (
-                                    <div className="bg-gray-50 p-3 rounded">
-                                        <span className="font-semibold text-gray-700">Ghi chú: </span>
-                                        <span className="text-gray-600">{detailPlan.ghiChu}</span>
+                        {/* Thông tin đăng ký và điểm số */}
+                        <div className="bg-green-50 p-4 rounded-lg">
+                            <h4 className="font-semibold text-gray-700 mb-3 flex items-center">
+                                <i className="pi pi-check-circle mr-2 text-green-500"></i>
+                                Trạng thái đăng ký và điểm số
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="text-center">
+                                    <p className="text-sm text-gray-600">Đã đăng ký</p>
+                                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${detailPlan.daDangKy ? 'bg-green-200 text-green-700' : 'bg-red-200 text-red-700'
+                                        }`}>
+                                        {detailPlan.daDangKy ? 'Có' : 'Chưa'}
+                                    </span>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-sm text-gray-600">Có điểm</p>
+                                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${detailPlan.coDiem ? 'bg-green-200 text-green-700' : 'bg-gray-200 text-gray-700'
+                                        }`}>
+                                        {detailPlan.coDiem ? 'Có' : 'Chưa có'}
+                                    </span>
+                                </div>
+                                {detailPlan.coDiem && detailPlan.diemTongKet !== undefined && (
+                                    <div className="text-center">
+                                        <p className="text-sm text-gray-600">Điểm tổng kết</p>
+                                        <p className="text-lg font-bold text-blue-600">{detailPlan.diemTongKet}</p>
+                                        {detailPlan.xepLoai && (
+                                            <span className="inline-block px-2 py-1 rounded text-xs bg-blue-200 text-blue-700 mt-1">
+                                                {detailPlan.xepLoai}
+                                            </span>
+                                        )}
                                     </div>
                                 )}
                             </div>
+                        </div>
+
+                        {/* Nội dung chi tiết học phần */}
+                        <div className="space-y-4">
+                            {detailPlan.moTaHocPhan && (
+                                <div className="bg-blue-50 p-4 rounded-lg">
+                                    <h4 className="font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i className="pi pi-info-circle mr-2 text-blue-500"></i>
+                                        Mô tả học phần
+                                    </h4>
+                                    <p className="text-gray-700">{detailPlan.moTaHocPhan}</p>
+                                </div>
+                            )}
+
+                            {detailPlan.mucTieuHocPhan && (
+                                <div className="bg-green-50 p-4 rounded-lg">
+                                    <h4 className="font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i className="pi pi-target mr-2 text-green-500"></i>
+                                        Mục tiêu học phần
+                                    </h4>
+                                    <p className="text-gray-700">{detailPlan.mucTieuHocPhan}</p>
+                                </div>
+                            )}
+
+                            {detailPlan.noiDungHocPhan && (
+                                <div className="bg-yellow-50 p-4 rounded-lg">
+                                    <h4 className="font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i className="pi pi-book mr-2 text-yellow-500"></i>
+                                        Nội dung học phần
+                                    </h4>
+                                    <p className="text-gray-700">{detailPlan.noiDungHocPhan}</p>
+                                </div>
+                            )}
+
+                            {detailPlan.dieuKienTienQuyet && (
+                                <div className="bg-purple-50 p-4 rounded-lg">
+                                    <h4 className="font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i className="pi pi-lock mr-2 text-purple-500"></i>
+                                        Điều kiện tiên quyết
+                                    </h4>
+                                    <p className="text-gray-700">{detailPlan.dieuKienTienQuyet}</p>
+                                </div>
+                            )}
+
+                            {detailPlan.phuongPhapGiangDay && (
+                                <div className="bg-indigo-50 p-4 rounded-lg">
+                                    <h4 className="font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i className="pi pi-users mr-2 text-indigo-500"></i>
+                                        Phương pháp giảng dạy
+                                    </h4>
+                                    <p className="text-gray-700">{detailPlan.phuongPhapGiangDay}</p>
+                                </div>
+                            )}
+
+                            {detailPlan.danhGiaHocPhan && (
+                                <div className="bg-pink-50 p-4 rounded-lg">
+                                    <h4 className="font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i className="pi pi-star mr-2 text-pink-500"></i>
+                                        Đánh giá học phần
+                                    </h4>
+                                    <p className="text-gray-700">{detailPlan.danhGiaHocPhan}</p>
+                                </div>
+                            )}
+
+                            {detailPlan.taiLieuThamKhao && (
+                                <div className="bg-orange-50 p-4 rounded-lg">
+                                    <h4 className="font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i className="pi pi-file mr-2 text-orange-500"></i>
+                                        Tài liệu tham khảo
+                                    </h4>
+                                    <p className="text-gray-700">{detailPlan.taiLieuThamKhao}</p>
+                                </div>
+                            )}
+
+                            {detailPlan.ghiChu && (
+                                <div className="bg-gray-50 p-4 rounded-lg">
+                                    <h4 className="font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i className="pi pi-comment mr-2 text-gray-500"></i>
+                                        Ghi chú
+                                    </h4>
+                                    <p className="text-gray-700">{detailPlan.ghiChu}</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 ) : null}

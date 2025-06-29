@@ -18,16 +18,27 @@ export interface StudyPlan {
 
 export interface StudyPlanDetail {
     maKeHoach: number;
-    maSinhVien: string;
-    hoTenSinhVien: string;
-    maHocPhan: string;
-    tenHocPhan: string;
-    soTinChi: number;
     hocKyDuKien: number;
     namHocDuKien: string;
     trangThai: number;
     trangThaiText: string;
-    diem?: number;
+    maSinhVien: string;
+    hoTenSinhVien: string;
+    email: string;
+    soDienThoai: string;
+    maLop: string;
+    tenLop: string;
+    maKhoa: string;
+    tenKhoa: string;
+    maHocPhan: string;
+    tenHocPhan: string;
+    soTinChi: number;
+    maKhoaHocPhan: string;
+    tenKhoaHocPhan: string;
+    daDangKy: boolean;
+    coDiem: boolean;
+    diemTongKet?: number;
+    xepLoai?: string;
     ghiChu?: string;
     // Thêm các trường chi tiết khác nếu có
     moTaHocPhan?: string;
