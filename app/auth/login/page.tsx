@@ -50,7 +50,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200 py-12 px-4">
+        <div className="h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200 px-4">
             <div className="w-full max-w-md bg-white/90 rounded-3xl shadow-2xl p-10 flex flex-col items-center backdrop-blur-lg hover:shadow-blue-300/40 transition-all duration-300">
                 {/* Logo và tiêu đề */}
                 <div className="w-full flex flex-col items-center mb-8">

@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200 py-12 px-4">
+        <div className="h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200 px-4">
             <div className="w-full max-w-md bg-white/90 rounded-3xl shadow-2xl p-10 flex flex-col items-center backdrop-blur-lg hover:shadow-blue-300/40 transition-all duration-300">
                 <img src="/logo.png" alt="Logo" width={72} height={72} className="rounded-full shadow-lg mb-4" />
                 <h1 className="text-2xl md:text-3xl font-extrabold text-blue-700 mb-2 text-center drop-shadow">Quên mật khẩu</h1>

@@ -4,12 +4,16 @@ import './globals.css';
 import Sidebar from './components/layout/Sidebar';
 import { Menubar } from 'primereact/menubar';
 import { Button } from 'primereact/button';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
+    const pathname = usePathname();
     const [user, setUser] = useState<{ maNguoiDung: string, tenNguoiDung: string } | null>(null);
+
+    // Check if current page is auth page
+    const isAuthPage = pathname?.startsWith('/auth');
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -88,44 +92,54 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <link rel="icon" type="image/png" href="/logo.png" />
             </head>
             <body className="m-0 p-0 min-h-screen w-full flex flex-col">
-                <div className="flex flex-1 min-h-0 h-full w-full">
-                    <Sidebar />
-                    <main className="flex-1 min-h-screen flex flex-col">
-                        {/* Menubar */}
-                        <div className="sticky top-0 z-50 shadow-lg bg-white/80 backdrop-blur-md">
-                            <div className="mx-auto flex items-center justify-between px-6 py-3 w-full">
-                                <div className="flex items-center gap-3 font-extrabold leading-tight text-primary-900">
-                                    <img
-                                        src="/logo.png"
-                                        alt="Logo"
-                                        className="h-10 w-10 mr-2 drop-shadow-lg cursor-pointer"
-                                        onClick={() => router.push('/')}
-                                    />
-                                    <h6 className="text-blue-700 text-2xl font-bold tracking-wide drop-shadow cursor-pointer"
-                                        onClick={() => router.push('/')}
-                                    >Hệ thống Đăng ký tín chỉ</h6>
-                                </div>
-                                <Menubar
-                                    model={menuItems}
-                                    end={end}
-                                    className="border-none shadow-none font-semibold bg-transparent text-blue-800   "
-                                    pt={{
-                                        root: { className: "gap-4" },
-                                        menu: { className: "flex gap-4" },
-                                        menuitem: { className: "rounded-lg px-4 py-2 hover:bg-blue-100 hover:text-blue-700 transition-colors text-blue-800" },
-                                        action: { className: "flex items-center gap-2 text-blue-800" },
-                                        icon: { className: "text-blue-700" },
-                                        label: { className: "text-blue-800" }
-                                    }}
-                                />
-                            </div>
-                        </div>
+                {isAuthPage ? (
+                    // Auth pages layout - no header/footer/sidebar
+                    <div className="min-h-screen w-full">
                         {children}
-                    </main>
-                </div>
-                <footer className="w-full bg-blue-100 text-slate-500 py-4 px-8 text-center mt-auto">
-                    © {new Date().getFullYear()} Hệ thống Đăng ký tín chỉ. All rights reserved.
-                </footer>
+                    </div>
+                ) : (
+                    // Main app layout with header/footer/sidebar
+                    <div className="flex flex-1 min-h-0 h-full w-full">
+                        <Sidebar />
+                        <main className="flex-1 min-h-screen flex flex-col">
+                            {/* Menubar */}
+                            <div className="sticky top-0 z-50 shadow-lg bg-white/80 backdrop-blur-md">
+                                <div className="mx-auto flex items-center justify-between px-6 py-3 w-full">
+                                    <div className="flex items-center gap-3 font-extrabold leading-tight text-primary-900">
+                                        <img
+                                            src="/logo.png"
+                                            alt="Logo"
+                                            className="h-10 w-10 mr-2 drop-shadow-lg cursor-pointer"
+                                            onClick={() => router.push('/')}
+                                        />
+                                        <h6 className="text-blue-700 text-2xl font-bold tracking-wide drop-shadow cursor-pointer"
+                                            onClick={() => router.push('/')}
+                                        >Hệ thống Đăng ký tín chỉ</h6>
+                                    </div>
+                                    <Menubar
+                                        model={menuItems}
+                                        end={end}
+                                        className="border-none shadow-none font-semibold bg-transparent text-blue-800   "
+                                        pt={{
+                                            root: { className: "gap-4" },
+                                            menu: { className: "flex gap-4" },
+                                            menuitem: { className: "rounded-lg px-4 py-2 hover:bg-blue-100 hover:text-blue-700 transition-colors text-blue-800" },
+                                            action: { className: "flex items-center gap-2 text-blue-800" },
+                                            icon: { className: "text-blue-700" },
+                                            label: { className: "text-blue-800" }
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                            {children}
+                        </main>
+                    </div>
+                )}
+                {!isAuthPage && (
+                    <footer className="w-full bg-blue-100 text-slate-500 py-4 px-8 text-center mt-auto">
+                        © {new Date().getFullYear()} Hệ thống Đăng ký tín chỉ. All rights reserved.
+                    </footer>
+                )}
             </body>
         </html>
     );

@@ -53,7 +53,7 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200 py-12 px-4">
+        <div className="h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200 px-4">
             <div className="w-full max-w-5xl bg-white/90 rounded-3xl shadow-2xl p-0 md:p-10 flex flex-col md:flex-row items-center gap-0 md:gap-10 backdrop-blur-lg hover:shadow-blue-300/40 transition-all duration-300">
                 {/* Left: Register Form */}
                 <div className="flex-1 w-full flex flex-col items-center md:items-start px-6 py-10 md:py-0">
