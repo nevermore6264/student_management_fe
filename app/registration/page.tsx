@@ -193,10 +193,11 @@ export default function CourseRegistrationPage() {
                 ketQuaDangKy: 1 // Default to 1 (success)
             });
 
-            console.log('Registration successful, showing toast...');
             setRegisterDialogVisible(false);
-            showToast('success', 'Thành công', 'Đăng ký lớp học phần thành công');
-            loadData(); // Reload data to update lists
+            await loadData();
+            if (toast.current) {
+                toast.current.show({ severity: 'success', summary: 'Thành công', detail: 'Đăng ký lớp học phần thành công', life: 3000 });
+            }
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : 'Đăng ký thất bại';
 
@@ -228,10 +229,11 @@ export default function CourseRegistrationPage() {
                 selectedRegistration.maSinhVien,
                 selectedRegistration.maLopHP
             );
-            console.log('Cancel successful, showing toast...');
             setCancelDialogVisible(false);
-            showToast('success', 'Thành công', 'Hủy đăng ký thành công');
-            loadData(); // Reload data to update lists
+            await loadData();
+            if (toast.current) {
+                toast.current.show({ severity: 'success', summary: 'Thành công', detail: 'Hủy đăng ký thành công', life: 3000 });
+            }
         } catch (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : 'Hủy đăng ký thất bại';
 
