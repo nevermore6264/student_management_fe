@@ -1,12 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
 import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
-import { Tag } from 'primereact/tag';
 
 // Định nghĩa interface cho kế hoạch học tập
 interface StudyPlan {
@@ -21,10 +18,10 @@ interface StudyPlan {
     ghiChu?: string;
 }
 
-const STATUS_MAP: Record<0 | 1 | 2, { label: string; color: "info" | "success" }> = {
-    0: { label: 'Chưa học', color: 'info' },
-    1: { label: 'Đã học', color: 'success' },
-    2: { label: 'Đang học', color: 'info' },
+const STATUS_MAP: Record<0 | 1 | 2, { label: string; color: string }> = {
+    0: { label: 'Chưa học', color: 'bg-gray-100 text-gray-700' },
+    1: { label: 'Đã học', color: 'bg-green-100 text-green-700' },
+    2: { label: 'Đang học', color: 'bg-blue-100 text-blue-700' },
 };
 
 export default function StudyPlanPage() {
@@ -52,17 +49,6 @@ export default function StudyPlanPage() {
         // eslint-disable-next-line
     }, [maSinhVien]);
 
-    const statusBody = (row: StudyPlan) => (
-        <Tag
-            value={STATUS_MAP[row.trangThai]?.label || 'Không xác định'}
-            severity={STATUS_MAP[row.trangThai]?.color || 'secondary'}
-            className="text-sm px-3 py-1 rounded-full"
-        />
-    );
-
-    const noteBody = (row: StudyPlan) => row.ghiChu || '';
-    const scoreBody = (row: StudyPlan) => row.diem !== undefined ? row.diem : '-';
-
     const filteredPlans = plans.filter(plan =>
         (statusFilter === null || plan.trangThai === statusFilter) &&
         (
@@ -72,23 +58,17 @@ export default function StudyPlanPage() {
     );
 
     return (
-        <div className="card">
-            <div className="flex justify-content-between align-items-center mb-4">
+        <div className="w-4/5 max-w-6xl mx-auto p-6 bg-white rounded-2xl shadow-lg mt-12">
+            <div className="flex justify-content-between align-items-center mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold">Kế hoạch học tập của tôi</h1>
+                    <h1 className="text-2xl font-bold text-blue-700">Kế hoạch học tập của tôi</h1>
                     <p className="text-gray-600">Quản lý kế hoạch học tập cá nhân</p>
                 </div>
-                <Button
-                    icon="pi pi-refresh"
-                    label="Làm mới"
-                    onClick={fetchPlans}
-                />
             </div>
 
             <div className="flex justify-content-between mb-4">
                 <div className="flex gap-3">
                     <span className="p-input-icon-left">
-                        <i className="pi pi-search" />
                         <InputText
                             value={search}
                             onChange={e => setSearch(e.target.value)}
@@ -112,27 +92,52 @@ export default function StudyPlanPage() {
                 </div>
             </div>
 
-            <DataTable
-                value={filteredPlans}
-                loading={loading}
-                paginator
-                rows={10}
-                rowsPerPageOptions={[5, 10, 25, 50]}
-                className="p-datatable-sm"
-                emptyMessage="Không có dữ liệu kế hoạch học tập."
-                scrollable
-                scrollHeight="500px"
-                responsiveLayout="scroll"
-            >
-                <Column field="maHocPhan" header="Mã học phần" sortable style={{ minWidth: 120 }} bodyClassName="font-mono" />
-                <Column field="tenHocPhan" header="Tên học phần" sortable style={{ minWidth: 200 }} />
-                <Column field="soTinChi" header="Số tín chỉ" sortable style={{ minWidth: 80 }} bodyClassName="text-center" />
-                <Column field="hocKy" header="Học kỳ" sortable style={{ minWidth: 80 }} bodyClassName="text-center" />
-                <Column field="namHoc" header="Năm học" sortable style={{ minWidth: 100 }} bodyClassName="text-center" />
-                <Column field="trangThai" header="Trạng thái" body={statusBody} sortable style={{ minWidth: 120 }} bodyClassName="text-center" />
-                <Column field="diem" header="Điểm" body={scoreBody} style={{ minWidth: 80 }} bodyClassName="text-center" />
-                <Column field="ghiChu" header="Ghi chú" body={noteBody} style={{ minWidth: 120 }} />
-            </DataTable>
+            {loading ? (
+                <div className="text-center py-8 text-blue-500 font-semibold">Đang tải dữ liệu...</div>
+            ) : (
+                <div className="overflow-x-auto w-full">
+                    <table className="w-full border rounded-lg overflow-hidden">
+                        <thead className="bg-blue-100">
+                            <tr>
+                                <th className="px-4 py-2 text-left">Mã học phần</th>
+                                <th className="px-4 py-2 text-left">Tên học phần</th>
+                                <th className="px-4 py-2 text-center">Số tín chỉ</th>
+                                <th className="px-4 py-2 text-center">Học kỳ</th>
+                                <th className="px-4 py-2 text-center">Năm học</th>
+                                <th className="px-4 py-2 text-center">Trạng thái</th>
+                                <th className="px-4 py-2 text-center">Điểm</th>
+                                <th className="px-4 py-2 text-left">Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredPlans.length === 0 ? (
+                                <tr>
+                                    <td colSpan={8} className="text-center py-4 text-gray-500">
+                                        Không có dữ liệu kế hoạch học tập
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredPlans.map(plan => (
+                                    <tr key={plan.maKeHoach + plan.maHocPhan} className="border-b hover:bg-blue-50">
+                                        <td className="px-4 py-2 font-mono">{plan.maHocPhan}</td>
+                                        <td className="px-4 py-2">{plan.tenHocPhan}</td>
+                                        <td className="px-4 py-2 text-center">{plan.soTinChi}</td>
+                                        <td className="px-4 py-2 text-center">{plan.hocKy}</td>
+                                        <td className="px-4 py-2 text-center">{plan.namHoc}</td>
+                                        <td className="px-4 py-2 text-center">
+                                            <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${STATUS_MAP[plan.trangThai]?.color || 'bg-gray-100 text-gray-700'}`}>
+                                                {STATUS_MAP[plan.trangThai]?.label || 'Không xác định'}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-2 text-center">{plan.diem !== undefined ? plan.diem : '-'}</td>
+                                        <td className="px-4 py-2">{plan.ghiChu || ''}</td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </div>
     );
 }
