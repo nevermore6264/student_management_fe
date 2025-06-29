@@ -103,15 +103,20 @@ export default function StudentProfilePage() {
                 maLop: editForm.maLop,
             };
             const response = await studentService.updateStudent(userId, updateData);
+            console.log('API response:', response);
             if (response.success) {
-                toast.current?.show({
-                    severity: 'success',
-                    summary: 'Thành công',
-                    detail: 'Cập nhật thông tin thành công',
-                    life: 3000
-                });
+                console.log('Showing success toast...');
                 setProfile(editForm);
                 setShowEditDialog(false);
+                setTimeout(() => {
+                    toast.current?.show({
+                        severity: 'success',
+                        summary: 'Thành công',
+                        detail: 'Cập nhật thông tin thành công',
+                        life: 3000
+                    });
+                    console.log('Toast should be visible now');
+                }, 300);
                 await fetchProfile();
             } else {
                 throw new Error(response.message || 'Cập nhật thất bại');
@@ -159,7 +164,6 @@ export default function StudentProfilePage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
-            <Toast ref={toast} />
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header Card */}
                 <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
@@ -450,6 +454,32 @@ export default function StudentProfilePage() {
                     </div>
                 )}
             </Dialog>
+
+            {/* Toast component - đặt ở cuối để đảm bảo z-index cao nhất */}
+            <Toast
+                ref={toast}
+                position="top-right"
+                className="z-[9999]"
+                style={{ zIndex: 9999, position: 'fixed', top: '20px', right: '20px' }}
+            />
+
+            {/* Test Toast đơn giản */}
+            <div
+                id="test-toast"
+                style={{
+                    position: 'fixed',
+                    top: '20px',
+                    right: '20px',
+                    zIndex: 10000,
+                    background: 'green',
+                    color: 'white',
+                    padding: '10px',
+                    borderRadius: '5px',
+                    display: 'none'
+                }}
+            >
+                Test Toast
+            </div>
         </div>
     );
 } 
