@@ -275,23 +275,31 @@ export default function Home() {
             </section>
 
             {/* Features Section */}
-            <section className="max-w-7xl mx-auto px-6 py-16">
-                <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-800">
+            <section className="max-w-7xl mx-auto px-6 py-20">
+                <h2 className="text-4xl md:text-5xl font-extrabold text-center mb-16 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-blue-400 to-blue-700 drop-shadow-lg tracking-tight">
                     Tính năng nổi bật
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-14">
                     {features.map((feature, index) => (
                         <div
                             key={index}
-                            className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-blue-200 cursor-pointer flex flex-col items-center"
+                            className="flex justify-center"
                             style={{ animation: `fadeInUp 0.6s ${index * 0.15 + 0.2}s both` }}
-                            onClick={() => router.push(feature.path)}
                         >
-                            <div className="w-16 h-16 mb-6 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg">
-                                <i className={`${feature.icon} text-white text-2xl`}></i>
+                            <div className="w-full max-w-xs h-full rounded-3xl bg-white/90 shadow-2xl hover:shadow-blue-400/40 transition-all duration-300 border-0 flex flex-col items-center p-12 group hover:scale-110 hover:bg-gradient-to-br hover:from-blue-100 hover:to-blue-200 relative overflow-hidden backdrop-blur-lg cursor-pointer"
+                                onClick={() => router.push(feature.path)}>
+                                <div className="mb-8 flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 shadow-2xl group-hover:from-blue-400 group-hover:to-blue-600 transition-all duration-300 animate-pulse group-hover:animate-none">
+                                    <i className={`${feature.icon} text-5xl text-white group-hover:text-yellow-200 transition-colors duration-200 group-hover:rotate-12`}></i>
+                                </div>
+                                <h3 className="text-2xl font-extrabold mb-4 text-blue-700 text-center group-hover:text-blue-900 transition-colors drop-shadow">
+                                    {feature.title}
+                                </h3>
+                                <p className="text-gray-500 text-base leading-relaxed text-center font-light">
+                                    {feature.description}
+                                </p>
+                                {/* Hiệu ứng glow */}
+                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-300 rounded-full opacity-20 blur-2xl pointer-events-none"></div>
                             </div>
-                            <h3 className="text-xl font-bold mb-2 text-center text-gray-800">{feature.title}</h3>
-                            <p className="text-gray-600 text-center leading-relaxed text-sm">{feature.description}</p>
                         </div>
                     ))}
                 </div>
