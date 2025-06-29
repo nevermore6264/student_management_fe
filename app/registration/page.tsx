@@ -35,7 +35,7 @@ export default function CourseRegistrationPage() {
     const [loadingStudents, setLoadingStudents] = useState(false);
 
     // Mock student ID - in real app this would come from user context/auth
-    const maSinhVien = localStorage.getItem('maNguoiDung') || '';
+    const maSinhVien = typeof window !== 'undefined' ? localStorage.getItem('maNguoiDung') : '';
 
     // Get selected period from URL
     const selectedPeriodId = searchParams.get('period');
@@ -76,9 +76,9 @@ export default function CourseRegistrationPage() {
                 period = await registrationService.getCurrentRegistrationPeriod();
             }
             const classes = selectedPeriodId
-                ? await registrationService.getAvailableClassesByPeriod(selectedPeriodId)
+                ? await registrationService.getAvailableClassesByPeriod(selectedPeriodId || '')
                 : await registrationService.getAvailableClasses();
-            const registrations = await registrationService.getRegisteredClasses(maSinhVien);
+            const registrations = await registrationService.getRegisteredClasses(maSinhVien || '');
             setRegistrationPeriod(period || null);
             setAvailableClasses(Array.isArray(classes) ? classes : []);
             setRegisteredClasses(Array.isArray(registrations) ? registrations : []);
