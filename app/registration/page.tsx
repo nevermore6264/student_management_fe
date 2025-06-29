@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
@@ -27,6 +28,11 @@ export default function CourseRegistrationPage() {
     const [selectedRegistration, setSelectedRegistration] = useState<Registration | null>(null);
     const [registerDialogVisible, setRegisterDialogVisible] = useState(false);
     const [cancelDialogVisible, setCancelDialogVisible] = useState(false);
+
+    // State cho popup danh sách sinh viên
+    const [studentListDialogVisible, setStudentListDialogVisible] = useState(false);
+    const [studentsOfClass, setStudentsOfClass] = useState<any[]>([]);
+    const [loadingStudents, setLoadingStudents] = useState(false);
 
     // Mock student ID - in real app this would come from user context/auth
     const maSinhVien = localStorage.getItem('maNguoiDung') || '';
@@ -252,6 +258,22 @@ export default function CourseRegistrationPage() {
         )
     );
 
+    // Hàm gọi API lấy danh sách sinh viên lớp học phần
+    const handleShowStudents = async (maLopHP: string) => {
+        setLoadingStudents(true);
+        setStudentListDialogVisible(true);
+        try {
+            const students = await (await import('../services/classService')).default.getStudentsOfClass(maLopHP);
+            setStudentsOfClass(students || []);
+        } catch (e: any) {
+            console.log('Error:', e);
+            setStudentsOfClass([]);
+            showToast('error', 'Lỗi', 'Không thể tải danh sách sinh viên');
+        } finally {
+            setLoadingStudents(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className="card">
@@ -404,7 +426,12 @@ export default function CourseRegistrationPage() {
                                             <td className="px-4 py-2 border border-gray-300">{rowData?.soTinChi || ''}</td>
                                             <td className="px-4 py-2 border border-gray-300">{rowData?.giangVien || ''}</td>
                                             <td className="px-4 py-2 border border-gray-300">{rowData?.phongHoc || ''}</td>
-                                            <td className="px-4 py-2 border border-gray-300">{rowData?.siSoHienTai || ''}</td>
+                                            <td
+                                                className="px-4 py-2 border border-gray-300 text-blue-600 underline cursor-pointer"
+                                                onClick={() => handleShowStudents(rowData.maLopHP)}
+                                            >
+                                                {rowData.siSoHienTai || ''}
+                                            </td>
                                             <td className="px-4 py-2 border border-gray-300">{rowData?.soLuong || ''}</td>
                                             <td className="px-4 py-2 border border-gray-300">
                                                 <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${rowData?.trangThai ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
@@ -537,6 +564,60 @@ export default function CourseRegistrationPage() {
                     Bạn có chắc chắn muốn hủy đăng ký lớp học phần{' '}
                     <strong>{selectedRegistration?.tenLopHP || 'N/A'}</strong>?
                 </p>
+            </Dialog>
+
+            {/* Thêm Dialog hiển thị danh sách sinh viên */}
+            <Dialog
+                visible={studentListDialogVisible}
+                onHide={() => setStudentListDialogVisible(false)}
+                header="Danh sách sinh viên lớp học phần"
+                modal
+                style={{ width: '80vw' }}
+            >
+                {loadingStudents ? (
+                    <div className="text-center py-8">Đang tải...</div>
+                ) : studentsOfClass.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">Không có sinh viên nào</div>
+                ) : (
+                    <div className="overflow-x-auto max-h-[60vh]">
+                        <table className="min-w-full border border-gray-300 rounded-lg overflow-hidden">
+                            <thead className="bg-blue-100">
+                                <tr>
+                                    <th className="px-3 py-2 border">Mã SV</th>
+                                    <th className="px-3 py-2 border">Họ tên</th>
+                                    <th className="px-3 py-2 border">Email</th>
+                                    <th className="px-3 py-2 border">SĐT</th>
+                                    <th className="px-3 py-2 border">Lớp</th>
+                                    <th className="px-3 py-2 border">Giới tính</th>
+                                    <th className="px-3 py-2 border">Địa chỉ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {studentsOfClass.map((sv) => (
+                                    <tr key={sv.maSinhVien} className="hover:bg-blue-50 transition">
+                                        <td className="px-3 py-2 border font-mono">{sv.maSinhVien}</td>
+                                        <td className="px-3 py-2 border">{sv.hoTenSinhVien}</td>
+                                        <td className="px-3 py-2 border">{sv.email}</td>
+                                        <td className="px-3 py-2 border">{sv.soDienThoai}</td>
+                                        <td className="px-3 py-2 border">{sv.tenLop}</td>
+                                        <td className="px-3 py-2 border text-center">
+                                            {sv.gioiTinh === true ? (
+                                                <span className="inline-flex items-center text-blue-600 font-medium">
+                                                    <i className="pi pi-male mr-1"></i> Nam
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center text-pink-500 font-medium">
+                                                    <i className="pi pi-female mr-1"></i> Nữ
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="px-3 py-2 border">{sv.diaChi}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </Dialog>
         </div>
     );

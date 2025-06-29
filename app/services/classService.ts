@@ -91,6 +91,23 @@ class ClassService {
         }
         return res;
     }
+
+    async getStudentsOfClass(maLopHP: string) {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`http://localhost:8080/api/lophocphan/${maLopHP}/students`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {})
+            },
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || 'Không thể lấy danh sách sinh viên lớp học phần');
+        }
+        const data = await res.json();
+        return data.data || [];
+    }
 }
 
 const classService = new ClassService();
