@@ -99,9 +99,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     </div>
                 ) : (
                     // Main app layout with header/footer/sidebar
-                    <div className="flex flex-1 min-h-0 h-full w-full">
+                    <div className="flex min-h-screen w-full">
                         <Sidebar />
-                        <main className="flex-1 min-h-screen flex flex-col">
+                        <main className="flex-1 flex flex-col">
                             {/* Menubar */}
                             <div className="sticky top-0 z-50 shadow-lg bg-white/80 backdrop-blur-md">
                                 <div className="mx-auto flex items-center justify-between px-6 py-3 w-full">

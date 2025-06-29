@@ -183,7 +183,7 @@ export default function Sidebar() {
     }
 
     return (
-        <div className="h-screen w-72 bg-gradient-to-b from-blue-50 via-white to-blue-100 flex flex-col shadow-xl rounded-r-2xl border-r border-blue-100">
+        <div className="fixed top-0 left-0 w-72 min-h-screen bg-gradient-to-b from-blue-50 via-white to-blue-100 flex flex-col shadow-xl rounded-r-2xl border-r border-blue-100 pb-6 z-40">
             {/* Header */}
             <div className="p-4 border-b border-blue-100">
                 <div className="flex items-center gap-4">

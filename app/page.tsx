@@ -105,7 +105,7 @@ export default function Home() {
 
     if (isAuthenticated && user) {
         return (
-            <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 font-sans">
+            <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 font-sans" style={{ paddingLeft: '285px' }}>
                 {/* Welcome Section */}
                 <section className="max-w-7xl mx-auto px-6 py-12">
                     <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 rounded-3xl p-8 md:p-12 shadow-2xl text-white relative overflow-hidden">
