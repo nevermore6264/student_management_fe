@@ -78,8 +78,8 @@ class StudyPlanService {
         return data.data;
     }
 
-    async getKeHoachChiTiet(maKeHoach: number, maSinhVien: string, maHocPhan: string) {
-        const res = await fetch(`${API_BASE}/chitiet/${maKeHoach}/${maSinhVien}/${maHocPhan}`, {
+    async getKeHoachChiTiet(maSinhVien: string) {
+        const res = await fetch(`${API_BASE}/chitiet/sinhvien/${maSinhVien}`, {
             method: 'GET',
             headers: this.getAuthHeaders(),
         });
