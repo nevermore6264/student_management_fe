@@ -3,41 +3,30 @@
 import { useEffect, useState } from 'react';
 import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
+import studyPlanService, { StudyPlan } from '../services/studyPlanService';
 
-// Định nghĩa interface cho kế hoạch học tập
-interface StudyPlan {
-    maKeHoach: string;
-    maHocPhan: string;
-    tenHocPhan: string;
-    soTinChi: number;
-    hocKy: number;
-    namHoc: string;
-    trangThai: 0 | 1 | 2;
-    diem?: number;
-    ghiChu?: string;
-}
-
-const STATUS_MAP: Record<0 | 1 | 2, { label: string; color: string }> = {
-    0: { label: 'Chưa học', color: 'bg-gray-100 text-gray-700' },
-    1: { label: 'Đã học', color: 'bg-green-100 text-green-700' },
-    2: { label: 'Đang học', color: 'bg-blue-100 text-blue-700' },
+const STATUS_MAP: Record<number, { color: string }> = {
+    0: { color: 'bg-gray-100 text-gray-700' },
+    1: { color: 'bg-green-100 text-green-700' },
+    2: { color: 'bg-blue-100 text-blue-700' },
 };
 
 export default function StudyPlanPage() {
     const [plans, setPlans] = useState<StudyPlan[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [statusFilter, setStatusFilter] = useState<0 | 1 | 2 | null>(null);
+    const [statusFilter, setStatusFilter] = useState<number | null>(null);
     const [search, setSearch] = useState<string>('');
     const maSinhVien = typeof window !== 'undefined' ? localStorage.getItem('maNguoiDung') : '';
 
     const fetchPlans = async () => {
+        if (!maSinhVien) return;
+
         setLoading(true);
         try {
-            const res = await fetch(`/api/kehoachcosinhvien/sinhvien/${maSinhVien}`);
-            const data = await res.json();
-            setPlans(data.data || []);
-        } catch {
+            const data = await studyPlanService.getByStudent(maSinhVien);
+            setPlans(data);
+        } catch (error) {
+            console.error('Lỗi khi tải kế hoạch học tập:', error);
             setPlans([]);
         } finally {
             setLoading(false);
@@ -45,17 +34,34 @@ export default function StudyPlanPage() {
     };
 
     useEffect(() => {
-        if (maSinhVien) fetchPlans();
+        fetchPlans();
         // eslint-disable-next-line
     }, [maSinhVien]);
 
-    const filteredPlans = plans.filter(plan =>
-        (statusFilter === null || plan.trangThai === statusFilter) &&
-        (
+    const handleStatusFilterChange = (e: { value: number | null | { label: string; value: null } }) => {
+        // Xử lý trường hợp clear dropdown trả về object
+        const filterValue = typeof e.value === 'object' && e.value !== null ? e.value.value : e.value;
+        setStatusFilter(filterValue);
+    };
+
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearch(e.target.value);
+    };
+
+    const filteredPlans = plans.filter(plan => {
+
+        // Kiểm tra filter trạng thái
+        const statusMatch = statusFilter === null || statusFilter === undefined || plan.trangThai === statusFilter;
+
+        // Kiểm tra search
+        const searchMatch = !search || search.trim() === '' ||
             plan.tenHocPhan?.toLowerCase().includes(search.toLowerCase()) ||
-            plan.maHocPhan?.toLowerCase().includes(search.toLowerCase())
-        )
-    );
+            plan.maHocPhan?.toLowerCase().includes(search.toLowerCase());
+
+        const result = statusMatch && searchMatch;
+
+        return result;
+    });
 
     return (
         <div className="w-4/5 max-w-6xl mx-auto p-6 bg-white rounded-2xl shadow-lg mt-12">
@@ -71,7 +77,7 @@ export default function StudyPlanPage() {
                     <span className="p-input-icon-left">
                         <InputText
                             value={search}
-                            onChange={e => setSearch(e.target.value)}
+                            onChange={handleSearchChange}
                             placeholder="Tìm kiếm học phần..."
                             className="w-64"
                         />
@@ -84,7 +90,7 @@ export default function StudyPlanPage() {
                             { label: 'Đã học', value: 1 },
                             { label: 'Đang học', value: 2 },
                         ]}
-                        onChange={e => setStatusFilter(e.value)}
+                        onChange={handleStatusFilterChange}
                         placeholder="Lọc theo trạng thái"
                         className="w-56"
                         showClear
@@ -102,8 +108,8 @@ export default function StudyPlanPage() {
                                 <th className="px-4 py-2 text-left">Mã học phần</th>
                                 <th className="px-4 py-2 text-left">Tên học phần</th>
                                 <th className="px-4 py-2 text-center">Số tín chỉ</th>
-                                <th className="px-4 py-2 text-center">Học kỳ</th>
-                                <th className="px-4 py-2 text-center">Năm học</th>
+                                <th className="px-4 py-2 text-center">Học kỳ dự kiến</th>
+                                <th className="px-4 py-2 text-center">Năm học dự kiến</th>
                                 <th className="px-4 py-2 text-center">Trạng thái</th>
                                 <th className="px-4 py-2 text-center">Điểm</th>
                                 <th className="px-4 py-2 text-left">Ghi chú</th>
@@ -122,11 +128,11 @@ export default function StudyPlanPage() {
                                         <td className="px-4 py-2 font-mono">{plan.maHocPhan}</td>
                                         <td className="px-4 py-2">{plan.tenHocPhan}</td>
                                         <td className="px-4 py-2 text-center">{plan.soTinChi}</td>
-                                        <td className="px-4 py-2 text-center">{plan.hocKy}</td>
-                                        <td className="px-4 py-2 text-center">{plan.namHoc}</td>
+                                        <td className="px-4 py-2 text-center">{plan.hocKyDuKien}</td>
+                                        <td className="px-4 py-2 text-center">{plan.namHocDuKien}</td>
                                         <td className="px-4 py-2 text-center">
                                             <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${STATUS_MAP[plan.trangThai]?.color || 'bg-gray-100 text-gray-700'}`}>
-                                                {STATUS_MAP[plan.trangThai]?.label || 'Không xác định'}
+                                                {plan.trangThaiText}
                                             </span>
                                         </td>
                                         <td className="px-4 py-2 text-center">{plan.diem !== undefined ? plan.diem : '-'}</td>

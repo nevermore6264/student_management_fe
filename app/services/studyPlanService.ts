@@ -2,14 +2,16 @@
 const API_BASE = 'http://localhost:8080/api/kehoachcosinhvien';
 
 export interface StudyPlan {
-    maKeHoach: string;
+    maKeHoach: number;
     maSinhVien: string;
+    hoTenSinhVien: string;
     maHocPhan: string;
     tenHocPhan: string;
     soTinChi: number;
-    hocKy: number;
-    namHoc: string;
+    hocKyDuKien: number;
+    namHocDuKien: string;
     trangThai: number;
+    trangThaiText: string;
     diem?: number;
     ghiChu?: string;
 }
@@ -43,7 +45,7 @@ class StudyPlanService {
         return data.data || [];
     }
 
-    async getById(maKeHoach: string, maSinhVien: string, maHocPhan: string) {
+    async getById(maKeHoach: number, maSinhVien: string, maHocPhan: string) {
         const res = await fetch(`${API_BASE}/${maKeHoach}/${maSinhVien}/${maHocPhan}`, {
             method: 'GET',
             headers: this.getAuthHeaders(),
@@ -64,7 +66,7 @@ class StudyPlanService {
         return data.data;
     }
 
-    async update(maKeHoach: string, maSinhVien: string, maHocPhan: string, plan: Partial<StudyPlan>) {
+    async update(maKeHoach: number, maSinhVien: string, maHocPhan: string, plan: Partial<StudyPlan>) {
         const res = await fetch(`${API_BASE}/${maKeHoach}/${maSinhVien}/${maHocPhan}`, {
             method: 'PUT',
             headers: this.getAuthHeaders(),
@@ -75,7 +77,7 @@ class StudyPlanService {
         return data.data;
     }
 
-    async delete(maKeHoach: string, maSinhVien: string, maHocPhan: string) {
+    async delete(maKeHoach: number, maSinhVien: string, maHocPhan: string) {
         const res = await fetch(`${API_BASE}/${maKeHoach}/${maSinhVien}/${maHocPhan}`, {
             method: 'DELETE',
             headers: this.getAuthHeaders(),
