@@ -185,14 +185,14 @@ export default function Sidebar() {
     return (
         <div className="h-screen w-72 bg-gradient-to-b from-blue-50 via-white to-blue-100 flex flex-col shadow-xl rounded-r-2xl border-r border-blue-100">
             {/* Header */}
-            <div className="p-6 pb-4 border-b border-blue-100">
+            <div className="p-4 border-b border-blue-100">
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center shadow-md">
                         <i className="pi pi-graduation-cap text-white text-2xl font-bold"></i>
                     </div>
                     <div>
-                        <h1 className="text-blue-900 font-extrabold text-xl leading-tight">Hệ thống quản lý</h1>
-                        <p className="text-blue-400 text-xs font-medium">Education Management</p>
+                        <h1 className="text-blue-900 font-extrabold text-l leading-tight">Hệ thống đăng ký tín chỉ</h1>
+                        <p className="text-blue-400 pt-2 text-xs font-medium">Trường Đại học Sư Phạm Kỹ thuật</p>
                     </div>
                 </div>
             </div>
