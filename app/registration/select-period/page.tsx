@@ -44,7 +44,18 @@ export default function SelectRegistrationPeriodPage() {
     };
 
     const handleSelectPeriod = (period: RegistrationPeriod) => {
-        setSelectedPeriod(period);
+        // Only allow selecting active periods
+        if (isPeriodActive(period)) {
+            setSelectedPeriod(period);
+        } else if (isPeriodUpcoming(period)) {
+            // For upcoming periods, show info but don't select
+            setSelectedPeriod(period);
+            showToast('info', 'Thông báo', 'Đợt đăng ký này chưa mở. Bạn có thể xem thông tin chi tiết.');
+        } else {
+            // For expired/closed periods, show info but don't select
+            setSelectedPeriod(period);
+            showToast('warn', 'Cảnh báo', 'Đợt đăng ký này không khả dụng.');
+        }
     };
 
     const handleContinue = () => {
@@ -53,8 +64,91 @@ export default function SelectRegistrationPeriodPage() {
             return;
         }
 
+        // Check if period is active
+        if (!isPeriodActive(selectedPeriod)) {
+            if (isPeriodUpcoming(selectedPeriod)) {
+                showToast('info', 'Thông báo', 'Đợt đăng ký này chưa mở. Vui lòng chờ đến thời gian bắt đầu.');
+            } else {
+                showToast('error', 'Lỗi', 'Đợt đăng ký này không khả dụng.');
+            }
+            return;
+        }
+
         // Navigate to registration page with selected period
         router.push(`/registration?period=${selectedPeriod.maDotDK}`);
+    };
+
+    const getTimeUntilStart = (startDate: string) => {
+        const now = new Date();
+        const start = new Date(startDate);
+        const diff = start.getTime() - now.getTime();
+
+        if (diff <= 0) return null;
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+        if (days > 0) return `${days} ngày ${hours} giờ`;
+        if (hours > 0) return `${hours} giờ ${minutes} phút`;
+        return `${minutes} phút`;
+    };
+
+    const getActionButton = () => {
+        if (!selectedPeriod) return null;
+
+        if (isPeriodActive(selectedPeriod)) {
+            return (
+                <Button
+                    label="Tiếp tục với đợt đăng ký đã chọn"
+                    icon="pi pi-arrow-right"
+                    className="p-button-success p-button-lg"
+                    onClick={handleContinue}
+                    size="large"
+                />
+            );
+        } else if (isPeriodUpcoming(selectedPeriod)) {
+            const timeUntilStart = getTimeUntilStart(selectedPeriod.ngayGioBatDau);
+            return (
+                <div className="text-center">
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                        <div className="flex items-center justify-center space-x-2 text-yellow-800 mb-2">
+                            <i className="pi pi-clock text-lg"></i>
+                            <span className="font-semibold">Đợt đăng ký chưa mở</span>
+                        </div>
+                        {timeUntilStart && (
+                            <p className="text-yellow-700">
+                                Còn <span className="font-bold">{timeUntilStart}</span> nữa sẽ mở đăng ký
+                            </p>
+                        )}
+                        <p className="text-yellow-600 text-sm mt-2">
+                            Bắt đầu: {formatDate(selectedPeriod.ngayGioBatDau)}
+                        </p>
+                    </div>
+                    <Button
+                        label="Đặt lời nhắc"
+                        icon="pi pi-bell"
+                        className="p-button-outlined p-button-warning p-button-lg"
+                        onClick={() => showToast('info', 'Thông báo', 'Tính năng đặt lời nhắc sẽ được phát triển sau')}
+                        size="large"
+                    />
+                </div>
+            );
+        } else {
+            return (
+                <div className="text-center">
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <div className="flex items-center justify-center space-x-2 text-red-800 mb-2">
+                            <i className="pi pi-times-circle text-lg"></i>
+                            <span className="font-semibold">Đợt đăng ký không khả dụng</span>
+                        </div>
+                        <p className="text-red-700">
+                            Đợt đăng ký này đã kết thúc hoặc bị đóng
+                        </p>
+                    </div>
+                </div>
+            );
+        }
     };
 
     const isPeriodActive = (period: RegistrationPeriod) => {
@@ -233,16 +327,7 @@ export default function SelectRegistrationPeriodPage() {
                         </div>
 
                         {/* Continue Button */}
-                        <div className="flex justify-center">
-                            <Button
-                                label="Tiếp tục với đợt đăng ký đã chọn"
-                                icon="pi pi-arrow-right"
-                                className="p-button-success p-button-lg"
-                                onClick={handleContinue}
-                                disabled={!selectedPeriod}
-                                size="large"
-                            />
-                        </div>
+                        {getActionButton()}
 
                         {/* Selected Period Summary */}
                         {selectedPeriod && (
