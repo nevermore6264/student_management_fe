@@ -55,16 +55,16 @@ const menuItems = [
             { label: 'Thời khóa biểu', path: '/courses/schedule', roles: ['admin'] }
         ]
     },
-    {
-        label: 'Quản lý đăng ký',
-        icon: 'pi pi-calendar',
-        path: '/registration-management',
-        roles: ['admin'],
-        subItems: [
-            { label: 'Đợt đăng ký', path: '/registration-management/periods', roles: ['admin'] },
-            { label: 'Danh sách đăng ký', path: '/registration-management/list', roles: ['admin'] }
-        ]
-    },
+    // {
+    //     label: 'Quản lý đăng ký',
+    //     icon: 'pi pi-calendar',
+    //     path: '/registration-management',
+    //     roles: ['admin'],
+    //     subItems: [
+    //         { label: 'Đợt đăng ký', path: '/registration-management/periods', roles: ['admin'] },
+    //         { label: 'Danh sách đăng ký', path: '/registration-management/list', roles: ['admin'] }
+    //     ]
+    // },
     {
         label: 'Giảng dạy',
         icon: 'pi pi-book',
@@ -129,8 +129,8 @@ const menuItems = [
         path: '/reports',
         roles: ['admin'],
         subItems: [
-            { label: 'Thống kê đăng ký', path: '/reports/registration', roles: ['admin'] },
-            { label: 'Kết quả học tập', path: '/reports/academic', roles: ['admin'] },
+            // { label: 'Thống kê đăng ký', path: '/reports/registration', roles: ['admin'] },
+            // { label: 'Kết quả học tập', path: '/reports/academic', roles: ['admin'] },
             { label: 'Báo cáo tổng hợp', path: '/reports/summary', roles: ['admin'] }
         ]
     }

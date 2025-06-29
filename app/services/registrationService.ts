@@ -17,15 +17,15 @@ export interface CourseClass {
 }
 
 export interface RegistrationPeriod {
-    maDotDK: string;
-    tenDotDK: string;
-    ngayGioBatDau: string;
-    ngayGioKetThuc: string;
-    thoiGian: number;
-    maKhoa: string;
-    tenKhoa: string;
-    moTa: string;
-    trangThai: boolean;
+    maDotDangKy: number;
+    tenDotDangKy: string;
+    ngayBatDau: string;
+    ngayKetThuc: string;
+    trangThai: number;
+    trangThaiText: string;
+    moTa?: string;
+    namHoc: string;
+    hocKy: number;
 }
 
 export interface Registration {
@@ -51,6 +51,24 @@ export interface RegisterPayload {
     thoiGianDangKy: string;
     trangThai: boolean;
     ketQuaDangKy: number;
+}
+
+export interface RegistrationRecord {
+    maDangKy: number;
+    maSinhVien: string;
+    hoTenSinhVien: string;
+    email: string;
+    maLop: string;
+    tenLop: string;
+    maHocPhan: string;
+    tenHocPhan: string;
+    soTinChi: number;
+    maDotDangKy: number;
+    tenDotDangKy: string;
+    ngayDangKy: string;
+    trangThai: number;
+    trangThaiText: string;
+    ghiChu?: string;
 }
 
 interface ApiResponse<T> {
@@ -127,17 +145,14 @@ class RegistrationService {
         return response.data;
     }
 
-    async getRegistrationPeriodById(maDotDK: string) {
-        const res = await fetch(`${API_BASE}/dotdangky/period?period=${maDotDK}`, {
+    async getRegistrationPeriodById(maDotDangKy: number) {
+        const res = await fetch(`${API_BASE}/dotdangky/${maDotDangKy}`, {
             method: 'GET',
             headers: this.getAuthHeaders(),
         });
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || 'Không thể lấy thông tin đợt đăng ký');
-        }
-        const response: ApiResponse<RegistrationPeriod> = await res.json();
-        return response.data;
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Không thể lấy thông tin đợt đăng ký');
+        return data.data;
     }
 
     async getRegisteredClasses(maSinhVien: string) {
@@ -182,6 +197,104 @@ class RegistrationService {
         }
 
         return response.data;
+    }
+
+    // ===== QUẢN LÝ ĐỢT ĐĂNG KÝ =====
+    async getRegistrationPeriods() {
+        const res = await fetch(`${API_BASE}/dotdangky`, {
+            method: 'GET',
+            headers: this.getAuthHeaders(),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Không thể lấy danh sách đợt đăng ký');
+        return data.data || [];
+    }
+
+    async createRegistrationPeriod(period: Partial<RegistrationPeriod>) {
+        const res = await fetch(`${API_BASE}/dotdangky`, {
+            method: 'POST',
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify(period),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Tạo đợt đăng ký thất bại');
+        return data.data;
+    }
+
+    async updateRegistrationPeriod(maDotDangKy: number, period: Partial<RegistrationPeriod>) {
+        const res = await fetch(`${API_BASE}/dotdangky/${maDotDangKy}`, {
+            method: 'PUT',
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify(period),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Cập nhật đợt đăng ký thất bại');
+        return data.data;
+    }
+
+    async deleteRegistrationPeriod(maDotDangKy: number) {
+        const res = await fetch(`${API_BASE}/dotdangky/${maDotDangKy}`, {
+            method: 'DELETE',
+            headers: this.getAuthHeaders(),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Xóa đợt đăng ký thất bại');
+        return data.data;
+    }
+
+    // ===== QUẢN LÝ DANH SÁCH ĐĂNG KÝ =====
+    async getRegistrationList(filters?: {
+        maDotDangKy?: number;
+        maSinhVien?: string;
+        trangThai?: number;
+        page?: number;
+        size?: number;
+    }) {
+        const params = new URLSearchParams();
+        if (filters?.maDotDangKy) params.append('maDotDangKy', filters.maDotDangKy.toString());
+        if (filters?.maSinhVien) params.append('maSinhVien', filters.maSinhVien);
+        if (filters?.trangThai !== undefined) params.append('trangThai', filters.trangThai.toString());
+        if (filters?.page) params.append('page', filters.page.toString());
+        if (filters?.size) params.append('size', filters.size.toString());
+
+        const res = await fetch(`${API_BASE}/dangky/admin?${params}`, {
+            method: 'GET',
+            headers: this.getAuthHeaders(),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Không thể lấy danh sách đăng ký');
+        return data.data || { content: [], totalElements: 0, totalPages: 0 };
+    }
+
+    async getRegistrationById(maDangKy: number) {
+        const res = await fetch(`${API_BASE}/dangky/${maDangKy}`, {
+            method: 'GET',
+            headers: this.getAuthHeaders(),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Không thể lấy thông tin đăng ký');
+        return data.data;
+    }
+
+    async updateRegistrationStatus(maDangKy: number, trangThai: number, ghiChu?: string) {
+        const res = await fetch(`${API_BASE}/dangky/${maDangKy}/status`, {
+            method: 'PUT',
+            headers: this.getAuthHeaders(),
+            body: JSON.stringify({ trangThai, ghiChu }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Cập nhật trạng thái đăng ký thất bại');
+        return data.data;
+    }
+
+    async deleteRegistration(maDangKy: number) {
+        const res = await fetch(`${API_BASE}/dangky/${maDangKy}`, {
+            method: 'DELETE',
+            headers: this.getAuthHeaders(),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Xóa đăng ký thất bại');
+        return data.data;
     }
 }
 
