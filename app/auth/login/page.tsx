@@ -51,6 +51,15 @@ export default function LoginPage() {
 
     return (
         <div className="h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200 px-4">
+            <button
+                onClick={() => router.push('/')}
+                className="cursor-pointer absolute top-6 left-6 p-button-lg font-bold text-lg rounded-xl bg-gradient-to-r from-blue-500 to-blue-700 border-0 shadow-lg hover:scale-105 transition-transform duration-200 text-white z-10"
+                style={{ minWidth: 'auto', padding: '0.5rem 1.25rem' }}
+                title="Về trang chủ"
+            >
+                Về trang chủ
+            </button>
+
             <div className="w-full max-w-md bg-white/90 rounded-3xl shadow-2xl p-10 flex flex-col items-center backdrop-blur-lg hover:shadow-blue-300/40 transition-all duration-300">
                 {/* Logo và tiêu đề */}
                 <div className="w-full flex flex-col items-center mb-8">

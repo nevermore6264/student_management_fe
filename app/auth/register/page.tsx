@@ -54,6 +54,15 @@ export default function RegisterPage() {
 
     return (
         <div className="h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200 px-4">
+            <button
+                onClick={() => router.push('/')}
+                className="cursor-pointer absolute top-6 left-6 p-button-lg font-bold text-lg rounded-xl bg-gradient-to-r from-blue-500 to-blue-700 border-0 shadow-lg hover:scale-105 transition-transform duration-200 text-white z-10"
+                style={{ minWidth: 'auto', padding: '0.5rem 1.25rem' }}
+                title="Về trang chủ"
+            >
+                Về trang chủ
+            </button>
+
             <div className="w-full max-w-5xl bg-white/90 rounded-3xl shadow-2xl p-0 md:p-10 flex flex-col md:flex-row items-center gap-0 md:gap-10 backdrop-blur-lg hover:shadow-blue-300/40 transition-all duration-300">
                 {/* Left: Register Form */}
                 <div className="flex-1 w-full flex flex-col items-center md:items-start px-6 py-10 md:py-0">
