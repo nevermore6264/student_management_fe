@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Button } from 'primereact/button';
-import { Card } from 'primereact/card';
 import { Toast } from 'primereact/toast';
 import { useRouter } from 'next/navigation';
 import registrationService, { RegistrationPeriod } from '../../services/registrationService';
@@ -78,119 +77,202 @@ export default function SelectRegistrationPeriodPage() {
     };
 
     const getPeriodStatus = (period: RegistrationPeriod) => {
-        if (!period.trangThai) return { text: 'Đã đóng', color: 'text-red-600', bgColor: 'bg-red-100' };
-        if (isPeriodActive(period)) return { text: 'Đang mở', color: 'text-green-600', bgColor: 'bg-green-100' };
-        if (isPeriodUpcoming(period)) return { text: 'Sắp mở', color: 'text-blue-600', bgColor: 'bg-blue-100' };
-        if (isPeriodExpired(period)) return { text: 'Đã kết thúc', color: 'text-gray-600', bgColor: 'bg-gray-100' };
-        return { text: 'Không xác định', color: 'text-gray-600', bgColor: 'bg-gray-100' };
+        if (!period.trangThai) return { text: 'Đã đóng', color: 'text-red-600', bgColor: 'bg-red-100', icon: 'pi-times-circle' };
+        if (isPeriodActive(period)) return { text: 'Đang mở', color: 'text-green-600', bgColor: 'bg-green-100', icon: 'pi-check-circle' };
+        if (isPeriodUpcoming(period)) return { text: 'Sắp mở', color: 'text-blue-600', bgColor: 'bg-blue-100', icon: 'pi-clock' };
+        if (isPeriodExpired(period)) return { text: 'Đã kết thúc', color: 'text-gray-600', bgColor: 'bg-gray-100', icon: 'pi-calendar-times' };
+        return { text: 'Không xác định', color: 'text-gray-600', bgColor: 'bg-gray-100', icon: 'pi-question-circle' };
+    };
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('vi-VN', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     };
 
     if (loading) {
         return (
-            <div className="card">
-                <div className="flex justify-content-center align-items-center" style={{ minHeight: '400px' }}>
-                    <div className="text-center">
-                        <i className="pi pi-spin pi-spinner" style={{ fontSize: '2rem' }}></i>
-                        <p className="mt-2">Đang tải danh sách đợt đăng ký...</p>
-                    </div>
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <h3 className="text-xl font-semibold text-gray-700 mb-2">Đang tải danh sách đợt đăng ký...</h3>
+                    <p className="text-gray-500">Vui lòng chờ trong giây lát</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="card">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
             <Toast ref={toast} />
 
-            <div className="flex justify-content-between align-items-center mb-4">
-                <h1 className="text-2xl font-bold mr-4">Chọn đợt đăng ký</h1>
-                <Button
-                    icon="pi pi-refresh"
-                    label="Làm mới"
-                    className="p-button-outlined"
-                    onClick={loadRegistrationPeriods}
-                    disabled={loading}
-                />
+            {/* Header */}
+            <div className="bg-white shadow-sm border-b border-gray-200">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                    <div className="flex justify-between items-center">
+                        <div className="flex items-center space-x-4">
+                            <div className="bg-blue-600 rounded-lg p-3">
+                                <i className="pi pi-calendar text-white text-2xl"></i>
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold text-gray-900">Chọn đợt đăng ký</h1>
+                                <p className="text-gray-600 mt-1">Vui lòng chọn đợt đăng ký học phần bạn muốn tham gia</p>
+                            </div>
+                        </div>
+                        <Button
+                            icon="pi pi-refresh"
+                            label="Làm mới"
+                            className="p-button-outlined p-button-secondary"
+                            onClick={loadRegistrationPeriods}
+                            disabled={loading}
+                        />
+                    </div>
+                </div>
             </div>
 
-            {registrationPeriods.length === 0 ? (
-                <div className="text-center py-8">
-                    <i className="pi pi-calendar-times" style={{ fontSize: '3rem', color: '#6b7280' }}></i>
-                    <h3 className="text-xl font-semibold mt-4 text-gray-600">Không có đợt đăng ký nào</h3>
-                    <p className="text-gray-500 mt-2">Hiện tại không có đợt đăng ký nào được thiết lập.</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {registrationPeriods.map((period) => {
-                        const status = getPeriodStatus(period);
-                        const isSelected = selectedPeriod?.maDotDK === period.maDotDK;
-                        const canSelect = period.trangThai && (isPeriodActive(period) || isPeriodUpcoming(period));
+            {/* Main Content */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {registrationPeriods.length === 0 ? (
+                    <div className="text-center py-16">
+                        <div className="bg-white rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6 shadow-lg">
+                            <i className="pi pi-calendar-times text-4xl text-gray-400"></i>
+                        </div>
+                        <h3 className="text-2xl font-semibold text-gray-700 mb-4">Không có đợt đăng ký nào</h3>
+                        <p className="text-gray-500 max-w-md mx-auto">
+                            Hiện tại không có đợt đăng ký nào được thiết lập. Vui lòng liên hệ với phòng đào tạo để biết thêm thông tin.
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                        {/* Period Cards Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                            {registrationPeriods.map((period) => {
+                                const status = getPeriodStatus(period);
+                                const isSelected = selectedPeriod?.maDotDK === period.maDotDK;
+                                const canSelect = period.trangThai && (isPeriodActive(period) || isPeriodUpcoming(period));
 
-                        return (
-                            <Card
-                                key={period.maDotDK}
-                                className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${isSelected ? 'ring-2 ring-blue-500 bg-blue-50' : ''
-                                    } ${!canSelect ? 'opacity-60' : ''}`}
-                                onClick={() => canSelect && handleSelectPeriod(period)}
-                            >
-                                <div className="p-4">
-                                    <div className="flex justify-content-between align-items-start mb-3">
-                                        <h3 className="text-lg font-semibold text-gray-800">
-                                            {period.tenDotDK}
-                                        </h3>
-                                        <span className={`px-2 py-1 rounded text-xs font-semibold ${status.bgColor} ${status.color}`}>
-                                            {status.text}
+                                return (
+                                    <div
+                                        key={period.maDotDK}
+                                        className={`relative group cursor-pointer transition-all duration-300 transform hover:scale-105 ${isSelected ? 'ring-4 ring-blue-500 shadow-2xl' : 'hover:shadow-xl'
+                                            } ${!canSelect ? 'opacity-75' : ''}`}
+                                        onClick={() => canSelect && handleSelectPeriod(period)}
+                                    >
+                                        {/* Status Badge */}
+                                        <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-semibold ${status.bgColor} ${status.color} flex items-center space-x-1`}>
+                                            <i className={`pi ${status.icon}`}></i>
+                                            <span>{status.text}</span>
+                                        </div>
+
+                                        {/* Card Content */}
+                                        <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+                                            <div className="p-6">
+                                                {/* Header */}
+                                                <div className="mb-4">
+                                                    <h3 className="text-xl font-bold text-gray-900 mb-2">
+                                                        {period.tenDotDK}
+                                                    </h3>
+                                                    <div className="flex items-center text-sm text-gray-600">
+                                                        <i className="pi pi-building mr-2"></i>
+                                                        <span>{period.tenKhoa}</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Time Information */}
+                                                <div className="space-y-3 mb-4">
+                                                    <div className="flex items-start space-x-3">
+                                                        <div className="bg-green-100 rounded-full p-2 flex-shrink-0">
+                                                            <i className="pi pi-calendar-plus text-green-600"></i>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-medium text-gray-700">Bắt đầu</p>
+                                                            <p className="text-sm text-gray-600">{formatDate(period.ngayGioBatDau)}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-start space-x-3">
+                                                        <div className="bg-red-100 rounded-full p-2 flex-shrink-0">
+                                                            <i className="pi pi-calendar-minus text-red-600"></i>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-medium text-gray-700">Kết thúc</p>
+                                                            <p className="text-sm text-gray-600">{formatDate(period.ngayGioKetThuc)}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Description */}
+                                                {period.moTa && (
+                                                    <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                                                        <p className="text-sm text-gray-700 italic">&ldquo;{period.moTa}&rdquo;</p>
+                                                    </div>
+                                                )}
+
+                                                {/* Selection Indicator */}
+                                                {isSelected && (
+                                                    <div className="flex items-center justify-center space-x-2 text-green-600 font-medium">
+                                                        <i className="pi pi-check-circle text-lg"></i>
+                                                        <span>Đã chọn</span>
+                                                    </div>
+                                                )}
+
+                                                {/* Disabled Overlay */}
+                                                {!canSelect && (
+                                                    <div className="absolute inset-0 bg-gray-100 bg-opacity-50 rounded-xl flex items-center justify-center">
+                                                        <span className="text-gray-600 font-medium">Không khả dụng</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Continue Button */}
+                        <div className="flex justify-center">
+                            <Button
+                                label="Tiếp tục với đợt đăng ký đã chọn"
+                                icon="pi pi-arrow-right"
+                                className="p-button-success p-button-lg"
+                                onClick={handleContinue}
+                                disabled={!selectedPeriod}
+                                size="large"
+                            />
+                        </div>
+
+                        {/* Selected Period Summary */}
+                        {selectedPeriod && (
+                            <div className="mt-8 bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                    <i className="pi pi-info-circle text-blue-600 mr-2"></i>
+                                    Đợt đăng ký đã chọn
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-700">Tên đợt</p>
+                                        <p className="text-lg font-semibold text-gray-900">{selectedPeriod.tenDotDK}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-700">Khoa</p>
+                                        <p className="text-lg font-semibold text-gray-900">{selectedPeriod.tenKhoa}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-700">Trạng thái</p>
+                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPeriodStatus(selectedPeriod).bgColor} ${getPeriodStatus(selectedPeriod).color}`}>
+                                            <i className={`pi ${getPeriodStatus(selectedPeriod).icon} mr-1`}></i>
+                                            {getPeriodStatus(selectedPeriod).text}
                                         </span>
                                     </div>
-
-                                    <div className="space-y-2 text-sm text-gray-600">
-                                        <div className="flex justify-content-between">
-                                            <span>Bắt đầu:</span>
-                                            <span className="font-medium">
-                                                {new Date(period.ngayGioBatDau).toLocaleDateString('vi-VN')}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-content-between">
-                                            <span>Kết thúc:</span>
-                                            <span className="font-medium">
-                                                {new Date(period.ngayGioKetThuc).toLocaleDateString('vi-VN')}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-content-between">
-                                            <span>Khoa:</span>
-                                            <span className="font-medium">{period.tenKhoa}</span>
-                                        </div>
-                                        {period.moTa && (
-                                            <div className="mt-3 p-2 bg-gray-50 rounded text-xs">
-                                                {period.moTa}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {isSelected && (
-                                        <div className="mt-3 text-center">
-                                            <i className="pi pi-check-circle text-green-600 mr-2"></i>
-                                            <span className="text-green-600 font-medium">Đã chọn</span>
-                                        </div>
-                                    )}
                                 </div>
-                            </Card>
-                        );
-                    })}
-                </div>
-            )}
-
-            {registrationPeriods.length > 0 && (
-                <div className="flex justify-content-center mt-6">
-                    <Button
-                        label="Tiếp tục"
-                        icon="pi pi-arrow-right"
-                        className="p-button-success"
-                        onClick={handleContinue}
-                        disabled={!selectedPeriod}
-                    />
-                </div>
-            )}
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
         </div>
     );
 } 
