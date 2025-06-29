@@ -46,7 +46,7 @@ export default function StudyPlanPage() {
         setDetailLoading(true);
         setError('');
         try {
-            const details = await studyPlanService.getKeHoachChiTiet(maSinhVien);
+            const details = await studyPlanService.getKeHoachChiTiet(maKeHoach, maSinhVien, maHocPhan);
             setDetailPlans(details);
             setDetailDialogVisible(true);
         } catch (error: unknown) {
@@ -170,57 +170,133 @@ export default function StudyPlanPage() {
             {loading ? (
                 <div className="text-center py-8 text-blue-500 font-semibold">Đang tải dữ liệu...</div>
             ) : (
-                <div className="overflow-x-auto w-full">
-                    <table className="w-full border rounded-lg overflow-hidden">
-                        <thead className="bg-blue-100">
-                            <tr>
-                                <th className="px-4 py-2 text-left">Mã học phần</th>
-                                <th className="px-4 py-2 text-left">Tên học phần</th>
-                                <th className="px-4 py-2 text-center">Số tín chỉ</th>
-                                <th className="px-4 py-2 text-center">Học kỳ dự kiến</th>
-                                <th className="px-4 py-2 text-center">Năm học dự kiến</th>
-                                <th className="px-4 py-2 text-center">Trạng thái</th>
-                                <th className="px-4 py-2 text-center">Điểm</th>
-                                <th className="px-4 py-2 text-center">Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredPlans.length === 0 ? (
-                                <tr>
-                                    <td colSpan={8} className="text-center py-4 text-gray-500">
-                                        Không có dữ liệu kế hoạch học tập
-                                    </td>
-                                </tr>
-                            ) : (
-                                filteredPlans.map(plan => (
-                                    <tr key={plan.maKeHoach + plan.maHocPhan} className="border-b hover:bg-blue-50 cursor-pointer">
-                                        <td className="px-4 py-2 font-mono" onClick={() => handleViewDetails()}>{plan.maHocPhan}</td>
-                                        <td className="px-4 py-2" onClick={() => handleViewDetails()}>{plan.tenHocPhan}</td>
-                                        <td className="px-4 py-2 text-center" onClick={() => handleViewDetails()}>{plan.soTinChi}</td>
-                                        <td className="px-4 py-2 text-center" onClick={() => handleViewDetails()}>{plan.hocKyDuKien}</td>
-                                        <td className="px-4 py-2 text-center" onClick={() => handleViewDetails()}>{plan.namHocDuKien}</td>
-                                        <td className="px-4 py-2 text-center" onClick={() => handleViewDetails()}>
-                                            <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${STATUS_MAP[plan.trangThai]?.color || 'bg-gray-100 text-gray-700'}`}>
-                                                {plan.trangThaiText}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-2 text-center" onClick={() => handleViewDetails()}>{plan.diem !== undefined ? plan.diem : '-'}</td>
-                                        <td className="px-4 py-2 text-center">
-                                            <Button
-                                                icon="pi pi-eye"
-                                                className="p-button-rounded p-button-info p-button-sm"
-                                                tooltip="Xem chi tiết"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleViewDetails();
-                                                }}
-                                            />
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                <div className="space-y-6">
+                    {/* Summary cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <div className="flex items-center">
+                                <i className="pi pi-calendar text-blue-500 text-2xl mr-3"></i>
+                                <div>
+                                    <p className="text-sm text-blue-600">Tổng số năm học</p>
+                                    <p className="text-xl font-bold text-blue-700">{sortedYears.length}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                            <div className="flex items-center">
+                                <i className="pi pi-book text-green-500 text-2xl mr-3"></i>
+                                <div>
+                                    <p className="text-sm text-green-600">Tổng số môn học</p>
+                                    <p className="text-xl font-bold text-green-700">{filteredPlans.length}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                            <div className="flex items-center">
+                                <i className="pi pi-star text-purple-500 text-2xl mr-3"></i>
+                                <div>
+                                    <p className="text-sm text-purple-600">Tổng số tín chỉ</p>
+                                    <p className="text-xl font-bold text-purple-700">
+                                        {filteredPlans.reduce((sum, plan) => sum + plan.soTinChi, 0)}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                            <div className="flex items-center">
+                                <i className="pi pi-check-circle text-orange-500 text-2xl mr-3"></i>
+                                <div>
+                                    <p className="text-sm text-orange-600">Đã hoàn thành</p>
+                                    <p className="text-xl font-bold text-orange-700">
+                                        {filteredPlans.filter(plan => plan.trangThai === 1).length}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Grouped by academic year */}
+                    {sortedYears.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500">
+                            Không có dữ liệu kế hoạch học tập
+                        </div>
+                    ) : (
+                        sortedYears.map(year => {
+                            const yearPlans = groupedPlans[year];
+                            const yearTotal = yearTotals.find(total => total.year === year);
+
+                            return (
+                                <div key={year} className="border rounded-lg overflow-hidden">
+                                    {/* Year header */}
+                                    <div className="bg-gradient-to-r from-gray-600 to-gray-700 text-white p-4">
+                                        <div className="flex justify-between items-center">
+                                            <div>
+                                                <h3 className="text-lg font-semibold">Năm học: {year}</h3>
+                                                <p className="text-gray-200 text-sm">
+                                                    {yearPlans.length} môn học • {yearTotal?.totalCredits} tín chỉ
+                                                </p>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <span className="bg-green-200 text-green-700 px-2 py-1 rounded text-xs">
+                                                    Đã học: {yearTotal?.completedCount}
+                                                </span>
+                                                <span className="bg-blue-200 text-blue-700 px-2 py-1 rounded text-xs">
+                                                    Đang học: {yearTotal?.inProgressCount}
+                                                </span>
+                                                <span className="bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs">
+                                                    Chưa học: {yearTotal?.notStartedCount}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Year's subjects table */}
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full">
+                                            <thead className="bg-gray-50">
+                                                <tr>
+                                                    <th className="px-4 py-2 text-left">Mã học phần</th>
+                                                    <th className="px-4 py-2 text-left">Tên học phần</th>
+                                                    <th className="px-4 py-2 text-center">Số tín chỉ</th>
+                                                    <th className="px-4 py-2 text-center">Học kỳ dự kiến</th>
+                                                    <th className="px-4 py-2 text-center">Trạng thái</th>
+                                                    <th className="px-4 py-2 text-center">Điểm</th>
+                                                    <th className="px-4 py-2 text-center">Hành động</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {yearPlans.map(plan => (
+                                                    <tr key={plan.maKeHoach + plan.maHocPhan} className="border-b hover:bg-blue-50 cursor-pointer">
+                                                        <td className="px-4 py-2 font-mono" onClick={() => handleViewDetails()}>{plan.maHocPhan}</td>
+                                                        <td className="px-4 py-2" onClick={() => handleViewDetails()}>{plan.tenHocPhan}</td>
+                                                        <td className="px-4 py-2 text-center" onClick={() => handleViewDetails()}>{plan.soTinChi}</td>
+                                                        <td className="px-4 py-2 text-center" onClick={() => handleViewDetails()}>{plan.hocKyDuKien}</td>
+                                                        <td className="px-4 py-2 text-center" onClick={() => handleViewDetails()}>
+                                                            <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${STATUS_MAP[plan.trangThai]?.color || 'bg-gray-100 text-gray-700'}`}>
+                                                                {plan.trangThaiText}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-4 py-2 text-center" onClick={() => handleViewDetails()}>{plan.diem !== undefined ? plan.diem : '-'}</td>
+                                                        <td className="px-4 py-2 text-center">
+                                                            <Button
+                                                                icon="pi pi-eye"
+                                                                className="p-button-rounded p-button-info p-button-sm"
+                                                                tooltip="Xem chi tiết"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleViewDetails();
+                                                                }}
+                                                            />
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
                 </div>
             )}
 
