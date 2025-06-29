@@ -80,7 +80,6 @@ export default function CourseManagementPage() {
     const [studentsDialogVisible, setStudentsDialogVisible] = useState(false);
     const [overviewDialogVisible, setOverviewDialogVisible] = useState(false);
     const [gradesDialogVisible, setGradesDialogVisible] = useState(false);
-    const [reportDialogVisible, setReportDialogVisible] = useState(false);
 
     // Data for popups
     const [selectedClass, setSelectedClass] = useState<ClassSection | null>(null);
@@ -101,7 +100,7 @@ export default function CourseManagementPage() {
         setLoading(true);
         try {
             // TODO: Get current teacher ID from auth context
-            const teacherId = 'GV001'; // Placeholder
+            const teacherId = typeof window !== 'undefined' ? localStorage.getItem('maNguoiDung') || '' : '';
             const data = await classSectionService.getClassSectionsByTeacher(teacherId);
             setMyClasses(data);
         } catch (err: unknown) {
@@ -114,7 +113,6 @@ export default function CourseManagementPage() {
     const fetchMyGrades = async () => {
         try {
             const data = await gradeService.getAllGrades();
-            // TODO: Filter by current teacher's classes
             setMyGrades(data);
         } catch (err: unknown) {
             console.error('Không thể tải điểm:', err);
@@ -646,7 +644,7 @@ export default function CourseManagementPage() {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <div className="text-green-100 text-sm font-medium mb-1">Điểm trung bình</div>
-                                        <div className="text-3xl font-bold">{overview.diemTrungBinhLop}</div>
+                                        <div className="text-3xl font-bold">{overview.diemTrungBinhLop?.toFixed(2)}</div>
                                     </div>
                                     <div className="bg-green-400 rounded-full p-3">
                                         <i className="pi pi-chart-line text-2xl"></i>
@@ -717,7 +715,7 @@ export default function CourseManagementPage() {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <div className="text-indigo-100 text-sm font-medium mb-1">Điểm cao nhất</div>
-                                        <div className="text-2xl font-bold">{overview.diemCaoNhat}</div>
+                                        <div className="text-2xl font-bold">{overview.diemCaoNhat?.toFixed(2)}</div>
                                     </div>
                                     <div className="bg-indigo-400 rounded-full p-3">
                                         <i className="pi pi-arrow-up text-xl"></i>
@@ -728,7 +726,7 @@ export default function CourseManagementPage() {
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <div className="text-pink-100 text-sm font-medium mb-1">Điểm thấp nhất</div>
-                                        <div className="text-2xl font-bold">{overview.diemThapNhat}</div>
+                                        <div className="text-2xl font-bold">{overview.diemThapNhat?.toFixed(2)}</div>
                                     </div>
                                     <div className="bg-pink-400 rounded-full p-3">
                                         <i className="pi pi-arrow-down text-xl"></i>
