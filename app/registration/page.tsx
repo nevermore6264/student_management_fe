@@ -28,6 +28,16 @@ export default function CourseRegistrationPage() {
     // Mock student ID - in real app this would come from user context/auth
     const maSinhVien = 'SV001';
 
+    // Check if registration period is currently active
+    const isRegistrationActive = () => {
+        if (registrationPeriods.length === 0) return false;
+        const period = registrationPeriods[0];
+        const now = new Date();
+        const startDate = new Date(period.ngayGioBatDau);
+        const endDate = new Date(period.ngayGioKetThuc);
+        return period.trangThai && now >= startDate && now <= endDate;
+    };
+
     useEffect(() => {
         loadData();
     }, []);
@@ -86,7 +96,19 @@ export default function CourseRegistrationPage() {
     };
 
     const actionTemplate = (rowData: CourseClass) => {
-        if (!rowData || rowData.trangThai) {
+        if (!rowData) return null;
+
+        // Check if class is available for registration
+        const isClassAvailable = rowData.trangThai &&
+            rowData.siSoHienTai < rowData.soLuong &&
+            isRegistrationActive();
+
+        // Check if student is already registered for this class
+        const isAlreadyRegistered = registeredClasses.some(reg =>
+            reg.maLopHP === rowData.maLopHP && reg.trangThai
+        );
+
+        if (isClassAvailable && !isAlreadyRegistered) {
             return (
                 <Button
                     label="Đăng ký"
@@ -98,24 +120,56 @@ export default function CourseRegistrationPage() {
                     }}
                 />
             );
+        } else if (isAlreadyRegistered) {
+            return (
+                <span className="text-blue-600 text-sm font-medium">Đã đăng ký</span>
+            );
+        } else if (!rowData.trangThai) {
+            return (
+                <span className="text-red-600 text-sm font-medium">Hết chỗ</span>
+            );
+        } else if (rowData.siSoHienTai >= rowData.soLuong) {
+            return (
+                <span className="text-red-600 text-sm font-medium">Đầy lớp</span>
+            );
+        } else if (!isRegistrationActive()) {
+            return (
+                <span className="text-orange-600 text-sm font-medium">Chưa mở đăng ký</span>
+            );
         }
+
         return null;
     };
 
     const registeredActionTemplate = (rowData: Registration) => {
         if (!rowData) return null;
 
-        return (
-            <Button
-                label="Hủy đăng ký"
-                icon="pi pi-times"
-                className="p-button-danger"
-                onClick={() => {
-                    setSelectedRegistration(rowData);
-                    setCancelDialogVisible(true);
-                }}
-            />
-        );
+        // Only allow cancellation for active registrations during registration period
+        const canCancel = rowData.trangThai && isRegistrationActive();
+
+        if (canCancel) {
+            return (
+                <Button
+                    label="Hủy đăng ký"
+                    icon="pi pi-times"
+                    className="p-button-danger"
+                    onClick={() => {
+                        setSelectedRegistration(rowData);
+                        setCancelDialogVisible(true);
+                    }}
+                />
+            );
+        } else if (!rowData.trangThai) {
+            return (
+                <span className="text-red-600 text-sm font-medium">Đã hủy</span>
+            );
+        } else if (!isRegistrationActive()) {
+            return (
+                <span className="text-gray-600 text-sm font-medium">Không thể hủy</span>
+            );
+        }
+
+        return null;
     };
 
     const handleRegister = async () => {
@@ -218,7 +272,14 @@ export default function CourseRegistrationPage() {
             <Toast ref={toast} />
 
             <div className="flex justify-content-between align-items-center mb-4">
-                <h1 className="text-2xl font-bold">Đăng ký học phần</h1>
+                <h1 className="text-2xl font-bold mr-4">Đăng ký học phần</h1>
+                <Button
+                    icon="pi pi-refresh"
+                    label="Làm mới"
+                    className="p-button-outlined"
+                    onClick={loadData}
+                    disabled={loading}
+                />
             </div>
 
             <div className="mb-4">
@@ -253,8 +314,17 @@ export default function CourseRegistrationPage() {
                                         </td>
                                         <td className="px-4 py-2 border border-gray-300">{period.tenKhoa}</td>
                                         <td className="px-4 py-2 border border-gray-300">
-                                            <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${period.trangThai ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                {period.trangThai ? 'Đang mở' : 'Đã đóng'}
+                                            <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${isRegistrationActive()
+                                                ? 'bg-green-100 text-green-700'
+                                                : period.trangThai
+                                                    ? 'bg-yellow-100 text-yellow-700'
+                                                    : 'bg-red-100 text-red-700'
+                                                }`}>
+                                                {isRegistrationActive()
+                                                    ? 'Đang mở'
+                                                    : period.trangThai
+                                                        ? 'Chưa đến thời gian'
+                                                        : 'Đã đóng'}
                                             </span>
                                         </td>
                                     </tr>
@@ -262,6 +332,34 @@ export default function CourseRegistrationPage() {
                             )}
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            {/* Registration Summary */}
+            <div className="mb-4 p-4 bg-blue-50 rounded-lg">
+                <h3 className="text-lg font-semibold mb-2">Thống kê đăng ký</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-600">
+                            {registeredClasses.filter(reg => reg.trangThai).length}
+                        </div>
+                        <div className="text-sm text-gray-600">Lớp đã đăng ký</div>
+                    </div>
+                    <div className="text-center">
+                        <div className="text-2xl font-bold text-green-600">
+                            {registeredClasses
+                                .filter(reg => reg.trangThai)
+                                .reduce((total, reg) => total + (reg.soTinChi || 0), 0)
+                            }
+                        </div>
+                        <div className="text-sm text-gray-600">Tổng số tín chỉ</div>
+                    </div>
+                    <div className="text-center">
+                        <div className="text-2xl font-bold text-orange-600">
+                            {isRegistrationActive() ? 'Đang mở' : 'Đã đóng'}
+                        </div>
+                        <div className="text-sm text-gray-600">Trạng thái đăng ký</div>
+                    </div>
                 </div>
             </div>
 
