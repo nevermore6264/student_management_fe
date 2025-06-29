@@ -10,7 +10,7 @@ const features = [
         title: 'Đăng ký tín chỉ',
         description: 'Đăng ký môn học nhanh chóng và dễ dàng với giao diện trực quan',
         icon: 'pi pi-book text-4xl text-primary',
-        path: '/course-registration'
+        path: '/registration'
     },
     {
         title: 'Lịch học',
@@ -31,7 +31,7 @@ const quickActions = [
         title: 'Đăng ký môn học',
         description: 'Chọn và đăng ký các môn học cho học kỳ mới',
         icon: 'pi pi-plus-circle',
-        path: '/course-registration',
+        path: '/registration',
         color: 'from-green-500 to-emerald-600'
     },
     {
