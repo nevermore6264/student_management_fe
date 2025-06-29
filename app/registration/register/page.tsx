@@ -8,7 +8,7 @@ import { Dialog } from 'primereact/dialog';
 import { TabView, TabPanel } from 'primereact/tabview';
 import { Toast } from 'primereact/toast';
 import { useRouter, useSearchParams } from 'next/navigation';
-import registrationService, { CourseClass, RegistrationPeriod, Registration } from '../services/registrationService';
+import registrationService, { CourseClass, RegistrationPeriod, Registration } from '../../services/registrationService';
 
 export default function CourseRegistrationPage() {
     const [activeTab, setActiveTab] = useState(0);
@@ -77,16 +77,10 @@ export default function CourseRegistrationPage() {
                 periods = periods ? [periods] : [];
             }
 
-            let classes;
-            if (selectedPeriodId) {
-                // Get classes for specific period
-                classes = await registrationService.getAvailableClassesByPeriod(selectedPeriodId);
-            } else {
-                // Get all available classes
-                classes = await registrationService.getAvailableClasses();
-            }
-
-            const registrations = await registrationService.getRegisteredClasses(maSinhVien);
+            const [classes, registrations] = await Promise.all([
+                registrationService.getAvailableClasses(),
+                registrationService.getRegisteredClasses(maSinhVien)
+            ]);
 
             console.log('API Response - periods:', periods);
             console.log('API Response - classes:', classes);

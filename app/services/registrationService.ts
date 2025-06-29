@@ -81,6 +81,19 @@ class RegistrationService {
         return response.data;
     }
 
+    async getAvailableClassesByPeriod(maDotDK: string) {
+        const res = await fetch(`${API_BASE}/lophocphan/dotdangky/${maDotDK}`, {
+            method: 'GET',
+            headers: this.getAuthHeaders(),
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || 'Không thể lấy danh sách lớp học phần cho đợt đăng ký này');
+        }
+        const response: ApiResponse<CourseClass[]> = await res.json();
+        return response.data;
+    }
+
     async getCurrentRegistrationPeriod() {
         console.log('Calling getCurrentRegistrationPeriod...');
         const res = await fetch(`${API_BASE}/dotdangky/hientai`, {
@@ -98,6 +111,32 @@ class RegistrationService {
         const response: ApiResponse<RegistrationPeriod> = await res.json();
         console.log('Raw API response:', response);
         console.log('Extracted data:', response.data);
+        return response.data;
+    }
+
+    async getAllRegistrationPeriods() {
+        const res = await fetch(`${API_BASE}/dotdangky`, {
+            method: 'GET',
+            headers: this.getAuthHeaders(),
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || 'Không thể lấy danh sách đợt đăng ký');
+        }
+        const response: ApiResponse<RegistrationPeriod[]> = await res.json();
+        return response.data;
+    }
+
+    async getRegistrationPeriodById(maDotDK: string) {
+        const res = await fetch(`${API_BASE}/dotdangky/${maDotDK}`, {
+            method: 'GET',
+            headers: this.getAuthHeaders(),
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || 'Không thể lấy thông tin đợt đăng ký');
+        }
+        const response: ApiResponse<RegistrationPeriod> = await res.json();
         return response.data;
     }
 
