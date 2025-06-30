@@ -118,7 +118,7 @@ export default function ClassListPage() {
     );
 
     return (
-        <div className="w-4/5 max-w-5xl mx-auto p-6 bg-white rounded-2xl shadow-lg mt-12 flex flex-col items-center">
+        <div className="w-full mx-auto p-6 bg-white rounded-2xl shadow-lg mt-12 flex flex-col items-center">
             <ConfirmDialog />
             <h1 className="text-2xl font-bold mb-6 text-blue-700 text-center">Quản lý lớp</h1>
             {error && <Message severity="error" text={error} className="mb-4" />}

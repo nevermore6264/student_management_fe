@@ -146,7 +146,7 @@ class RegistrationService {
     }
 
     async getRegistrationPeriodById(maDotDangKy: number) {
-        const res = await fetch(`${API_BASE}/dotdangky/${maDotDangKy}`, {
+        const res = await fetch(`${API_BASE}/dotdangky/period?period=${maDotDangKy}`, {
             method: 'GET',
             headers: this.getAuthHeaders(),
         });

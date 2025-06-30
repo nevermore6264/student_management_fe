@@ -43,7 +43,7 @@ export default function RegistrationReportPage() {
     );
 
     return (
-        <div className="w-4/5 max-w-5xl mx-auto p-6 bg-white rounded-2xl shadow-lg mt-12 flex flex-col items-center">
+        <div className="w-full mx-auto p-6 bg-white rounded-2xl shadow-lg mt-12 flex flex-col items-center">
             <h1 className="text-2xl font-bold mb-6 text-blue-700 text-center">Báo cáo đăng ký học phần</h1>
             {error && <div className="mb-4 w-full text-center text-red-500 font-semibold">{error}</div>}
             <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4">

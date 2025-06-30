@@ -93,7 +93,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <meta name="theme-color" content="#2563eb" />
                 <link rel="icon" type="image/png" href="/logo.png" />
             </head>
-            <body className="m-0 p-0 min-h-screen w-full flex flex-col" style={{ paddingLeft: '285px' }}>
+            <body className={`m-0 p-0 min-h-screen w-full flex flex-col ${user ? 'pl-[285px]' : ''}`}>
                 <ToastProvider>
                     {isAuthPage ? (
                         // Auth pages layout - no header/footer/sidebar

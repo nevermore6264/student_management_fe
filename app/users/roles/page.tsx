@@ -98,7 +98,7 @@ export default function RoleManagementPage() {
                 onHide={() => setEditDialogVisible(false)}
                 header={formData.maVaiTro ? 'Sửa vai trò' : 'Thêm vai trò mới'}
                 modal
-                className="p-fluid"
+                className="p-fluid w-full max-w-3xl"
                 footer={
                     <div className="flex justify-end gap-2 mt-4">
                         <button
